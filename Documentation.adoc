@@ -1013,7 +1013,7 @@ $ fbgs Documentation.pdf
 
 [INFO]
 ====
-You can view all the controls by pressin `h`.
+You can view all the controls by pressing `h`.
 ====
 
 ==== Partition management
@@ -1053,3 +1053,148 @@ $ sudo pacman -S chromium browserpass browserpass-chromium
 == Creating the DustArch
 
 The following section is aimed at documenting the DustArch creation process. If you just want to use the DustArch then you're finished now. If not, keep reading.
+
+Installing `archiso` and setting it up is as simple as doing
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S archiso
+dustvoice@DustArch ~
+$ cd Projects/Development
+dustvoice@DustArch ~/Projects/Development
+$ git clone git@git.dustvoice.de:DustVoice/DustArch.git
+dustvoice@DustArch ~/Projects/Development
+$ cd DustArch
+dustvoice@DustArch ~/Projects/Development/DustArch
+$ mkdir archiso
+dustvoice@DustArch ~/Projects/Development/DustArch
+$ cd livecd
+dustvoice@DustArch ~/Projects/Development/DustArch/livecd
+$ cp -r /usr/share/archiso/configs/releng/* ./
+----
+
+== DustArch package list
+
+A complete list of all the packages present on the DustArch.
+
+[source, text, linenums]
+----
+alsa-utils
+arch-install-scripts
+b43-fwcutter
+broadcom-wl
+browserpass
+browserpass-chromium
+btrfs-progs
+ccid
+chromium
+clang
+clonezilla
+cmake
+crda
+darkhttpd
+ddrescue
+dhclient
+dhcpcd
+dialog
+diffutils
+dmraid
+dnsmasq
+dnsutils
+dolphin
+dosfstools
+elinks
+ethtool
+exfat-utils
+f2fs-tools
+fbida
+fish
+fsarchiver
+ghostscript
+git
+gnome-terminal
+gnu-netcat
+gnupg
+gparted
+gpm
+gptfdisk
+grml-zsh-config
+grub
+grub
+hdparm
+i3
+i3status
+iputils
+ipw2100-fw
+ipw2200-fw
+irssi
+iwd
+jfsutils
+lftp
+libusb-compat
+linux-atm
+linux-firmware
+lsscsi
+lvm2
+make
+man-db
+man-pages
+mc
+mdadm
+mtools
+mtools
+mupdf
+nano
+ndisc6
+neovim
+netctl
+nfs-utils
+nilfs-utils
+nmap
+ntfs-3g
+ntp
+openconnect
+opensc
+openssh
+openvpn
+os-prober
+partclone
+parted
+partimage
+pass
+pcsclite
+ppp
+pptpclient
+python3
+refind-efi
+reiserfsprogs
+rofi
+rp-pppoe
+rsync
+ruby
+rubygems
+sdparm
+sg3_utils
+smartmontools
+sudo
+tcpdump
+testdisk
+ttf-hack
+usb_modeswitch
+usbutils
+vi
+vim-minimal
+vpnc
+wget
+wicd
+wireless-regdb
+wireless_tools
+wpa_supplicant
+wvdial
+xfsprogs
+xl2tpd
+xorg
+xorg-drivers
+xorg-xinit
+----
