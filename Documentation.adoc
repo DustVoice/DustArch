@@ -993,39 +993,28 @@ $ sudo pacman -S mupdf
 
 // TODO: Check if fbpdf is really working
 
-If you want to not always use the graphical desktop with `mupdf`, you might be interested in the `fbpdf` package.
+If you want to not always use the graphical desktop with `mupdf`, you might be interested in the `fbgs` software.
 
-As it is an `AUR` package, we can't just install it with pacman. We have to do
+This software renders a pdf document using the native framebuffer. To install it simply do
 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ git clone https://aur.archlinux.org/mujs-git.git
-dustvoice@DustArch ~
-$ cd mujs-git
-dustvoice@DustArch ~/mujs-git
-$ sudo pacman -S fakeroot
-dustvoice@DustArch ~/mujs-git
-$ makepkg
-dustvoice@DustArch ~/mujs-git
-$ sudo pacman -U mujs-git-*
-dustvoice@DustArch ~/mujs-git
-$ cd ..
-dustvoice@DustArch ~
-$ git clone https://aur.archlinux.org/fbpdf-git.git
-dustvoice@DustArch ~
-$ cd fbpdf-git
-dustvoice@DustArch ~/fbpdf-git
-$ sudo pacman -S mupdf libmupdf djvulibre pkg-config
-dustvoice@DustArch ~/fbpdf-git
-$ makepkg
-dustvoice@DustArch ~/fbpdf-git
-$ sudo pacman -U fbpdf-git-*
-dustvoice@DustArch ~/fbpdf-git
-$ cd ..
-dustvoice@DustArch ~
-$ rm -rf mujs-git fbpdf-git
+$ pacman -S fbida ghostscript
 ----
+
+and to view this pdf document (`Documentation.pdf`) for example, you would run
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ fbgs Documentation.pdf
+----
+
+[INFO]
+====
+You can view all the controls by pressin `h`.
+====
 
 ==== Partition management
 
