@@ -33,6 +33,7 @@ gem install asciidoctor-pdf --pre
 gem install asciidoctor-epub3 --pre
 gem install pygments.rb --pre
 
+nvim --headless +PlugInstall +qa
 python3 ~/.config/nvim/plugged/YouCompleteMe/install.py --clang-completer
 
 systemctl enable pacman-init.service choose-mirror.service
