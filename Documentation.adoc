@@ -22,7 +22,7 @@ Even when you do use a standard keyboard layout, there could still be some custo
 
 In my case, I'll want the `Caps_Lock` key mapped to `Escape` for the american keyboard layouts (both the standard and the international version) as well as for the german layout with no dead keys (` won't require two keypresses).
 
-All keymaps are stored under `/usr/shar/kbd/keymaps` and in my case the default keyboard map used for the german language with no dead keys resides under `/usr/share/kbd/keymaps/i386/qwertz/de-latin1-nodeadkeys.map.gz` and the US layouts are to be found under `/usr/share/kbd/keymaps/i386/qwerty/us.map.gz` _(normal US version)_ and `/usr/share/kbd/keymaps/i386/qwerty/us-acentos.map.gz` _(US international layout)_ respectively.
+All keymaps are stored under `/usr/share/kbd/keymaps` and in my case the default keyboard map used for the german language with no dead keys resides under `/usr/share/kbd/keymaps/i386/qwertz/de-latin1-nodeadkeys.map.gz` and the US layouts are to be found under `/usr/share/kbd/keymaps/i386/qwerty/us.map.gz` _(normal US version)_ and `/usr/share/kbd/keymaps/i386/qwerty/us-acentos.map.gz` _(US international layout)_ respectively.
 
 Now we switch to the `/tmp` directory and create our new keymap(s).
 
@@ -128,7 +128,7 @@ Now you are able to load the keymap and set it as the default one to use
 [source, console]
 ----
 root@archiso ~ # loadkeys custom-us
-root@archiso ~ # locatectl set-keymap --noconvert custom-us
+root@archiso ~ # localectl set-keymap --no-convert custom-us
 ----
 
 === Updating the system
@@ -1035,9 +1035,7 @@ I'm using `pass` as my password manager. To use it I have to do
 dustvoice@DustArch ~
 $ sudo pacman -S pass
 dustvoice@DustArch ~
-$ git clone git@git.dustvoice.de:DustVoice/pass.git
-dustvoice@DustArch ~
-$ mv pass .password-store
+$ git clone git@git.dustvoice.de:DustVoice/pass.git .password-store
 ----
 
 ==== Web browser
@@ -1166,6 +1164,7 @@ pass
 pcsclite
 ppp
 pptpclient
+python-pip
 python3
 refind-efi
 reiserfsprogs
