@@ -1,3 +1,3 @@
 [submodule "livecd/airootfs/etc/skel"]
 	path = livecd/airootfs/etc/skel
-	url = git@git.dustvoice.de:DustVoice/dotfiles.git
+	url = git@github.com:DustVoice/dotfiles.git
