@@ -524,7 +524,7 @@ After that we are going to create a new user, set the password for this user, ma
 
 [source, console]
 ----
-[root@archiso /]# useradd -mg users -G wheel,storage,power dustvoice
+[root@archiso /]# useradd -m -p "" -g users -G "adm,audio,floppy,log,network,rfkill,scanner,storage,optical,power,wheel" -s /usr/bin/fish dustvoice
 [root@archiso /]# passwd dustvoice
 [root@archiso /]# pacman -S sudo
 ----
