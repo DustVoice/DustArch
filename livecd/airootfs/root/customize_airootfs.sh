@@ -27,14 +27,22 @@ sed -i 's/#\(HandleSuspendKey=\)suspend/\1ignore/' /etc/systemd/logind.conf
 sed -i 's/#\(HandleHibernateKey=\)hibernate/\1ignore/' /etc/systemd/logind.conf
 sed -i 's/#\(HandleLidSwitch=\)suspend/\1ignore/' /etc/systemd/logind.conf
 
+pip3 install neovim
 pip3 install pygments
-gem install asciidoctor --pre
-gem install asciidoctor-pdf --pre
-gem install asciidoctor-epub3 --pre
-gem install pygments.rb --pre
 
-nvim --headless +PlugInstall +qa
-python3 ~/.config/nvim/plugged/YouCompleteMe/install.py --clang-completer
+! id dustvoice && useradd -m -p "" -g users -G "adm,audio,floppy,log,network,rfkill,scanner,storage,optical,power,wheel" -s /usr/bin/fish dustvoice
+echo 'dustvoice ALL=(ALL) ALL' >> /etc/sudoers
+chown -R dustvoice:users /home/dustvoice
+
+sudo -u dustvoice gem install asciidoctor --pre
+sudo -u dustvoice gem install asciidoctor-pdf --pre
+sudo -u dustvoice gem install asciidoctor-epub3 --pre
+sudo -u dustvoice gem install pygments.rb --pre
+
+sudo -u dustvoice nvim --headless +PlugInstall +qa
+sudo -u dustvoice python3 /home/dustvoice/.config/nvim/plugged/YouCompleteMe/install.py --clang-completer
+
+sudo -u dustvoice gpg-connect-agent updatestartuptty /bye
 
 systemctl enable pacman-init.service choose-mirror.service
 systemctl set-default multi-user.target
@@ -45,4 +53,10 @@ systemctl start dhcpcd.service
 systemctl enable pcscd
 systemctl start pcscd
 
-gpg-connect-agent updatestartuptty /bye
+echo ""
+echo "Please set a password for the [root] user:"
+until passwd; do echo "Try again, or Ctrl-c within 5 seconds!"; sleep 5; done
+
+echo ""
+echo "Please set a password for the [dustvoice] user:"
+until passwd dustvoice; do echo "Try again, or Ctrl-c within 5 seconds!"; sleep 5; done
