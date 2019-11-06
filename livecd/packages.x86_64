@@ -26,6 +26,7 @@ elinks
 ethtool
 exfat-utils
 f2fs-tools
+fakeroot
 fbida
 fish
 fsarchiver
