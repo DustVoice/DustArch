@@ -12,9 +12,6 @@ hwclock --systohc --utc
 timedatectl set-timezone Europe/Berlin
 timedatectl set-ntp true
 
-loadkeys custom-us
-localectl set-keymap --no-convert custom-us
-
 usermod -s /usr/bin/fish root
 cp -aT /etc/skel/ /root/
 chmod 700 /root
@@ -40,9 +37,12 @@ sudo -u dustvoice gem install asciidoctor-epub3 --pre
 sudo -u dustvoice gem install pygments.rb --pre
 
 sudo -u dustvoice nvim --headless +PlugInstall +qa
-sudo -u dustvoice python3 /home/dustvoice/.config/nvim/plugged/YouCompleteMe/install.py --clang-completer
+sudo -u dustvoice python3 ~/.config/nvim/plugged/YouCompleteMe/install.py --clang-completer
 
 sudo -u dustvoice gpg-connect-agent updatestartuptty /bye
+
+sudo -u dustvoice loadkeys custom-us
+sudo -u dustvoice localectl set-keymap --no-convert custom-us
 
 systemctl enable pacman-init.service choose-mirror.service
 systemctl set-default multi-user.target
