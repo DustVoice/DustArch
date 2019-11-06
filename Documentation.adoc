@@ -183,6 +183,7 @@ root@archiso ~ # fdisk /dev/sda
 
 ==== BIOS - MBR
 
+.fdisk /dev/sda
 [source, text]
 ----
 Command (m for help): o
@@ -196,6 +197,7 @@ The identifier will be different everytime you run this command.
 
 Now we will create a new primary partition for `/` with the partition type set to `Linux`.
 
+.fdisk /dev/sda
 [source, text]
 ----
 Command (m for help): n
@@ -223,6 +225,7 @@ I want the partition to have approx. 32GB, hence this specific value.
 
 Now onto the `swap` partition
 
+.fdisk /dev/sda
 [source, text]
 ----
 Command (m for help): n
@@ -249,6 +252,7 @@ A swap size twice the size of your RAM is recommended by a lot of people. But wi
 
 Now onto the `/home` partition, which in my case will be assigned the remaining space
 
+.fdisk /dev/sda
 [source, text]
 ----
 Command (m for help): n
@@ -270,6 +274,7 @@ Changed type of partition 'Linux' to 'Linux'.
 
 Now write the changes and exit the tool
 
+.fdisk /dev/sda
 [source, text]
 ----
 Command (m for help): w
@@ -435,6 +440,7 @@ After that you have to generate your locale information. For that you have to ed
 I recommend to always uncomment `en_US.UTF-8 UTF8` for development purposes, also if you want to use another language primarily.
 In my case I uncommented
 
+./etc/locale.gen
 [source, text]
 ----
 [...]
@@ -446,6 +452,7 @@ In my case I uncommented
 
 which then became
 
+./etc/locale.gen
 [source, text]
 ----
 [...]
@@ -475,6 +482,7 @@ To change the `hostname`, simply edit `/etc/hostname`, enter the desired name, t
 
 which in my case then cointains
 
+./etc/hostname
 [source, text]
 ----
 DustArch
@@ -489,6 +497,7 @@ Now we need to specify some `hosts` entries by editing `/etc/hosts`
 
 And originall looked like this
 
+./etc/hosts
 [source, text]
 ----
 # Static table lookup for hostnames.
@@ -497,6 +506,7 @@ And originall looked like this
 
 and now looks like this
 
+./etc/hosts
 [source, text]
 ----
 # Static table lookup for hostnames.
@@ -538,6 +548,7 @@ We now have to allow the `wheel` group sudo access. For that we edit
 
 and uncomment the following line
 
+./etc/sudoers
 [source, text]
 ----
 ## Uncomment to allow members of group wheel to execute any command
@@ -546,6 +557,7 @@ and uncomment the following line
 
 so that it becomes the following
 
+./etc/sudoers
 [source, text]
 ----
 ## Uncomment to allow members of group wheel to execute any command
@@ -554,6 +566,7 @@ so that it becomes the following
 
 You could also add a new line below
 
+./etc/sudoers
 [source, text]
 ----
 root ALL=(ALL) ALL
@@ -561,6 +574,7 @@ root ALL=(ALL) ALL
 
 with your new username
 
+./etc/sudoers
 [source, text]
 ----
 dustvoice ALL=(ALL) ALL
@@ -742,6 +756,11 @@ and then download my public key (which is provided by an URL to my website on th
 [source, console]
 ----
 dustvoice@DustArch ~> gpg --card-edit
+----
+
+.gpg --card-edit
+[source, console]
+----
 gpg/card> fetch
 gpg/card> quit
 ----
@@ -878,6 +897,7 @@ dustvoice@DustArch ~
 $ sudo pacman -S clang make cmake
 ----
 
+[#neovim_for_president]
 ==== Neovim for president
 
 Now, after I finally have all my configs, I want to edit files too. In order for that to work, I have to install `neovim`, the corresponding python package, as well as cloning my neovim config files and installing all plugins.
@@ -900,6 +920,7 @@ $ nvim platform_template.vim
 
 Now change the content in line 3 from
 
+.platform_template.vim
 [source, text]
 ----
 let g:platform = "windows_portable"
@@ -907,6 +928,7 @@ let g:platform = "windows_portable"
 
 to
 
+.platform.vim
 [source, text]
 ----
 let g:platform = "linux"
@@ -916,6 +938,7 @@ and save to `platform.vim`
 
 Now open `custom_template.vim` add the following lines
 
+.custom.vim
 [source, text]
 ----
 let g:use_autocomplete = 3
@@ -1048,34 +1071,196 @@ dustvoice@DustArch ~
 $ sudo pacman -S chromium browserpass browserpass-chromium
 ----
 
+=== Making a boot medium
+
+After this whole process you're probably wondering how to create a bootable medium. This section is purely dedicated to that topic.
+
+==== Making a DustArch boot stick
+
+For this task you can just use `dd`. In this example, the usb stick I want to use lied under `/dev/sdb`.
+
+In this case I would simply do
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo dd bs=4M if=DustArch.iso of=/dev/sdb status=progress oflag=sync
+----
+
+==== Making a DustArch bootable partition
+
+This could be what you want to do, if you for example also want to use the usb drive for storage purposes (in Windows, etc.). In this case, you have to create a *primary* and *active* `fat32` partition and filesystem (with `fdisk` & `mkfs.vfat` or `parted`).
+
+[NOTE]
+====
+Windows only really reads the first partition of a drive, so make sure, the first partition is the one you want to access from Windows.
+====
+
+[INFO]
+====
+To mark a partition as *active*, or *bootable*, just open the disk with `fdisk` and enter `a` followed by the partition number you want to mark as active.
+====
+
+In my case my `fat32` formatted partition is located under `/dev/sdb2`, my storage partition is located under `/dev/sdb1` and the `DustArch.iso` is located in the base directory of said storage partition.
+
+First off, you have to make sure that `syslinux` is installed!
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S syslinux
+----
+
+After that we will now handle the task of copying the iso to the partition
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo mkdir -p /mnt/{iso,storage,usb}
+dustvoice@DustArch ~
+$ sudo mount /dev/sdb1 /mnt/storage
+dustvoice@DustArch ~
+$ sudo mount -o loop /mnt/storage/DustArch.iso /mnt/iso
+dustvoice@DustArch ~
+$ sudo mount /dev/sdb2 /mnt/usb
+dustvoice@DustArch ~
+$ sudo cp -a /mnt/iso/* /mnt/usb
+dustvoice@DustArch ~
+$ sudo sync
+dustvoice@DustArch ~
+$ sudo umount /mnt/iso
+dustvoice@DustArch ~
+$ sudo umount /mnt/storage
+----
+
+As you might have noticed, `/dev/sdb2` is still mounted at `/mnt/usb`. This is because we still have to provide the `name` or the `UUID` to two config scripts: `/mnt/usb/arch/boot/syslinux/archiso_sys.cfg` and `/mnt/usb/loader/entries/archiso-x86_64.conf`.
+
+Change
+
+[source, text]
+----
+archisolabel=...
+----
+
+(where `...` is probably something in the form of `ARCH_YYMMDD`) to either
+
+[source, text]
+----
+archisolabel=MY-NAME
+----
+
+where `MY-NAME` is the name of the filesystem (the `-n` option of `mkfs.vfat` for example), or to
+
+[source, text]
+----
+archisodevice=/dev/disk/by-uuid/YOUR-UUID
+----
+
+where `YOUR-UUID` is, in my case, obtained by running
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo blkid -o value -s UUID /dev/sdb2`
+----
+
+After that we can unmount the partition!
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo umount /mnt/usb
+----
+
+Now the only thing left is to write the `bootstrap` to the disk (*not the partition!*) by doing
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo dd bs=440 count=1 conv=notrunc status=progress if=/usr/lib/syslinux/bios/mbr.bin of=/dev/sdb
+----
+
+Alternatively, if you don't want to make your partition active, for some reason, or this method creates weird behaviour, you can also specify the partition number by replacing the above command with
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ printf '\x2' | cat /usr/lib/syslinux/bios/altmbr.bin - | sudo dd bs=440 count=1 status=progress iflag=fullblock of=/dev/sdb
+----
+
 == Creating the DustArch
 
 The following section is aimed at documenting the DustArch creation process. If you just want to use the DustArch then you're finished now. If not, keep reading.
 
-Installing `archiso` and setting it up is as simple as doing
+Installing `archiso` is as simple as doing
 
 [source, console]
 ----
 dustvoice@DustArch ~
 $ sudo pacman -S archiso
+----
+
+To get the DustArch archiso files, we have to clone the repository and add the file `platform.vim` and optionally `custom.vim` (templates are `platform_template.vim` and `custom_template.vim`), in order for `neovim` to work properly.
+An example configuration is shown in the section <<neovim_for_president>>.
+
+[source, console]
+----
 dustvoice@DustArch ~
 $ cd Projects/Development
 dustvoice@DustArch ~/Projects/Development
-$ git clone git@git.dustvoice.de:DustVoice/DustArch.git
+$ git clone --recurse-submodules --shallow-submodules git@git.dustvoice.de:DustVoice/DustArch.git
 dustvoice@DustArch ~/Projects/Development
 $ cd DustArch
 dustvoice@DustArch ~/Projects/Development/DustArch
-$ mkdir archiso
+$ cd livecd/airootfs/etc/skel/.config/nvim
+dustvoice@DustArch ~/Projects/Development/DustArch/livecd/airootfs/etc/skel/.config/nvim
+$ echo 'let g:platform = "linux"' >> platform.vim
+dustvoice@DustArch ~/Projects/Development/DustArch/livecd/airootfs/etc/skel/.config/nvim
+$ echo 'let g:use_autocomplete = 3' >> custom.vim
+dustvoice@DustArch ~/Projects/Development/DustArch/livecd/airootfs/etc/skel/.config/nvim
+$ echo 'let g:use_clang_format = 1' >> custom.vim
+dustvoice@DustArch ~/Projects/Development/DustArch/livecd/airootfs/etc/skel/.config/nvim
+$ echo 'let g:use_font = 0' >> custom.vim
+dustvoice@DustArch ~/Projects/Development/DustArch/livecd/airootfs/etc/skel/.config/nvim
+$ cd ../../../../../../
+----
+
+Now you just need to change the ownership of the `livecd` directory to `root:root` and then proceed to building the whole thing!
+
+[source, console]
+----
+dustvoice@DustArch ~/Projects/Development/DustArch
+$ sudo chown -R root:root livecd
 dustvoice@DustArch ~/Projects/Development/DustArch
 $ cd livecd
-dustvoice@DustArch ~/Projects/Development/DustArch/livecd
-$ cp -r /usr/share/archiso/configs/releng/* ./
 ----
+
+[NOTE]
+====
+Keep in mind that you have to execute the `build.sh` as root. So either `su` into `root`
+
+[source, console]
+----
+dustvoice@DustArch ~/Projects/Development/DustArch/livecd
+$ sudo su root
+root@DustArch /home/dustvoice/Projects/Development/DustArch/livecd
+$ ./build.sh -v
+----
+
+or just use `sudo`
+
+[source, console]
+----
+dustvoice@DustArch ~/Projects/Development/DustArch/livecd
+$ sudo -u root ./build.sh -v
+----
+====
 
 == DustArch package list
 
 A complete list of all the packages present on the DustArch.
 
+.packages-x86_64
 [source, text, linenums]
 ----
 alsa-utils
