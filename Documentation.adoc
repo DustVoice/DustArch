@@ -1,4 +1,5 @@
-= DustArch - The complete guide
+= DustArch\ 
+The complete guide to setting up DustVoice's Arch Linux completely from scratch or by using the DustArch image
 David Holland <info@dustvoice.de>
 v1.12, 2019-10-24
 :toc: left
@@ -14,6 +15,7 @@ v1.12, 2019-10-24
 
 This section is aimed at providing help with the general installation of archlinux from within either the custom DustArch live-os, or the official archlinux live-os.
 
+// TODO: remove or move this complete section
 [#keyboard_layout]
 === Change the keyboard layout
 
@@ -145,6 +147,7 @@ root@archiso ~ # pacman -Sy
 After that, you will now be able to install packages with pacman.
 ====
 
+// TODO: Adapt, fill up and shorten
 === Formatting the drive
 
 First you have to list all the available drives by issuing
@@ -356,7 +359,7 @@ root@archiso ~ # pacstrap /mnt base linux linux-firmware $(pacman -Qq | tr '\n' 
 
 This will take quite some time depending on your internet connection speed.
 
-After that generate an `fstab` using `genfstab` like so
+After that generate a `fstab` using `genfstab` like so
 
 [source, console]
 ----
@@ -404,13 +407,21 @@ Furthermore you'll probably need an editor so either use
 [root@archiso /]# pacman -S nano
 ----
 
-or
-
 [source, console]
 ----
 [root@archiso /]# pacman -S vim
 ----
 
+or
+
+[source, console]
+----
+[root@archiso /]# pacman -S neovim
+----
+
+according to your preference.
+
+// TODO: Move keyboard part here.
 ==== Changing the keyboard layout
 
 The first thing you probably wanna do is change the keyboard layout again. For that just follow the instructions in section <<keyboard_layout>>.
@@ -530,11 +541,14 @@ To change the password for the current user (the root user) do
 
 and choose a new password.
 
-After that we are going to create a new user, set the password for this user, make sure the `sudo` package is installed and allow the `wheel` group sudo access.
+==== Creating my personal user
+
+We are going to make sure the `fish` shell is installed, create a new user, set the password for this user, make sure the `sudo` package is installed and allow the `wheel` group sudo access.
 
 [source, console]
 ----
-[root@archiso /]# useradd -m -p "" -g users -G "adm,audio,floppy,log,network,rfkill,scanner,storage,optical,power,wheel" -s /usr/bin/fish dustvoice
+[root@archiso /]# pacman -S fish
+[root@archiso /]# useradd -m -p "" -G "adm,audio,floppy,log,network,rfkill,scanner,storage,users,optical,power,wheel" -s /usr/bin/fish dustvoice
 [root@archiso /]# passwd dustvoice
 [root@archiso /]# pacman -S sudo
 ----
@@ -543,7 +557,7 @@ We now have to allow the `wheel` group sudo access. For that we edit
 
 [source, console]
 ----
-[root@archiso /]# sudo vim /etc/sudoers
+[root@archiso /]# sudo nvim /etc/sudoers
 ----
 
 and uncomment the following line
@@ -581,6 +595,127 @@ dustvoice ALL=(ALL) ALL
 ----
 
 to only grant yourself sudo privileges.
+
+==== Setting up a home environment
+
+In this step we're going to setup a home environment for both the root and my personal user. Note, that in my case these 2 home environments are equivalent, which is why you execute the follwing commands as the root user first and then `su` into the new user and repeat the same commands.
+
+[source, console]
+----
+[root@archiso /]# cd ~
+[root@archiso ~]# pacman -S git
+[root@archiso ~]# git init
+[root@archiso ~]# git remote add origin https://github.com/DustVoice/dotfiles.git
+[root@archiso ~]# git fetch
+[root@archiso ~]# git reset origin/master --hard
+[root@archiso ~]# git branch --set-upstream-to=origin/master master
+----
+
+Before we'll be able to update the `submodule`, we will have to setup our `gpg` key as a `ssh` key
+
+[source, console]
+----
+[root@archiso ~]# pacman -S gnupg openssh
+[root@archiso ~]# chmod 700 .gnupg
+[root@archiso ~]# gpg --card-status
+[root@archiso ~]# gpg --card-edit
+(insert) gpg/card> fetch
+(insert) gpg/card> q
+[root@archiso ~]# gpg-connect-agent updatestartuptty /bye
+[root@archiso ~]# git remote set-url origin git@github.com:DustVoice/dotfiles.git
+[root@archiso ~]# chsh -s /usr/bin/fish
+[root@archiso ~]# exit
+root@archiso ~ # arch-chroot /mnt
+[root@archiso /]# fish
+[I] root@archiso /
+# cd ~
+[I] root@archiso ~
+# git submodule update --init --recursive
+[I] root@archiso ~
+# cd .config/nvim
+[I] root@archiso ~/.config/nvim
+# echo 'let g:platform = "linux"' >> platform.vim
+[I] root@archiso ~/.config/nvim
+# echo 'let g:use_autocomplete = 3' >> custom.vim
+[I] root@archiso ~/.config/nvim
+# echo 'let g:use_clang_format = 1' >> custom.vim
+[I] root@archiso ~/.config/nvim
+# echo 'let g:use_font = 0' >> custom.vim
+[I] root@archiso ~/.config/nvim
+# pacman -S make cmake clang jdk-openjdk pyhton pyhton-pip
+[I] root@archiso ~/.config/nvim
+# pip3 install neovim
+[I] root@archiso ~/.config/nvim
+# nvim --headless +PlugInstall +qa
+[I] root@archiso ~/.config/nvim
+# cd plugged/YouCompleteMe
+[I] root@archiso ~/.config/nvim/plugged/YouCompleteMe
+# python3 install.py --clang-completer --java-completer
+[I] root@archiso ~/.config/nvim/plugged/YouCompleteMe
+# cd ~
+[I] root@archiso ~
+# 
+sudo pacman -S arandr
+
+git clone https://aur.archlinux.org/brave-bin.git
+cd brave-bin
+makepkg -si
+cd ..
+rm -rf brave-bin
+
+sudo pacman -S browserpass
+...
+
+sudo pacman -S nvidia nvidia-utils opencl-nvidia
+
+nvim /etc/pacman.conf -> multilib
+sudo pacman -Sy
+git clone https://aur.archlinux.org/davinci-resolve.git
+cd davinci-resolve
+makepkg -si
+set -U fish_user_paths $fish_user_paths /opt/resolve/bin
+cd ..
+rm -rf davinci-resolve
+
+pacman astyle
+
+pacman doxygen
+
+JUCE
+FRUT
+
+pacman ninja
+
+aur obs-studio-git
+
+pacman pass
+
+pacman teamspeak3
+
+aur teamviewer
+
+pacman telegram-desktop
+
+aur tor-browser
+
+pacman discord
+
+pacman vlc
+
+pacman avahi
+pacman cups
+aur brother-mfc-j497dw
+
+pacman virtualbox
+
+pacman qjackctl
+
+pacman thunderbird
+
+
+
+fstab file for win?
+----
 
 === Preparing to boot
 
@@ -621,9 +756,9 @@ If you chose the `UEFI - GPT` variation, you'll first have to mount the `EFI Sys
 
 [source, console]
 ----
-[root@archiso /]# mkdir /boot/EFI
-[root@archiso /]# mount /dev/sda1 /boot/EFI
-[root@archiso /]# grub_install --target=x86_64-efi --bootloader=grub_uefi --recheck
+[root@archiso /]# mkdir /boot
+[root@archiso /]# mount /dev/sda1 /boot
+[root@archiso /]# grub_install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
 ----
 
 In all cases, you now have to create the main configuration file
@@ -655,6 +790,7 @@ This outputs the interface status report. To make sure that you really have a wo
 
 If this doesn't work, you probably need to run the following commands
 
+// TODO: Move to user setup pos 1
 [source, console]
 ----
 [dustvoice@DustArch ~]$ sudo systemctl enable dhcpcd.service
@@ -674,6 +810,7 @@ Everything should run smoothly now.
 
 After making sure that you have established an internet connection, you can then proceed to update and upgrade all installed packages by issuing
 
+// TODO: Move to user setup pos 2
 [source, console]
 ----
 [dustvoice@DustArch ~]$ sudo pacman -Syu
@@ -692,6 +829,7 @@ If you did the whole previous process out of the original archiso, you will like
 
 First you'll probably want to install the *fish* shell and set it as your default.
 
+// TODO: Move to user setup pos -1
 [source, console]
 ----
 [dustvoice@DustArch ~]$ sudo pacman -S fish
@@ -731,6 +869,7 @@ dustvoice@DustArch ~> sudo pacman -S gnupg
 
 After that you'll still have to setup `gnupg` correctly. In my case I have my private keys stored on a smartcard. To use it, I'll have to install some packages first
 
+// TODO: check if maybe only pcsclite is needed with the systemctl enabled
 [source, console]
 ----
 dustvoice@DustArch ~> sudo pacman -S pcsclite libusb-compat ccid opensc
@@ -843,15 +982,9 @@ For `asciidoctor` _(will be installed in just a second)_ we also need to install
 [source, console]
 ----
 dustvoice@DustArch ~
-$ sudo pacman -S python3 wget
-dustvoice@DustArch ~
-$ wget bootstrap.pypa.io/get-pip.py
-dustvoice@DustArch ~
-$ sudo python3 get-pip.py
+$ sudo pacman -S python python-pip
 dustvoice@DustArch ~
 $ sudo pip3 install pygments
-dustvoice@DustArch ~
-$ rm get-pip.py
 ----
 
 ==== Ruby & Asciidoctor
@@ -976,6 +1109,7 @@ $ nvim config
 
 If you decide, that you want to use a graphical desktop environment, you have to install additional packages in order for that to work.
 
+// TODO: add paragraph for nvidia, xrandr/arandr
 [source, console]
 ----
 dustvoice@DustArch ~
@@ -1046,7 +1180,7 @@ You may also choose to use a graphical partitioning software instead of `fdisk` 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ sudo pacman -S gparted
+$ sudo pacman -S gparted gdisk
 ----
 
 ==== Password management
@@ -1065,6 +1199,14 @@ $ git clone git@git.dustvoice.de:DustVoice/pass.git .password-store
 
 As you're already using a GUI, you also might be interested in a web browser. In my case, I'll install `chromium` and the `browserpass-chromium` extension for my passwords.
 
+// TODO: Add brave aur install instructions (base-devel required)
+// Additional dependency installed packages
+// ttf-font
+// gperf
+// npm
+// cups
+// libgnome-keyring
+// pepper-flash
 [source, console]
 ----
 dustvoice@DustArch ~
