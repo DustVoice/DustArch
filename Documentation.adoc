@@ -744,6 +744,14 @@ dustvoice@DustArch ~
 $ sudo pacman -S mupdf
 ----
 
+If you want to have changes made to the pdf reflected immediately in the viewer, you would need `evince` instead
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S evince
+----
+
 ===== Using the framebuffer
 
 If you want to not always use the graphical desktop with `mupdf`, you might be interested in the `fbgs` software.
