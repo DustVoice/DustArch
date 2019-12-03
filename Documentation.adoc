@@ -889,7 +889,7 @@ $ sudo pacman -S libreoffice-fresh
 
 ==== Printing
 
-In order for printing to work with my printer, which is a _Brother MFC J497DW_, I had do install `avahi`, `cups`, `cups-pdf`, `nss-mdns` and the correspoding driver for my printer
+In order for printing to work with my printer, which is a _Brother MFC J497DW_, I had do install `avahi`, `cups`, `cups-pdf`, `nss-mdns` and the correspoding driver for my printer. In order to be able to print from the `gtk` print dialogue, we'll also need to install `system-config-printer` and `print-manager`.
 
 [source, console]
 ----
@@ -945,7 +945,11 @@ dustvoice@DustArch ~
 $ sudo systemctl enable org.cups.cupsd.service
 dustvoice@DustArch ~
 $ sudo systemctl start org.cups.cupsd.service
+dustvoice@DustArch ~
+$ sudo pacman -S system-config-printer print-manager
 ----
+
+Now just open up `system-config-printer` and configure your printer.
 
 To test if everything is working, you could open up `brave`, the go to *Print* and then try printing.
 
