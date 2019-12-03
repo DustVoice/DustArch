@@ -14,7 +14,6 @@ v2.4, 2019-10-24
 
 This section is aimed at providing help with the general installation of the customized archlinux from within official archlinux image.
 
-
 === Updating the system
 
 First of we need to sync pacman up
@@ -669,18 +668,63 @@ dustvoice@DustArch ~
 $ sudo pacman -S xorg xorg-xinit xorg-drivers i3 i3status rofi ttf-hack xfce4-terminal alsa alsa-utils wicd nautilus arandr
 ----
 
+===== NVIDIA
+
 If you also want to use NVIDIA functionality, for example for `davinci-resolve`, you would need to install their proprietary driver
 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ sudo pacman -S nvidia nvidia-utils opencl-nvidia
+$ sudo pacman -S nvidia nvidia-utils nvidia-settings opencl-nvidia
 ----
 
 [NOTE]
 ====
 You would have to reboot sooner or later after installing the NVIDIA drivers.
+
+Also to get the best performance, at least for something like screen capturing in `obs`, go to *X Server Display Configuration* inside `nvidia-settings`, switch to *Advanced* and enable *Force Composition Pipeline*, as well as *Force Full Composition Pipeline*.
 ====
+
+===== Compositer
+
+To get buttery smooth animation as well as e.g. video playback in `brave`, you might want to consider using a fork of `compton` named `picom`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S picom
+----
+
+After installing `picom` you'll still have to add a line to the bottom of your `~/.config/i3/config` file
+
+.~/.config/i3/config
+[source, text]
+----
+exec picom -bCG --backend glx --vsync
+----
+
+[WARNING]
+====
+In order for ``obs``' screen capture to work correctly, you need to kill `picom` completely before using `obs`.
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ pkill picom
+----
+
+or
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ ps aux | grep picom
+dustvoice@DustArch ~
+$ kill <pid>
+----
+====
+
+===== Launching the grahpical environment
 
 After that you can now do `startx` in order to launch the graphical environment.
 
@@ -1027,6 +1071,24 @@ dustvoice@DustArch ~/obs-studio-git
 $ cd ..
 dustvoice@DustArch ~
 $ rm -rf obs-studio-git
+----
+
+===== Live stream a terminal session
+
+For this task, you'll need a program called `tmate`. Just install it
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S tmate
+----
+
+and run it
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ tmate
 ----
 
 ===== Editing video
