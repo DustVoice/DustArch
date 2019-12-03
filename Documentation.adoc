@@ -1,7 +1,6 @@
-= DustArch\ 
-The complete guide to setting up DustVoice's Arch Linux completely from scratch or by using the DustArch image
+= DustArch: Setting up DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v1.12, 2019-10-24
+v2.4, 2019-10-24
 :toc: left
 :toc-title: Table Of Contents
 :toclevels: 3
@@ -13,129 +12,12 @@ v1.12, 2019-10-24
 
 == Inside the archiso
 
-This section is aimed at providing help with the general installation of archlinux from within either the custom DustArch live-os, or the official archlinux live-os.
+This section is aimed at providing help with the general installation of the customized archlinux from within official archlinux image.
 
-// TODO: remove or move this complete section
-[#keyboard_layout]
-=== Change the keyboard layout
-
-Probably the first thing you want to do, unless you use a standard international keyboard, is to change the keyboard layout.
-Even when you do use a standard keyboard layout, there could still be some custom keybinds you want to achieve.
-
-In my case, I'll want the `Caps_Lock` key mapped to `Escape` for the american keyboard layouts (both the standard and the international version) as well as for the german layout with no dead keys (` won't require two keypresses).
-
-All keymaps are stored under `/usr/share/kbd/keymaps` and in my case the default keyboard map used for the german language with no dead keys resides under `/usr/share/kbd/keymaps/i386/qwertz/de-latin1-nodeadkeys.map.gz` and the US layouts are to be found under `/usr/share/kbd/keymaps/i386/qwerty/us.map.gz` _(normal US version)_ and `/usr/share/kbd/keymaps/i386/qwerty/us-acentos.map.gz` _(US international layout)_ respectively.
-
-Now we switch to the `/tmp` directory and create our new keymap(s).
-
-[source, console]
-----
-root@archiso ~ # cd /tmp
-root@archiso ~ # touch custom-de.map.gz
-root@archiso ~ # touch custom-us.map.gz
-root@archiso ~ # touch custom-us-acentos.map.gz
-----
-
-[NOTE]
-====
-Of course you are currently limited to the default US-American keyboard layout.
-This might require you to first try out, where every key is, or look at some images online, if you have access to the internet.
-If I wouldn't be familiar with the US layout, I would have to (for a german keyboard layout) have to use the following table:
-
-.Conversion from DE to US keyboard layout
-[cols=">,<", options="header", width="50%"]
-|===
-|Desired output
-|Key to press
-
-|/
-|-
-
-|-
-|ß
-
-|=
-|´
-
-|:
-|Ö
-|===
-====
-
-For editing these files, you can use whatever editor you desire. The archiso is shipped with `vim` and `nano` preinstalled.
-
-Now edit the files to your hearts desire. In my case, I only need to add the `Caps_Lock -> Escape` mapping.
-
-[NOTE]
-====
-Make sure to `include` the keymap you want your keymap to be based on in your custom keymap file.
-
-Also make sure, that you later copy your keymap to the right directory, in order for the included file to be found.
-====
-
-.custom-de.map
-[source, text, linenums]
-----
-# custom-de.map: Custom vim optimized german keymap
-# Due to David Holland (info@dustvoice.de)
-
-include "de-latin1-nodeadkeys.map"
-
-keycode 58 = Escape
-----
-
-.custom-us.map
-[source, text, linenums]
-----
-# custom-de.map: Custom vim optimized US keymap
-# Due to David Holland (info@dustvoice.de)
-
-include "us.map"
-
-keycode 58 = Escape
-----
-
-.custom-us-acentos.map
-[source, text, linenums]
-----
-# custom-de.map: Custom vim optimized US international keymap
-# Due to David Holland (info@dustvoice.de)
-
-include "us-acentos.map"
-
-keycode 58 = Escape
-----
-
-After making the desired changes, zip them up
-
-[source, console]
-----
-root@archiso /tmp # gzip custom-de.map
-root@archiso /tmp # gzip custom-us.map
-root@archiso /tmp # gzip custom-us-acentos.map
-----
-
-and move them to their right keymap folders
-
-[source, console]
-----
-root@archiso /tmp # mv custom-de.map.gz /usr/share/kbd/keymaps/i386/qwertz/
-root@archiso /tmp # mv custom-us.map.gz /usr/share/kbd/keymaps/i386/qwerty/
-root@archiso /tmp # mv custom-us-acentos.map.gz /usr/share/kbd/keymaps/i386/qwerty/
-root@archiso /tmp # cd ~
-----
-
-Now you are able to load the keymap and set it as the default one to use
-
-[source, console]
-----
-root@archiso ~ # loadkeys custom-us
-root@archiso ~ # localectl set-keymap --no-convert custom-us
-----
 
 === Updating the system
 
-Updating the system is as easy as issuing
+First of we need to sync pacman up
 
 [source, console]
 ----
@@ -147,7 +29,6 @@ root@archiso ~ # pacman -Sy
 After that, you will now be able to install packages with pacman.
 ====
 
-// TODO: Adapt, fill up and shorten
 === Formatting the drive
 
 First you have to list all the available drives by issuing
@@ -155,218 +36,80 @@ First you have to list all the available drives by issuing
 [source, console]
 ----
 root@archiso ~ # fdisk -l
-Disk /dev/sda: 50 GiB, 53687091200 bytes, 104857600 sectors
-Disk model: VBOX HARDDISK
-Units: sectors of 1 * 512 = 512 bytes
-Sector size (logical/physical): 512 bytes / 512 bytes
-I/O size (minimum/optimal): 512 bytes / 512 bytes
-
-
-Disk /dev/loop0: 513.1 MiB, 538021888 bytes, 1050824 sectors
-Units: sectors of 1 * 512 = 512 bytes
-Sector size (logical/physical): 512 bytes / 512 bytes
-I/O size (minimum/optimal): 512 bytes / 512 bytes
 ----
 
 [NOTE]
 ====
-The output of `fdisk -l` is dependent on your system configuration. I just added my output for the purpose of a better understanding what's going on.
+The output of `fdisk -l` is dependent on your system configuration.
 ====
 
-In my case, the disk I want to use is located under `/dev/sda`.
-
-Now we have to edit said disk.
-
-To do just that we can either use the _pure_ `fdisk` or you can use the graphical interface by using `cfdisk`.
-
-[source, console]
-----
-root@archiso ~ # fdisk /dev/sda
-----
-
-==== BIOS - MBR
-
-.fdisk /dev/sda
-[source, text]
-----
-Command (m for help): o
-Created a new DOS disklabel with disk identifier 0xe670fc90
-----
+In my case, the partition I want to install the root filesystem on is `/dev/sdb2`. `/dev/sdb3` will be my swap partition.
 
 [NOTE]
 ====
-The identifier will be different everytime you run this command.
+A swap size twice the size of your RAM is recommended by a lot of people. You should make the swap size *at least your RAM size* though.
 ====
 
-Now we will create a new primary partition for `/` with the partition type set to `Linux`.
-
-.fdisk /dev/sda
-[source, text]
-----
-Command (m for help): n
-Partition type
-   p   primary (0 primary, 0 extended, 4 free)
-   e   extended (container for logical partitions)
-Select (default p): p
-Partition number (1-4, default 1): 1
-First sector (2048-104857599, default 2048): 2048
-Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-104857599, default 104857599): +32G
-
-Created a new partition 1 of type 'Linux' and of size 32 GiB.
-
-Command (m for help): t
-Selected partition 1
-Hex code (type L to list all codes): 83
-Changed type of partition 'Linux' to 'Linux'.
-----
-
-[NOTE]
+[IMPORTANT]
 ====
-The only thing you probably want to modify, unless you know what you are doing is the `+32G` part.
-I want the partition to have approx. 32GB, hence this specific value.
+If you haven't yet partitioned your disk, please refer to a general partitioning tutorial in the arch-wiki.
 ====
-
-Now onto the `swap` partition
-
-.fdisk /dev/sda
-[source, text]
-----
-Command (m for help): n
-Partition type
-   p   primary (1 primary, 0 extended, 3 free)
-   e   extended (container for logical partitions)
-Select (default p): p
-Partition number (2-4, default 2): 2
-First sector (67110912-104857599, default 67110912): 67110912
-Last sector, +/-sectors or +/-size{K,M,G,T,P} (67110912-104857599, default 104857599): +2G
-
-Created a new partition 1 of type 'Linux' and of size 2 GiB.
-
-Command (m for help): t
-Partition number (1,2, default 2): 2
-Hex code (type L to list all codes): 82
-Changed type of partition 'Linux' to 'Linux swap / Solaris'.
-----
-
-[NOTE]
-====
-A swap size twice the size of your RAM is recommended by a lot of people. But with 32GB RAM, I just chose to stick with the kind of _normal_ 2GB size.
-====
-
-Now onto the `/home` partition, which in my case will be assigned the remaining space
-
-.fdisk /dev/sda
-[source, text]
-----
-Command (m for help): n
-Partition type
-   p   primary (2 primary, 0 extended, 2 free)
-   e   extended (container for logical partitions)
-Select (default p): p
-Partition number (3-4, default 3): 3
-First sector (71305216-104857599, default 71305216): 71305216
-Last sector, +/-sectors or +/-size{K,M,G,T,P} (71305216-104857599, default 104857599): 104857599
-
-Created a new partition 1 of type 'Linux' and of size 16 GiB.
-
-Command (m for help): t
-Partition number (1-3, default 3): 3
-Hex code (type L to list all codes): 83
-Changed type of partition 'Linux' to 'Linux'.
-----
-
-Now write the changes and exit the tool
-
-.fdisk /dev/sda
-[source, text]
-----
-Command (m for help): w
-Ther partition table has been altered.
-Calling ioctl() to re-read partition table.
-Syncing disks.
-----
 
 Now we need to format the partitions accordingly
 
 [source, console]
 ----
-root@archiso ~ # mkfs.ext4 /dev/sda1
-mke2fs 1.45.4 (23-Sep-2019)
-Creating filesystem with 8388608 4k blocks and 2097152 inodes
-Filesystem UUID: 36394b49-4008-4164-8541-de8960c6c64a
-Superblock backups stored on blocks:
-        32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208,
-        4096000, 7962624
-
-Allocating group tables: done
-Writing inode tables: done
-Creating journal (65536 blocks): done
-Writing superblocks and filesystem accounting information: done
-
-root@archiso ~ # mkfs.ext4 /dev/sda3
-mke2fs 1.45.4 (23-Sep-2019)
-Creating filesystem with 4194048 4k blocks and 1048576 inodes
-Filesystem UUID: f7caaccb-2f61-4666-aca2-21e354772345
-Superblock backups stored on blocks:
-        32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208,
-        4096000
-
-Allocating group tables: done
-Writing inode tables: done
-Creating journal (16384 blocks): done
-Writing superblocks and filesystem accounting information: done
-
-root@archiso ~ # mkswap /dev/sda2
-Setting up swapspace version 1, size = 2 GiB (2147479552 bytes)
-no label, UUID=c1972999-337-4d40-b81b-c8231d9ad983
+root@archiso ~ # mkfs.ext4 /dev/sdb2
+root@archiso ~ # mkswap /dev/sdb3
 ----
 
-After doing that, we can enable the swap and mount the other partitions
+After doing that, we can enable the swap and mount the root partition.
 
 [source, console]
 ----
-root@archiso ~ # swapon /dev/sda2
-root@archiso ~ # mount /dev/sda1 /mnt
-root@archiso ~ # mkdir /mnt/home
-root@archiso ~ # mount /dev/sda3 /mnt/home
+root@archiso ~ # swapon /dev/sdb3
+root@archiso ~ # mount /dev/sdb2 /mnt
 ----
 
-==== BIOS - GPT
+[NOTE]
+====
+If you have an additional *EFI system partition*, because of a _UEFI - GPT_ setup or e.g. an existing windows installation, which we will assume to be located under `/dev/sda2` (`/dev/sda` is the disk of my windows install), you'll have to mount this partition to the new systems `/boot` folder
 
-For a GPT formatted disk, you have to create an additional boot partition at the front.
-
-// TODO: more information
-
-==== UEFI - GPT
+[source, console]
+----
+root@archiso ~ # mkdir /mnt/boot
+root@archiso ~ # mount /dev/sda2 /mnt/boot
+----
+====
 
 === Preparing the chroot environment
 
-First it might make sense to edit `/etc/pacman.d/mirrorlist` to move the mirrors geographically closest to you to the top.
+First it might make sense to edit `/etc/pacman.d/mirrorlist` to move the mirror(s) geographically closest to you to the top.
 
-After that we can either install the bare minimum
+After that we can either install the bare minimum packages needed
 
 [source, console]
 ----
 root@archiso ~ # pacstrap /mnt base linux linux-firmware
 ----
 
-or install all packages present on the archiso (which makes sense for DustArch)
+or install all packages present on the archiso, which makes sense in our case
 
 [source, console]
 ----
-root@archiso ~ # pacstrap /mnt base linux linux-firmware $(pacman -Qq | tr '\n' ' ')
+root@archiso ~ # pacstrap /mnt base base-devel linux linux-firmware $(pacman -Qq | tr '\n' ' ')
 ----
 
-This will take quite some time depending on your internet connection speed.
+This could take quite some time depending on your internet connection speed.
 
-After that generate a `fstab` using `genfstab` like so
+After that generate a `fstab` using `genfstab`
 
 [source, console]
 ----
 root@archiso ~ # genfstab -U /mnt >> /mnt/etc/fstab
 ----
 
-Now you're ready to go to enter the chroot environment.
+and you're ready to go entering the chroot environment.
 
 === Entering the chroot
 
@@ -379,52 +122,67 @@ Et voila, you're inside the new os, greeted by a bash prompt.
 
 ==== Installing additional packages
 
-If you've installed archlinux from a *DustArch* ISO, you can probably skip this section as all neccessary tools should already be present on the live-os and therefore be automatically installed when executing
-
-[source, console]
-----
-root@archiso ~ # pacstrap /mnt base linux linux-firmware $(pacman -Qq | tr '\n' ' ')
-----
-
-You can install the packages, which you'll probably if not definetely need, by issuing the following command
+First we'll make sure we get ourselves some basic utilities and enable the `dhcpcd` service, in order for the internet connection to work upon booting in our fresh system later.
 
 [source, console]
 ----
 [root@archiso /]# pacman -S sudo iputils dhcpcd grub dosfstools os-prober mtools
+[root@archiso /]# systemctl enable dhcpcd
 ----
 
-If you use UEFI, you'll also need
+If you use `UEFI`, you'll also need
 
 [source, console]
 ----
 [root@archiso /]# pacman -S efibootmgr
 ----
 
-Furthermore you'll probably need an editor so either use
-
-[source, console]
-----
-[root@archiso /]# pacman -S nano
-----
-
-[source, console]
-----
-[root@archiso /]# pacman -S vim
-----
-
-or
+Furthermore you'll probably need an editor. I'll use `neovim`
 
 [source, console]
 ----
 [root@archiso /]# pacman -S neovim
 ----
 
-according to your preference.
-
-// TODO: Move keyboard part here.
 ==== Changing the keyboard layout
 
-The first thing you probably wanna do is change the keyboard layout again. For that just follow the instructions in section <<keyboard_layout>>.
+The next thing you probably wanna do, at least if you're me, is to change the keyboard layout. In my case I'll adapt the standard `us` layout, so the `Caps_Lock` key will be mapped to `Escape`.
+
+`Neovim` saves me from a ton of headaches, by providing the functionality to edit `gzip` files directly.
+
+In my case I'll copy the `us` and `us-acentos` to `custom-us` and `custom-us-acentos` respectively
+
+[source, console]
+----
+[root@archiso /]# cp /usr/share/kbd/keymaps/i386/qwerty/us.map.gz /usr/share/kbd/keymaps/i386/qwerty/custom-us.map.gz
+[root@archiso /]# cp /usr/share/kbd/keymaps/i386/qwerty/us-acentos.map.gz /usr/share/kbd/keymaps/i386/qwerty/custom-us-acentos.map.gz
+----
+
+and change the line
+
+./usr/share/kbd/keymaps/i386/qwerty/custom-us.map.gz
+[source, text]
+----
+keycode 58 = Caps_Lock
+----
+
+to
+
+./usr/share/kbd/keymaps/i386/qwerty/custom-us.map.gz
+[source, text]
+----
+keycode 58 = Escape
+----
+
+in both created files.
+
+Now you are able to load the keymap and set it as the default one to use respectively
+
+[source, console]
+----
+root@archiso ~ # loadkeys custom-us
+root@archiso ~ # localectl set-keymap custom-us
+----
 
 ==== Master of time
 
@@ -448,14 +206,12 @@ Now you can also enable time synchronization over network and check that everyth
 ==== Master of locales
 
 After that you have to generate your locale information. For that you have to edit `/etc/locale.gen` and uncomment the locale lines you want to enable.
-I recommend to always uncomment `en_US.UTF-8 UTF8` for development purposes, also if you want to use another language primarily.
+I recommend to always uncomment `en_US.UTF-8 UTF8` for development purposes, even if you want to use another language primarily.
 In my case I uncommented
 
 ./etc/locale.gen
 [source, text]
 ----
-[...]
-#de_DE.UTF-8 UTF8
 [...]
 #en_US.UTF-8 UTF8
 [...]
@@ -466,8 +222,6 @@ which then became
 ./etc/locale.gen
 [source, text]
 ----
-[...]
-de_DE.UTF-8 UTF8
 [...]
 en_US.UTF-8 UTF8
 [...]
@@ -480,9 +234,20 @@ After that you still have to actually generate the locales by issuing
 [root@archiso /]# locale-gen
 ----
 
+and set the locale
+
+[source, console]
+----
+[root@archiso /]# localectl set-locale LANG="en_US.UTF-8"
+----
+
+and we're done with this part.
+
 ==== Naming your machine
 
 Now we can set the `hostname` and add `hosts` entries.
+
+===== Hostname
 
 To change the `hostname`, simply edit `/etc/hostname`, enter the desired name, then save and quit.
 
@@ -498,6 +263,8 @@ which in my case then cointains
 ----
 DustArch
 ----
+
+===== Hosts
 
 Now we need to specify some `hosts` entries by editing `/etc/hosts`
 
@@ -528,9 +295,11 @@ and now looks like this
 127.0.1.1   DustArch.localhost  DustArch
 ----
 
-==== Giving yourself a name
+==== User setup
 
 Now you should probably change the default root password and create a new user for yourself, as using your new system purley through the native root user is not recommended from a security standpoint.
+
+===== Give root a password
 
 To change the password for the current user (the root user) do
 
@@ -541,7 +310,7 @@ To change the password for the current user (the root user) do
 
 and choose a new password.
 
-==== Creating my personal user
+===== Creating my personal user
 
 We are going to make sure the `fish` shell is installed, create a new user, set the password for this user, make sure the `sudo` package is installed and allow the `wheel` group sudo access.
 
@@ -594,132 +363,11 @@ with your new username
 dustvoice ALL=(ALL) ALL
 ----
 
-to only grant yourself sudo privileges.
-
-==== Setting up a home environment
-
-In this step we're going to setup a home environment for both the root and my personal user. Note, that in my case these 2 home environments are equivalent, which is why you execute the follwing commands as the root user first and then `su` into the new user and repeat the same commands.
-
-[source, console]
-----
-[root@archiso /]# cd ~
-[root@archiso ~]# pacman -S git
-[root@archiso ~]# git init
-[root@archiso ~]# git remote add origin https://github.com/DustVoice/dotfiles.git
-[root@archiso ~]# git fetch
-[root@archiso ~]# git reset origin/master --hard
-[root@archiso ~]# git branch --set-upstream-to=origin/master master
-----
-
-Before we'll be able to update the `submodule`, we will have to setup our `gpg` key as a `ssh` key
-
-[source, console]
-----
-[root@archiso ~]# pacman -S gnupg openssh
-[root@archiso ~]# chmod 700 .gnupg
-[root@archiso ~]# gpg --card-status
-[root@archiso ~]# gpg --card-edit
-(insert) gpg/card> fetch
-(insert) gpg/card> q
-[root@archiso ~]# gpg-connect-agent updatestartuptty /bye
-[root@archiso ~]# git remote set-url origin git@github.com:DustVoice/dotfiles.git
-[root@archiso ~]# chsh -s /usr/bin/fish
-[root@archiso ~]# exit
-root@archiso ~ # arch-chroot /mnt
-[root@archiso /]# fish
-[I] root@archiso /
-# cd ~
-[I] root@archiso ~
-# git submodule update --init --recursive
-[I] root@archiso ~
-# cd .config/nvim
-[I] root@archiso ~/.config/nvim
-# echo 'let g:platform = "linux"' >> platform.vim
-[I] root@archiso ~/.config/nvim
-# echo 'let g:use_autocomplete = 3' >> custom.vim
-[I] root@archiso ~/.config/nvim
-# echo 'let g:use_clang_format = 1' >> custom.vim
-[I] root@archiso ~/.config/nvim
-# echo 'let g:use_font = 0' >> custom.vim
-[I] root@archiso ~/.config/nvim
-# pacman -S make cmake clang jdk-openjdk pyhton pyhton-pip
-[I] root@archiso ~/.config/nvim
-# pip3 install neovim
-[I] root@archiso ~/.config/nvim
-# nvim --headless +PlugInstall +qa
-[I] root@archiso ~/.config/nvim
-# cd plugged/YouCompleteMe
-[I] root@archiso ~/.config/nvim/plugged/YouCompleteMe
-# python3 install.py --clang-completer --java-completer
-[I] root@archiso ~/.config/nvim/plugged/YouCompleteMe
-# cd ~
-[I] root@archiso ~
-# 
-sudo pacman -S arandr
-
-git clone https://aur.archlinux.org/brave-bin.git
-cd brave-bin
-makepkg -si
-cd ..
-rm -rf brave-bin
-
-sudo pacman -S browserpass
-...
-
-sudo pacman -S nvidia nvidia-utils opencl-nvidia
-
-nvim /etc/pacman.conf -> multilib
-sudo pacman -Sy
-git clone https://aur.archlinux.org/davinci-resolve.git
-cd davinci-resolve
-makepkg -si
-set -U fish_user_paths $fish_user_paths /opt/resolve/bin
-cd ..
-rm -rf davinci-resolve
-
-pacman astyle
-
-pacman doxygen
-
-JUCE
-FRUT
-
-pacman ninja
-
-aur obs-studio-git
-
-pacman pass
-
-pacman teamspeak3
-
-aur teamviewer
-
-pacman telegram-desktop
-
-aur tor-browser
-
-pacman discord
-
-pacman vlc
-
-pacman avahi
-pacman cups
-aur brother-mfc-j497dw
-
-pacman virtualbox
-
-pacman qjackctl
-
-pacman thunderbird
-
-
-
-fstab file for win?
-----
+to solely grant yourself sudo privileges.
 
 === Preparing to boot
 
-Now onto installing the boot manager. We will use grub.
+Now onto installing the boot manager. We will use `grub` in this guide.
 
 First make sure, all the required packages are installed
 
@@ -728,22 +376,24 @@ First make sure, all the required packages are installed
 [root@archiso /]# pacman -S grub dosfstools os-prober mtools
 ----
 
-and if you want to use UEFI, also
+and if you want to use `UEFI`, also
 
 [source, console]
 ----
 [root@archiso /]# pacman -S efibootmgr
 ----
 
+==== BIOS
+
 If you chose the `BIOS - MBR` variation, have to do nothing special
 
-If you chose the `BIOS - GPT` variation, you'll have to have a `+1M` created with the partition type set to `BIOS boot` for `fdisk`.
+If you chose the `BIOS - GPT` variation, you'll have to have a `+1M` boot partition created with the partition type set to `BIOS boot` for `fdisk`.
 
 In both cases you now have to run the following command
 
 [source, console]
 ----
-[root@archiso /]# grub-install --target=i386-pc /dev/sda
+[root@archiso /]# grub-install --target=i386-pc /dev/sdb
 ----
 
 [NOTE]
@@ -751,15 +401,16 @@ In both cases you now have to run the following command
 It is obvious, you have to replace `/dev/sda` with the disk you want to use. Note however that you have to specify a *disk* and *not a partition*, so *no number*.
 ====
 
+==== UEFI
 
-If you chose the `UEFI - GPT` variation, you'll first have to mount the `EFI System Partition` (where `/dev/sda1` is the partition of said `EFI System Partition`)
+If you chose the `UEFI - GPT` variation, you'll have to have the `EFI System Partition` mounted (where `/dev/sda2` is the partition holding said `EFI System Partition` in my particular setup) and execute the following command
 
 [source, console]
 ----
-[root@archiso /]# mkdir /boot
-[root@archiso /]# mount /dev/sda1 /boot
 [root@archiso /]# grub_install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
 ----
+
+==== Grub config
 
 In all cases, you now have to create the main configuration file
 
@@ -774,80 +425,52 @@ Now you're good to boot into your new system
 
 === Someone there?
 
-First we are have to check if the internet connection is set up properly.
+First we have to check if the internet connection is set up properly
 
 [source, console]
 ----
-[dustvoice@DustArch ~]$ ip link
+dustvoice@DustArch ~> ip link
 ----
 
 This outputs the interface status report. To make sure that you really have a working _internet_ connection, issue
 
 [source, console]
 ----
-[dustvoice@DustArch ~]$ ping archlinux.org
+dustvoice@DustArch ~> ping archlinux.org
 ----
 
-If this doesn't work, you probably need to run the following commands
-
-// TODO: Move to user setup pos 1
-[source, console]
-----
-[dustvoice@DustArch ~]$ sudo systemctl enable dhcpcd.service
-[dustvoice@DustArch ~]$ sudo systemctl start dhcpcd.service
-----
-
-and rerun
+Everything should run smoothly. If not, try running
 
 [source, console]
 ----
-[dustvoice@DustArch ~]$ ping archlinux.org
+dustvoice@DustArch ~> sudo systemctl restart dhcpcd
 ----
 
-Everything should run smoothly now.
+and then try `ping` again.
 
 === Update and upgrade
 
 After making sure that you have established an internet connection, you can then proceed to update and upgrade all installed packages by issuing
 
-// TODO: Move to user setup pos 2
 [source, console]
 ----
-[dustvoice@DustArch ~]$ sudo pacman -Syu
+dustvoice@DustArch ~> sudo pacman -Syu
 ----
 
 === Customizing your install
 
-// TODO: Specify the section to skip to
-
-[NOTE]
-====
-If you did the whole previous process out of the original archiso, you will likely have to install some more packages, and clone additional git repositories, in order to set up the complete DustArch environment. If you followed the guide up until this point, using the DustArch image, you can skip the following subsections.
-====
-
-==== Fish shell
-
-First you'll probably want to install the *fish* shell and set it as your default.
-
-// TODO: Move to user setup pos -1
-[source, console]
-----
-[dustvoice@DustArch ~]$ sudo pacman -S fish
-[dustvoice@DustArch ~]$ chsh -s /usr/bin/fish
-----
-
-Now you only have to log out
+I'll be using the `fish` shell for the `root` user too, so I'll have to change ``root``'s default shell to it.
 
 [source, console]
 ----
-[dustvoice@DustArch ~]$ exit
+dustvoice@DustArch ~> chsh -s /usr/bin/fish root
 ----
 
-and log back in. Don't worry about the looks by the way, we're gonna change all that in just a second.
+Don't worry about the looks by the way, we're gonna change all that in just a second.
 
 ==== Version control
 
-Next you'll probably want to install *git*. Just do
+Next you'll probably want to install `git`. Just do
 
 [source, console]
 ----
@@ -858,7 +481,7 @@ and you're good to go. We'll care about the `.gitconfig` in just a second.
 
 ==== Security is important
 
-If you've followed the tutorial using a recent version of archlinux, you'll probably already have the most recent version of `gnupg` installed by default. Just to make sure, issue
+If you've followed the tutorial using a recent version of arch linux, you'll probably already have the most recent version of `gnupg` installed by default. Just to make sure, issue
 
 [source, console]
 ----
@@ -869,7 +492,6 @@ dustvoice@DustArch ~> sudo pacman -S gnupg
 
 After that you'll still have to setup `gnupg` correctly. In my case I have my private keys stored on a smartcard. To use it, I'll have to install some packages first
 
-// TODO: check if maybe only pcsclite is needed with the systemctl enabled
 [source, console]
 ----
 dustvoice@DustArch ~> sudo pacman -S pcsclite libusb-compat ccid opensc
@@ -883,72 +505,58 @@ dustvoice@DustArch ~> sudo systemctl enable pcscd
 dustvoice@DustArch ~> sudo systemctl start pcscd
 ----
 
-Now I can register my smartcard by using
-
-[source, console]
-----
-dustvoice@DustArch ~> gpg --card-status
-----
-
-and then download my public key (which is provided by an URL to my website on the smartcard)
-
-[source, console]
-----
-dustvoice@DustArch ~> gpg --card-edit
-----
-
-.gpg --card-edit
-[source, console]
-----
-gpg/card> fetch
-gpg/card> quit
-----
-
 Note however that your mileage may vary.
 
-==== Setting up configs
-
-In my case, I want to access all my git repositories with my gpg-key on my smartcard. For that I have to configure the `gpg-agent` though. So I will have to reside to first use the `https` url and later change the url in the corresponding `.git/config` file.
-
-The first thing I'll want to setup are my dotfiles.
+[#additional-tools-setup-home]
+==== Additional required tools
 
 [source, console]
 ----
-dustvoice@DustArch ~> mkdir Projects
-dustvoice@DustArch ~> cd Projects
-dustvoice@DustArch ~/Projects> git clone https://github.com/DustVoice/dotfiles.git
-dustvoice@DustArch ~/Projects> cd ~
-dustvoice@DustArch ~> ln -s ~/Projects/dotfiles/.gitconfig
-dustvoice@DustArch ~> ln -s ~/Projects/dotfiles/.inputrc
-dustvoice@DustArch ~> ln -s ~/Projects/dotfiles/.xinitrc
-dustvoice@DustArch ~> ln -s ~/Projects/dotfiles/.Xmodmap
-dustvoice@DustArch ~> mkdir .config
-dustvoice@DustArch ~> cd .config
-dustvoice@DustArch ~/.config> rm -rf .compton.conf fish i3 nitrogen polybar
-dustvoice@DustArch ~/.config> ln -s ~/Projects/dotfiles/.compton.conf
-dustvoice@DustArch ~/.config> ln -s ~/Projects/dotfiles/fish
-dustvoice@DustArch ~/.config
-$ ln -s ~/Projects/dotfiles/i3
-dustvoice@DustArch ~/.config
-$ ln -s ~/Projects/dotfiles/nitrogen
-dustvoice@DustArch ~/.config
-$ ln -s ~/Projects/dotfiles/polybar
-dustvoice@DustArch ~/.config
-$ cd ..
-dustvoice@DustArch ~
-$ cd .gnupg
-dustvoice@DustArch ~/.gnupg
-$ rm -rf gpg-agent.conf gpg.conf sshcontrol
-dustvoice@DustArch ~/.gnupg
-$ ln -s ~/Projects/dotfiles/.gnupg/gpg-agent.conf
-dustvoice@DustArch ~/.gnupg
-$ ln -s ~/Projects/dotfiles/.gnupg/gpg.conf
-dustvoice@DustArch ~/.gnupg
-$ ln -s ~/Projects/dotfiles/.gnupg/sshcontrol
-dustvoice@DustArch ~/.gnupg
-$ cd ~
-dustvoice@DustArch ~
-$ pacman -S openssh
+dustvoice@DustArch ~> pacman -S make cmake clang jdk-openjdk pyhton pyhton-pip pass openssh
+----
+
+[#setup-home]
+==== Setting up a home environment
+
+In this step we're going to setup a home environment for both the `root` and my personal `dustvoice` user. 
+
+[NOTE]
+====
+In my case these 2 home environments are mostly equivalent, which is why I'll execute the follwing commands as the `dustvoice` user first and then `su` into the `root` user and repeat the same commands.
+====
+
+[NOTE]
+====
+In my case, I want to access all my git repositories with my `gpg` key on my smartcard. For that I have to configure the `gpg-agent` though. So I will have to reside to first use the `https` url and later change the url in the corresponding `.git/config` file.
+====
+
+[source, console]
+----
+dustvoice@DustArch ~> git init
+dustvoice@DustArch ~> git remote add origin https://github.com/DustVoice/dotfiles.git
+dustvoice@DustArch ~> git fetch
+dustvoice@DustArch ~> git reset origin/master --hard
+dustvoice@DustArch ~> git branch --set-upstream-to=origin/master master
+----
+
+Before we'll be able to update the ``submodule``s (`nvim` config files and ``pass``word-store), we will have to setup our `gpg` key as a `ssh` key
+
+[source, console]
+----
+[I] dustvoice@DustArch ~>
+$ chmod 700 .gnupg
+[I] dustvoice@DustArch ~>
+$ gpg --card-status
+[I] dustvoice@DustArch ~>
+$ gpg --card-edit
+(insert) gpg/card> fetch
+(insert) gpg/card> q
+[I] dustvoice@DustArch ~>
+$ gpg-connect-agent updatestartuptty /bye
+[I] dustvoice@DustArch ~>
+$ git remote set-url origin git@github.com:DustVoice/dotfiles.git
+[I] dustvoice@DustArch ~>
+$ exit
 ----
 
 [NOTE]
@@ -956,23 +564,54 @@ $ pacman -S openssh
 You would have to adapt the keygrip present in the sshcontrol file to your keygrip, retrieved with `gpg -K --with-keygrip`.
 ====
 
-To make gnupg adapt to the changes, you could either issue
+Now log back in and continue
 
 [source, console]
 ----
-dustvoice@DustArch ~
-$ gpg-connect-agent killagent /bye
-dustvoice@DustArch ~
-$ gpg-connect-agent /bye
+[I] dustvoice@DustArch ~
+$ git submodule update --init --recursive
+[I] dustvoice@DustArch ~
+$ cd .config/nvim
+[I] dustvoice@DustArch ~/.config/nvim
+$ echo 'let g:platform = "linux"' >> platform.vim
+[I] dustvoice@DustArch ~/.config/nvim
+$ echo 'let g:use_autocomplete = 3' >> custom.vim
+[I] dustvoice@DustArch ~/.config/nvim
+$ echo 'let g:use_clang_format = 1' >> custom.vim
+[I] dustvoice@DustArch ~/.config/nvim
+$ echo 'let g:use_font = 0' >> custom.vim
+[I] dustvoice@DustArch ~/.config/nvim
+$ pip3 install neovim
+[I] dustvoice@DustArch ~/.config/nvim
+$ nvim --headless +PlugInstall +qa
+[I] dustvoice@DustArch ~/.config/nvim
+$ cd plugged/YouCompleteMe
+[I] dustvoice@DustArch ~/.config/nvim/plugged/YouCompleteMe
+$ python3 install.py --clang-completer --java-completer
+[I] dustvoice@DustArch ~/.config/nvim/plugged/YouCompleteMe
+$ cd ~
 ----
 
-or, as I like to do, just exit and log back in, to also make `fish` adapt to the config changes
+Your personal environment will be complete, after getting `JUCE` and `FRUT`
 
 [source, console]
 ----
-dustvoice@DustArch ~
-$ exit
+[I] dustvoice@DustArch ~
+$ git clone https://github.com/WeAreROLI/JUCE.git
+[I] dustvoice@DustArch ~
+$ cd JUCE
+[I] dustvoice@DustArch ~/JUCE
+$ git checkout develop
+[I] dustvoice@DustArch ~/JUCE
+$ cd ..
+[I] dustvoice@DustArch ~
+$ git clone https://github.com/McMartin/FRUT.git
 ----
+
+[NOTE]
+====
+As mentioned before, you would now switch to the `root` user, either by logging in as root, or ``su``ing, and go back to <<setup-home>> to repeat all commands for the root user.
+====
 
 ==== Python
 
@@ -1020,117 +659,76 @@ If you use another shell than `fish`, you might have to do something different t
 Also please note that if you run a ruby version different from `2.6.0`, you have to use the `bin` path for that version.
 ====
 
-==== Minimal compilation setup
-
-In order to get `YouCompleteMe` for `neovim` setup, or for `clang-format` to work, we have to install `clang` and having `make` and `cmake` installed is always a good idea.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S clang make cmake
-----
-
-[#neovim_for_president]
-==== Neovim for president
-
-Now, after I finally have all my configs, I want to edit files too. In order for that to work, I have to install `neovim`, the corresponding python package, as well as cloning my neovim config files and installing all plugins.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S neovim
-dustvoice@DustArch ~
-$ sudo pip3 install neovim
-dustvoice@DustArch ~
-$ cd .config
-dustvoice@DustArch ~/.config
-$ git clone git@github.com:DustVoice/nvim.git
-dustvoice@DustArch ~/.config
-$ cd nvim
-dustvoice@DustArch ~/.config/nvim
-$ nvim platform_template.vim
-----
-
-Now change the content in line 3 from
-
-.platform_template.vim
-[source, text]
-----
-let g:platform = "windows_portable"
-----
-
-to
-
-.platform.vim
-[source, text]
-----
-let g:platform = "linux"
-----
-
-and save to `platform.vim`
-
-Now open `custom_template.vim` add the following lines
-
-.custom.vim
-[source, text]
-----
-let g:use_autocomplete = 3
-let g:use_clang_format = 1
-let g:use_font = 0
-----
-
-and save it under `custom.vim`.
-
-Now just enter `:PlugInstall`, wait for all the plugins to install and exit neovim.
-
-Now you will still have to setup `YouCompleteMe`.
-
-[source, console]
-----
-dustvoice@DustArch ~/.config/nvim
-$ cd plugged/YouCompleteMe
-dustvoice@DustArch ~/.config/nvim/plugged/YouCompleteMe
-$ python3 install.py --clang-completer
-dustvoice@DustArch ~/.config/nvim/plugged/YouCompleteMe
-$ cd ~
-----
-
-Now the only thing left is to change the `dotfiles` repository to use `ssh` instead of `https`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd Projects/dotfiles/.git
-dustvoice@DustArch ~/Projects/dotfiles/.git
-$ nvim config
-----
-
 ==== GUI > Terminal ?
 
 If you decide, that you want to use a graphical desktop environment, you have to install additional packages in order for that to work.
 
-// TODO: add paragraph for nvidia, xrandr/arandr
 [source, console]
 ----
 dustvoice@DustArch ~
-$ sudo pacman -S xorg xorg-xinit xorg-drivers i3 i3status rofi ttf-hack gnome-terminal alsa-utils wicd dolphin
+$ sudo pacman -S xorg xorg-xinit xorg-drivers i3 i3status rofi ttf-hack xfce4-terminal alsa alsa-utils wicd nautilus arandr
+----
+
+If you also want to use NVIDIA functionality, for example for `davinci-resolve`, you would need to install their proprietary driver
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S nvidia nvidia-utils opencl-nvidia
 ----
 
 [NOTE]
 ====
-You have to set your locale first, before starting `gnome-terminal` in order for everything to run smoothly.
-To do that, you have to use `localectl`.
-
-To use the english locale, do `sudo localectl set-locale LANG="en_US.UTF-8"`
-
-To use another locale, for example the german one, you have to use the name you uncommented in the `locale-gen` step.
-
-For german you would probably do `sudo localectl set-locale LANG="de_DE.UTF-8"`.
+You would have to reboot sooner or later after installing the NVIDIA drivers.
 ====
 
 After that you can now do `startx` in order to launch the graphical environment.
 
-If anything goes wrong in the process, remember that you can press *Alt+<Number>* to switch ``tty``s.
+If anything goes wrong in the process, remember that you can press *Ctrl+Alt+<Number>* to switch ``tty``s.
+
+==== Audio
+
+===== ALSA
+
+To quickly setup audio, install `alsa` and `alsa-utils`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S alsa alsa-utils
+----
+
+Now choose the soundcard you want to use
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ cat /proc/asound/cards
+----
+
+and then create `/etc/asound.conf`
+
+./etc/asound.conf
+[source, text]
+----
+defaults.pcm.card 2
+defaults.ctl.card 2
+----
+
+[NOTE]
+====
+It should be apparent, that you would have to switch out `2` witht the number corresponding to the soundcard you want to use.
+====
+
+===== Pulse Audio
+
+Some applications require `pulseaudio` or work better with it (for example `discord`), so it might make sense to use `pulseaudio`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S pulseaudio pulsemixer
+----
 
 ==== PDF viewer
 
@@ -1147,8 +745,6 @@ $ sudo pacman -S mupdf
 ----
 
 ===== Using the framebuffer
-
-// TODO: Check if fbpdf is really working
 
 If you want to not always use the graphical desktop with `mupdf`, you might be interested in the `fbgs` software.
 
@@ -1180,223 +776,305 @@ You may also choose to use a graphical partitioning software instead of `fdisk` 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ sudo pacman -S gparted gdisk
+$ sudo pacman -S gparted
 ----
 
 ==== Password management
 
-I'm using `pass` as my password manager. To use it I have to do
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S pass
-dustvoice@DustArch ~
-$ git clone git@git.dustvoice.de:DustVoice/pass.git .password-store
-----
+I'm using `pass` as my password manager. We already installed it in the <<additional-tools-setup-home>> step.
 
 ==== Web browser
 
-As you're already using a GUI, you also might be interested in a web browser. In my case, I'll install `chromium` and the `browserpass-chromium` extension for my passwords.
-
-// TODO: Add brave aur install instructions (base-devel required)
-// Additional dependency installed packages
-// ttf-font
-// gperf
-// npm
-// cups
-// libgnome-keyring
-// pepper-flash
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S chromium browserpass browserpass-chromium
-----
-
-=== Making a boot medium
-
-After this whole process you're probably wondering how to create a bootable medium. This section is purely dedicated to that topic.
-
-==== Making a DustArch boot stick
-
-For this task you can just use `dd`. In this example, the usb stick I want to use lied under `/dev/sdb`.
-
-In this case I would simply do
+As you're already using a GUI, you also might be interested in a web browser. In my case, I'll install `brave` from the AUR as well as `browserpass` from the official repositories for using my passwords in `brave`.
 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ sudo dd bs=4M if=DustArch.iso of=/dev/sdb status=progress oflag=sync
+$ git clone https://aur.archlinux.org/brave-bin.git
+dustvoice@DustArch ~/brave-bin
+$ makepkg -si
+dustvoice@DustArch ~/brave-bin
+$ cd ..
+dustvoice@DustArch ~
+$ rm -rf brave-bin
+dustvoice@DustArch ~
+$ sudo pacman -S browserpass
 ----
 
-==== Making a DustArch bootable partition
-
-This could be what you want to do, if you for example also want to use the usb drive for storage purposes (in Windows, etc.). In this case, you have to create a *primary* and *active* `fat32` partition and filesystem (with `fdisk` & `mkfs.vfat` or `parted`).
-
-[NOTE]
-====
-Windows only really reads the first partition of a drive, so make sure, the first partition is the one you want to access from Windows.
-====
-
-[INFO]
-====
-To mark a partition as *active*, or *bootable*, just open the disk with `fdisk` and enter `a` followed by the partition number you want to mark as active.
-====
-
-In my case my `fat32` formatted partition is located under `/dev/sdb2`, my storage partition is located under `/dev/sdb1` and the `DustArch.iso` is located in the base directory of said storage partition.
-
-First off, you have to make sure that `syslinux` is installed!
+Now we still have to setup `browserpass`
 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ sudo pacman -S syslinux
+$ cd /usr/local/lib/browserpass
+dustvoice@DustArch /usr/local/lib/browserpass
+$ make hosts-brave-user
+dustvoice@DustArch /usr/local/lib/browserpass
+$ make policies-brave-user
+dustvoice@DustArch /usr/local/lib/browserpass
+$ cd ~
 ----
 
-After that we will now handle the task of copying the iso to the partition
+Now the only thing left is, to fire up `brave` and install the `browserpass` extension from the chrome store.
+
+===== Entering the dark side
+
+You might have to be completely anonymous whilst browsing the web at some point. Although this shouldn't be your only precaution, using `tor-browser` would be the first thing to use
 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ sudo mkdir -p /mnt/{iso,storage,usb}
+$ git clone https://aur.archlinux.org/tor-browser.git
 dustvoice@DustArch ~
-$ sudo mount /dev/sdb1 /mnt/storage
+$ cd tor-browser
+dustvoice@DustArch ~/tor-browser
+$ makepkg -si
+dustvoice@DustArch ~/tor-browser
+$ cd ..
 dustvoice@DustArch ~
-$ sudo mount -o loop /mnt/storage/DustArch.iso /mnt/iso
-dustvoice@DustArch ~
-$ sudo mount /dev/sdb2 /mnt/usb
-dustvoice@DustArch ~
-$ sudo cp -a /mnt/iso/* /mnt/usb
-dustvoice@DustArch ~
-$ sudo sync
-dustvoice@DustArch ~
-$ sudo umount /mnt/iso
-dustvoice@DustArch ~
-$ sudo umount /mnt/storage
+$ rm -rf tor-browser
 ----
 
-As you might have noticed, `/dev/sdb2` is still mounted at `/mnt/usb`. This is because we still have to provide the `name` or the `UUID` to two config scripts: `/mnt/usb/arch/boot/syslinux/archiso_sys.cfg` and `/mnt/usb/loader/entries/archiso-x86_64.conf`.
+==== Additional Development tools
 
-Change
+Here are just some examples of development tools one could install in addition to what we already have.
+
+===== Code formatting
+
+We already have `clang-format` as a code formatter, but this only works for `C` languages. For the `java` part, we can use `astyle`.
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S astyle
+----
+
+===== Documentation
+
+To generate a documentation from source code, I mostly use `doxygen`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S doxygen
+----
+
+===== Build tools
+
+In addition to `make`, I'll often times use `ninja` for my builds
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S ninja
+----
+
+==== Office utilities
+
+For now we'll install `libreoffice-fresh`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S libreoffice-fresh
+----
+
+==== Printing
+
+In order for printing to work with my printer, which is a _Brother MFC J497DW_, I had do install `avahi`, `cups`, `cups-pdf`, `nss-mdns` and the correspoding driver for my printer
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S avahi
+dustvoice@DustArch ~
+$ sudo pacman -S cups cups-pdf nss-mdns
+dustvoice@DustArch ~
+$ git clone https://aur.archlinux.org/brother-mfc-j497dw.git
+dustvoice@DustArch ~
+$ cd brother-mfc-j497dw
+dustvoice@DustArch ~/brother-mfc-j497dw
+$ makepkg -si
+dustvoice@DustArch ~/brother-mfc-j497dw
+$ cd ..
+dustvoice@DustArch ~
+$ rm -rf brother-mfc-j497dw
+dustvoice@DustArch ~
+$ sudo systemctl enable avahi-daemon.service
+dustvoice@DustArch ~
+$ sudo systemctl start avahi-daemon.service
+----
+
+Now you have to edit `/etc/nsswitch.conf`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo nvim /etc/nsswitch.conf
+----
+
+so this line
 
 [source, text]
 ----
-archisolabel=...
+hosts: files mymachines myhostname resolve [!UNAVAIL=return] dns
 ----
 
-(where `...` is probably something in the form of `ARCH_YYMMDD`) to either
+becomes this line
 
 [source, text]
 ----
-archisolabel=MY-NAME
+hosts: files mymachines myhostname mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns
 ----
 
-where `MY-NAME` is the name of the filesystem (the `-n` option of `mkfs.vfat` for example), or to
+Now continue with this
 
 [source, text]
 ----
-archisodevice=/dev/disk/by-uuid/YOUR-UUID
+dustvoice@DustArch ~
+$ avahi-browse --all --ignore-local --resolve --terminate
+dustvoice@DustArch ~
+$ sudo systemctl enable org.cups.cupsd.service
+dustvoice@DustArch ~
+$ sudo systemctl start org.cups.cupsd.service
 ----
 
-where `YOUR-UUID` is, in my case, obtained by running
+To test if everything is working, you could open up `brave`, the go to *Print* and then try printing.
+
+==== Communication
+
+Life is all about communicating. Here are some pieces of software to do exactly that.
+
+===== Email
+
+There is nothing better than some classical email.
 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ sudo blkid -o value -s UUID /dev/sdb2`
+$ sudo pacman -S thunderbird
 ----
 
-After that we can unmount the partition!
+===== Telegram
+
+You want to have your `telegram` messages on your desktop pc?
 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ sudo umount /mnt/usb
+$ sudo pacman -S telegram-desktop
 ----
 
-Now the only thing left is to write the `bootstrap` to the disk (*not the partition!*) by doing
+===== TeamSpeak 3
+
+Wanna chat with your gaming friends and they have a `teamspeak3` server? Go for it
 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ sudo dd bs=440 count=1 conv=notrunc status=progress if=/usr/lib/syslinux/bios/mbr.bin of=/dev/sdb
+$ sudo pacman -S teamspeak3
 ----
 
-Alternatively, if you don't want to make your partition active, for some reason, or this method creates weird behaviour, you can also specify the partition number by replacing the above command with
+===== Discord
+
+You'd rather use `discord`? No problem
 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ printf '\x2' | cat /usr/lib/syslinux/bios/altmbr.bin - | sudo dd bs=440 count=1 status=progress iflag=fullblock of=/dev/sdb
+$ sudo pacman -S discord
 ----
 
-== Creating the DustArch
+==== Video software
 
-The following section is aimed at documenting the DustArch creation process. If you just want to use the DustArch then you're finished now. If not, keep reading.
+Just some additional software related to videos.
 
-Installing `archiso` is as simple as doing
+===== Viewing video
+
+You might consider using `vlc`
 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ sudo pacman -S archiso
+$ sudo pacman -S vlc
 ----
 
-To get the DustArch archiso files, we have to clone the repository and add the file `platform.vim` and optionally `custom.vim` (templates are `platform_template.vim` and `custom_template.vim`), in order for `neovim` to work properly.
-An example configuration is shown in the section <<neovim_for_president>>.
+===== Creating video
+
+`obs` should be the right choice
 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ cd Projects/Development
-dustvoice@DustArch ~/Projects/Development
-$ git clone --recurse-submodules --shallow-submodules git@git.dustvoice.de:DustVoice/DustArch.git
-dustvoice@DustArch ~/Projects/Development
-$ cd DustArch
-dustvoice@DustArch ~/Projects/Development/DustArch
-$ cd livecd/airootfs/etc/skel/.config/nvim
-dustvoice@DustArch ~/Projects/Development/DustArch/livecd/airootfs/etc/skel/.config/nvim
-$ echo 'let g:platform = "linux"' >> platform.vim
-dustvoice@DustArch ~/Projects/Development/DustArch/livecd/airootfs/etc/skel/.config/nvim
-$ echo 'let g:use_autocomplete = 3' >> custom.vim
-dustvoice@DustArch ~/Projects/Development/DustArch/livecd/airootfs/etc/skel/.config/nvim
-$ echo 'let g:use_clang_format = 1' >> custom.vim
-dustvoice@DustArch ~/Projects/Development/DustArch/livecd/airootfs/etc/skel/.config/nvim
-$ echo 'let g:use_font = 0' >> custom.vim
-dustvoice@DustArch ~/Projects/Development/DustArch/livecd/airootfs/etc/skel/.config/nvim
-$ cd ../../../../../../
+$ git clone https://aur.archlinux.org/obs-studio-git
+dustvoice@DustArch ~
+$ cd obs-studio-git
+dustvoice@DustArch ~/obs-studio-git
+$ makepkg -si
+dustvoice@DustArch ~/obs-studio-git
+$ cd ..
+dustvoice@DustArch ~
+$ rm -rf obs-studio-git
 ----
 
-Now you just need to change the ownership of the `livecd` directory to `root:root` and then proceed to building the whole thing!
+===== Editing video
 
-[source, console]
-----
-dustvoice@DustArch ~/Projects/Development/DustArch
-$ sudo chown -R root:root livecd
-dustvoice@DustArch ~/Projects/Development/DustArch
-$ cd livecd
-----
+In my case, I'm using `davinci-resolve`.
 
-[NOTE]
-====
-Keep in mind that you have to execute the `build.sh` as root. So either `su` into `root`
+But before installing `davinci-resolve`, we have to enable 32-bit packages.
+Just edit `/etc/pacman.conf` and uncomment the `multilib` lines.
+
+Then update your packages
 
 [source, console]
 ----
-dustvoice@DustArch ~/Projects/Development/DustArch/livecd
-$ sudo su root
-root@DustArch /home/dustvoice/Projects/Development/DustArch/livecd
-$ ./build.sh -v
+dustvoice@DustArch ~
+$ sudo pacman -Sy
 ----
 
-or just use `sudo`
+and install `davinci-resolve`
 
 [source, console]
 ----
-dustvoice@DustArch ~/Projects/Development/DustArch/livecd
-$ sudo -u root ./build.sh -v
+dustvoice@DustArch ~
+$ git clone https://aur.archlinux.org/davinci-resolve.git
+dustvoice@DustArch ~
+$ cd davinci-resolve
+dustvoice@DustArch ~/davinci-resolve
+$ makepkg -si
+dustvoice@DustArch ~/davinci-resolve
+$ cd ..
+dustvoice@DustArch ~
+$ rm -rf davinci-resolve
 ----
-====
+
+===== Utilizing video
+
+Wanna remote control your/another pc? `teamviewer` might just be the right choice for you
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ git clone https://aur.archlinux.org/teamviewer.git
+dustvoice@DustArch ~
+$ cd teamviewer
+dustvoice@DustArch ~/teamviewer
+$ makepkg -si
+dustvoice@DustArch ~/teamviewer
+$ cd ..
+dustvoice@DustArch ~
+$ rm -rf teamviewer
+----
+
+==== Virtualization
+
+You might need to run another os, for example Mac OS, from within Linux, e.g. for development/testing purposes. For that you can use `virtualbox`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S virtualbox
+----
 
 == DustArch package list
 
@@ -1405,123 +1083,815 @@ A complete list of all the packages present on the DustArch.
 .packages-x86_64
 [source, text, linenums]
 ----
+a52dec
+acl
+adobe-source-code-pro-fonts
+adwaita-icon-theme
+alsa-lib
+alsa-topology-conf
+alsa-ucm-conf
 alsa-utils
+amd-ucode
+aom
+apr
+apr-util
+arandr
 arch-install-scripts
+archlinux-keyring
+argon2
+aribb24
+astyle
+at-spi2-atk
+at-spi2-core
+atk
+atkmm
+attr
+audit
+autoconf
+automake
+avahi
 b43-fwcutter
+base
+bash
+bc
+bind-tools
+binutils
+bison
+boost-libs
+brave-bin
 broadcom-wl
+brother-mfc-j497dw
+brotli
 browserpass
-browserpass-chromium
 btrfs-progs
+bubblewrap
+bzip2
+bzr
+c-ares
+ca-certificates
+ca-certificates-mozilla
+ca-certificates-utils
+cairo
+cairomm
+cantarell-fonts
 ccid
-chromium
+cdparanoia
+celt0.5.1
 clang
 clonezilla
+clucene
 cmake
+colord
+compiler-rt
+confuse
+coreutils
+cracklib
 crda
+cryptsetup
+cups
+cups-filters
+cups-pdf
+curl
 darkhttpd
+dav1d
+davinci-resolve
+db
+dbus
+dbus-glib
+dconf
 ddrescue
+desktop-file-utils
+device-mapper
+devtools
 dhclient
 dhcpcd
 dialog
 diffutils
+ding-libs
+discord
+dkms
 dmraid
 dnsmasq
-dnsutils
-dolphin
+dnssec-anchors
+docbook-xml
+docbook-xsl
 dosfstools
+double-conversion
+doxygen
+drbl
+e2fsprogs
+ecryptfs-utils
+efibootmgr
+efitools
+efivar
+egl-wayland
+eglexternalplatform
 elinks
 ethtool
+exempi
 exfat-utils
+exiv2
+expat
 f2fs-tools
+faad2
 fakeroot
 fbida
+ffmpeg
+fftw
+file
+filesystem
+findutils
 fish
+flac
+flex
+fontconfig
+freetype2
+fribidi
 fsarchiver
+fuse-common
+fuse2
+fuse3
+gawk
+gc
+gcc
+gcc-libs
+gcr
+gdbm
+gdk-pixbuf2
+geoip
+geoip-database
+gettext
 ghostscript
+giflib
 git
-gnome-terminal
+glib-networking
+glib2
+glibc
+glibmm
+glu
+gmp
+gnome-autoar
+gnome-desktop
+gnu-free-fonts
 gnu-netcat
 gnupg
+gnutls
+gobject-introspection-runtime
 gparted
+gperf
+gpgme
 gpm
 gptfdisk
+graphene
+graphite
+grep
 grml-zsh-config
+groff
 grub
-grub
+gsettings-desktop-schemas
+gsfonts
+gsm
+gssproxy
+gst-plugins-base
+gst-plugins-base-libs
+gstreamer
+gtk-update-icon-cache
+gtk2
+gtk3
+gtkmm3
+guile
+gupnp-dlna
+gvfs
+gzip
+harfbuzz
+harfbuzz-icu
+haveged
 hdparm
-i3
+hicolor-icon-theme
+hunspell
+hwids
+hyphen
+i3-gaps
+i3blocks
+i3lock
 i3status
+iana-etc
+icu
+ijs
+imagemagick
+inetutils
+intel-ucode
+iproute2
+iptables
 iputils
 ipw2100-fw
 ipw2200-fw
 irssi
+iso-codes
+itstool
+iw
 iwd
+jack
+jansson
+jasper
+java-environment-common
+java-runtime-common
+jbig2dec
+jdk-openjdk
 jfsutils
+jq
+jre-openjdk
+jre-openjdk-headless
+js60
+json-c
+json-glib
+jsoncpp
+kbd
+keyutils
+kmod
+krb5
+l-smash
+lame
+lbzip2
+lcms2
+ldns
+less
 lftp
+lib32-glibc
+lib32-libpng12
+lib32-zlib
+libabw
+libaio
+libarchive
+libass
+libassuan
+libasyncns
+libatasmart
+libatomic_ops
+libavc1394
+libblockdev
+libbluray
+libbytesize
+libcanberra
+libcap
+libcap-ng
+libcddb
+libcdio
+libcdio-paranoia
+libcdr
+libcmis
+libcroco
+libcue
+libcups
+libdaemon
+libdatrie
+libdca
+libdmx
+libdrm
+libdvbpsi
+libe-book
+libebml
+libedit
+libelf
+libepoxy
+libepubgen
+libetonyek
+libev
+libevdev
+libevent
+libexif
+libexttextcat
+libfdk-aac
+libffi
+libfontenc
+libfreehand
+libgcrypt
+libgexiv2
+libglvnd
+libgnome-keyring
+libgpg-error
+libgrss
+libgsf
+libgudev
+libgusb
+libgxps
+libibus
+libice
+libidn
+libidn2
+libiec61883
+libimobiledevice
+libinput
+libiptcdata
+libixion
+libjpeg-turbo
+libksba
+liblangtag
+libldap
+liblouis
+liblqr
+libluv
+libmad
+libmatroska
+libmng
+libmnl
+libmodplug
+libmpc
+libmpcdec
+libmpeg2
+libmspub
+libmwaw
+libnautilus-extension
+libnet
+libnetfilter_conntrack
+libnewt
+libnfnetlink
+libnftnl
+libnghttp2
+libnl
+libnm
+libnotify
+libnsl
+libnumbertext
+libodfgen
+libogg
+libomxil-bellagio
+liborcus
+libosinfo
+libotr
+libpagemaker
+libpaper
+libpcap
+libpciaccess
+libpipeline
+libplist
+libpng
+libpng12
+libproxy
+libpsl
+libpulse
+libquvi
+libquvi-scripts
+libqxp
+libraqm
+libraw1394
+libreoffice-fresh
+librevenge
+librsvg
+libsamplerate
+libsasl
+libseccomp
+libsecret
+libsigc++
+libsm
+libsndfile
+libsoup
+libsoxr
+libssh
+libssh2
+libstaroffice
+libstemmer
+libtar
+libtasn1
+libtermkey
+libthai
+libtheora
+libtiff
+libtirpc
+libtommath
+libtool
+libunistring
+libunwind
+libupnp
+libusb
 libusb-compat
+libusbmuxd
+libutf8proc
+libutil-linux
+libuv
+libva
+libvdpau
+libvisio
+libvisual
+libvorbis
+libvpx
+libvterm
+libwacom
+libwebp
+libwpd
+libwpg
+libwps
+libx11
+libxau
+libxaw
+libxcb
+libxcomposite
+libxcursor
+libxdamage
+libxdg-basedir
+libxdmcp
+libxext
+libxfce4ui
+libxfce4util
+libxfixes
+libxfont2
+libxft
+libxi
+libxinerama
+libxkbcommon
+libxkbcommon-x11
+libxkbfile
+libxml2
+libxmu
+libxp
+libxpm
+libxrandr
+libxrender
+libxshmfence
+libxslt
+libxss
+libxt
+libxtst
+libxv
+libxvmc
+libxxf86dga
+libxxf86vm
+libyaml
+libzmf
+licenses
+linux
+linux-api-headers
 linux-atm
 linux-firmware
+llvm-libs
+lm_sensors
+lmdb
+lpsolve
+lrzip
 lsscsi
+lua
+lua51
+lua52
+lua52-bitop
+lua52-expat
+lua52-lpeg
+lua52-luajson
+lua52-socket
+luajit
 lvm2
+lz4
+lzo
+lzop
+m4
+mailcap
 make
 man-db
 man-pages
 mc
 mdadm
-mtools
+memtest86+
+mercurial
+mesa
+minizip
+mkinitcpio
+mkinitcpio-busybox
+mkinitcpio-nfs-utils
+mozilla-common
+mpfr
+msgpack-c
+mtdev
 mtools
 mupdf
 nano
+nautilus
+nautilus-sendto
+nbd
+ncurses
+ndctl
 ndisc6
+neon
 neovim
+net-tools
 netctl
+nettle
 nfs-utils
+nfsidmap
 nilfs-utils
+ninja
 nmap
+node-gyp
+nodejs
+npm
+npth
+nspr
+nss
+nss-mdns
 ntfs-3g
 ntp
+nvidia
+nvidia-utils
+obs-studio-git
+ocl-icd
+oniguruma
+openal
+opencl-nvidia
 openconnect
+opencore-amr
+openjpeg2
+openmotif
+openresolv
 opensc
 openssh
+openssl
+openssl-1.0
 openvpn
+opera-ffmpeg-codecs
+opus
+orc
 os-prober
+osinfo-db
+p11-kit
+pacman
+pacman-mirrorlist
+pam
+pambase
+pango
+pangomm
 partclone
 parted
 partimage
 pass
+patch
+pbzip2
+pciutils
+pcre
+pcre2
 pcsclite
+pepper-flash
+perl
+perl-error
+perl-mailtools
+perl-timedate
+pigz
+pinentry
+pixman
+pixz
+pkcs11-helper
+pkgconf
+po4a
+polkit
+poppler
+poppler-glib
+popt
 ppp
 pptpclient
+procps-ng
+progsreiserfs
+psmisc
+pygobject-devel
+python
+python-appdirs
+python-cachecontrol
+python-cairo
+python-chardet
+python-colorama
+python-dbus-common
+python-distlib
+python-distro
+python-gobject
+python-html5lib
+python-idna
+python-importlib-metadata
+python-lockfile
+python-more-itertools
+python-msgpack
+python-ordered-set
+python-packaging
+python-pep517
 python-pip
-python3
+python-progress
+python-pyparsing
+python-pytoml
+python-requests
+python-retrying
+python-setuptools
+python-six
+python-urllib3
+python-webencodings
+python-zipp
+python2
+python2-dbus
+python2-gobject2
+python2-urwid
+qjackctl
+qpdf
+qt5-base
+qt5-declarative
+qt5-imageformats
+qt5-location
+qt5-quickcontrols
+qt5-sensors
+qt5-svg
+qt5-webchannel
+qt5-webengine
+qt5-webkit
+qt5-websockets
+qt5-x11extras
+raptor
+rasqal
+re2
+readline
+redland
 refind-efi
 reiserfsprogs
+rest
+rhash
 rofi
 rp-pppoe
+rpcbind
 rsync
 ruby
 rubygems
+run-parts
+screen
+sdl
+sdl2
 sdparm
+sed
+semver
+serf
 sg3_utils
+shadow
+shared-mime-info
+slang
 smartmontools
+snappy
+sound-theme-freedesktop
+speex
+speexdsp
+spice
+sqlite
+sshfs
+startup-notification
+stoken
+subversion
 sudo
+swig
+sysfsutils
+syslinux
+systemd
+systemd-libs
+systemd-sysvcompat
+taglib
+tar
+tcl
 tcpdump
+tdb
+teamspeak3
+teamviewer
+telegram-desktop
 testdisk
+texinfo
+thin-provisioning-tools
+thunderbird
+totem-pl-parser
+tracker
+tracker-miners
+tre
+tree
+tslib
 ttf-hack
+tzdata
+udisks2
+unibilium
+upower
 usb_modeswitch
+usbmuxd
 usbutils
+util-linux
+v4l-utils
 vi
-vim-minimal
+vid.stab
+vim
+vim-runtime
+virtualbox
+virtualbox-host-dkms
+vlc
+volume_key
 vpnc
+vte-common
+vte3
+vulkan-icd-loader
+wayland
+wayland-protocols
 wget
+which
 wicd
 wireless-regdb
 wireless_tools
+woff2
 wpa_supplicant
 wvdial
+wvstreams
+x264
+x265
+xcb-proto
+xcb-util
+xcb-util-cursor
+xcb-util-image
+xcb-util-keysyms
+xcb-util-renderutil
+xcb-util-wm
+xcb-util-xrm
+xclip
+xdg-user-dirs
+xdg-utils
+xf86-input-evdev
+xf86-input-keyboard
+xf86-input-libinput
+xf86-input-mouse
+xf86-input-synaptics
+xf86-input-vmmouse
+xf86-input-void
+xf86-video-amdgpu
+xf86-video-ati
+xf86-video-dummy
+xf86-video-fbdev
+xf86-video-intel
+xf86-video-nouveau
+xf86-video-openchrome
+xf86-video-qxl
+xf86-video-vesa
+xf86-video-vmware
+xf86-video-voodoo
+xfce4-terminal
+xfconf
 xfsprogs
+xkeyboard-config
 xl2tpd
-xorg
-xorg-drivers
+xmlsec
+xmlto
+xorg-bdftopcf
+xorg-docs
+xorg-font-util
+xorg-font-utils
+xorg-fonts-100dpi
+xorg-fonts-75dpi
+xorg-fonts-alias
+xorg-fonts-encodings
+xorg-iceauth
+xorg-luit
+xorg-mkfontscale
+xorg-server
+xorg-server-common
+xorg-server-devel
+xorg-server-xdmx
+xorg-server-xephyr
+xorg-server-xnest
+xorg-server-xvfb
+xorg-server-xwayland
+xorg-sessreg
+xorg-setxkbmap
+xorg-smproxy
+xorg-util-macros
+xorg-x11perf
+xorg-xauth
+xorg-xbacklight
+xorg-xcmsdb
+xorg-xcursorgen
+xorg-xdpyinfo
+xorg-xdriinfo
+xorg-xev
+xorg-xgamma
+xorg-xhost
 xorg-xinit
+xorg-xinput
+xorg-xkbcomp
+xorg-xkbevd
+xorg-xkbutils
+xorg-xkill
+xorg-xlsatoms
+xorg-xlsclients
+xorg-xmodmap
+xorg-xpr
+xorg-xprop
+xorg-xrandr
+xorg-xrdb
+xorg-xrefresh
+xorg-xset
+xorg-xsetroot
+xorg-xvinfo
+xorg-xwd
+xorg-xwininfo
+xorg-xwud
+xorgproto
+xplc
+xvidcore
+xz
+yajl
+zita-alsa-pcmi
+zita-resampler
+zlib
+zsh
+zstd
 ----
