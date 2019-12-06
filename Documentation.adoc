@@ -1,6 +1,6 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v2.6, 2019-10-24
+v2.8, 2019-12-06
 :toc: left
 :toc-title: Table Of Contents
 :toclevels: 4
