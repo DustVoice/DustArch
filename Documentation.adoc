@@ -1,9 +1,9 @@
-= DustArch: Setting up DustVoice's Arch Linux from scratch
+= DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v2.4, 2019-10-24
+v2.6, 2019-10-24
 :toc: left
 :toc-title: Table Of Contents
-:toclevels: 3
+:toclevels: 4
 :doctype: book
 :docinfo: shared
 :source-highlighter: pygments
@@ -72,7 +72,7 @@ root@archiso ~ # mount /dev/sdb2 /mnt
 
 [NOTE]
 ====
-If you have an additional *EFI system partition*, because of a _UEFI - GPT_ setup or e.g. an existing windows installation, which we will assume to be located under `/dev/sda2` (`/dev/sda` is the disk of my windows install), you'll have to mount this partition to the new systems `/boot` folder
+If you have an additional *EFI system partition*, because of a _UEFI - GPT_ setup or e.g. an existing Windows installation, which we will assume to be located under `/dev/sda2` (`/dev/sda` is the disk of my Windows install), you'll have to mount this partition to the new systems `/boot` folder
 
 [source, console]
 ----
@@ -309,6 +309,7 @@ To change the password for the current user (the root user) do
 
 and choose a new password.
 
+[#creating-my-personal-user]
 ===== Creating my personal user
 
 We are going to make sure the `fish` shell is installed, create a new user, set the password for this user, make sure the `sudo` package is installed and allow the `wheel` group sudo access.
@@ -316,7 +317,7 @@ We are going to make sure the `fish` shell is installed, create a new user, set 
 [source, console]
 ----
 [root@archiso /]# pacman -S fish
-[root@archiso /]# useradd -m -p "" -G "adm,audio,floppy,log,network,rfkill,scanner,storage,users,optical,power,wheel" -s /usr/bin/fish dustvoice
+[root@archiso /]# useradd -m -p "" -G "adm,audio,floppy,kvm,log,network,rfkill,scanner,storage,users,optical,power,wheel" -s /usr/bin/fish dustvoice
 [root@archiso /]# passwd dustvoice
 [root@archiso /]# pacman -S sudo
 ----
@@ -409,6 +410,27 @@ If you chose the `UEFI - GPT` variation, you'll have to have the `EFI System Par
 [root@archiso /]# grub_install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
 ----
 
+[IMPORTANT]
+====
+If you've planned on dual booting arch with Windows and therefore reused the `EFI System Partition` created by Windows, you might not be able to boot to grub just yet. In this case, boot into Windows, open a `cmd` window as administrator and type in
+
+[source, console]
+----
+bcdedit /set {bootmgr} path \EFI\grub\grubx64.efi
+----
+
+To make sure that the path is correct, you can just
+
+[source, console]
+----
+[root@archiso /]# ls /boot/EFI/grub
+----
+
+to make sure, that the `grubx64.efi` file is really there.
+
+Now you should be good to go.
+====
+
 ==== Grub config
 
 In all cases, you now have to create the main configuration file
@@ -456,9 +478,11 @@ After making sure that you have established an internet connection, you can then
 dustvoice@DustArch ~> sudo pacman -Syu
 ----
 
-=== Customizing your install
+=== Setting the correct shell
 
-I'll be using the `fish` shell for the `root` user too, so I'll have to change ``root``'s default shell to it.
+I'll be using the `fish` shell.
+
+We already set the correct shell for the `dustvoice` user in the <<creating-my-personal-user>> step, but I want to use `fish` for the `root` user too, so I'll have to change ``root``'s default shell to it.
 
 [source, console]
 ----
@@ -467,7 +491,7 @@ dustvoice@DustArch ~> chsh -s /usr/bin/fish root
 
 Don't worry about the looks by the way, we're gonna change all that in just a second.
 
-==== Version control
+=== Version control
 
 Next you'll probably want to install `git`. Just do
 
@@ -478,7 +502,7 @@ dustvoice@DustArch ~> sudo pacman -S git
 
 and you're good to go. We'll care about the `.gitconfig` in just a second.
 
-==== Security is important
+=== Security is important
 
 If you've followed the tutorial using a recent version of arch linux, you'll probably already have the most recent version of `gnupg` installed by default. Just to make sure, issue
 
@@ -487,7 +511,7 @@ If you've followed the tutorial using a recent version of arch linux, you'll pro
 dustvoice@DustArch ~> sudo pacman -S gnupg
 ----
 
-===== Smartcard shenanigans
+==== Smartcard shenanigans
 
 After that you'll still have to setup `gnupg` correctly. In my case I have my private keys stored on a smartcard. To use it, I'll have to install some packages first
 
@@ -507,7 +531,7 @@ dustvoice@DustArch ~> sudo systemctl start pcscd
 Note however that your mileage may vary.
 
 [#additional-tools-setup-home]
-==== Additional required tools
+=== Additional required tools
 
 [source, console]
 ----
@@ -515,7 +539,7 @@ dustvoice@DustArch ~> pacman -S make cmake clang jdk-openjdk pyhton pyhton-pip p
 ----
 
 [#setup-home]
-==== Setting up a home environment
+=== Setting up a home environment
 
 In this step we're going to setup a home environment for both the `root` and my personal `dustvoice` user. 
 
@@ -612,34 +636,38 @@ $ git clone https://github.com/McMartin/FRUT.git
 As mentioned before, you would now switch to the `root` user, either by logging in as root, or ``su``ing, and go back to <<setup-home>> to repeat all commands for the root user.
 ====
 
-==== Python
+=== Password management
+
+I'm using `pass` as my password manager. We already installed it in the <<additional-tools-setup-home>> step.
+
+=== Python
 
 Python has become really important for a magnitude of use cases. We need `python3` in particular as well as the `pip` for it.
 For `asciidoctor` _(will be installed in just a second)_ we also need to install the `pygments` package.
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S python python-pip
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pip3 install pygments
 ----
 
-==== Ruby & Asciidoctor
+=== Ruby & Asciidoctor
 
 In order to use `asciidoctor`, we have to install `ruby` and `rubygems`. After that we can install `asciidoctor` and all it's required gems.
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S ruby rubygems
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ gem install asciidoctor --pre
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ gem install asciidoctor-pdf --pre
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ gem install asciidoctor-epub3 --pre
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ gem install pygments.rb --pre
 ----
 
@@ -647,7 +675,7 @@ Now the only thing left (in my case) is adding `~/.gem/ruby/2.6.0/bin` to your p
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ set -U fish_user_paths $fish_user_paths ~/.gem/ruby/2.6.0/bin
 ----
 
@@ -658,87 +686,51 @@ If you use another shell than `fish`, you might have to do something different t
 Also please note that if you run a ruby version different from `2.6.0`, you have to use the `bin` path for that version.
 ====
 
-==== GUI > Terminal ?
+==== Additional Development tools
 
-If you decide, that you want to use a graphical desktop environment, you have to install additional packages in order for that to work.
+Here are just some examples of development tools one could install in addition to what we already have.
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S xorg xorg-xinit xorg-drivers i3 i3status rofi ttf-hack xfce4-terminal alsa alsa-utils wicd nautilus arandr
-----
+===== Code formatting
 
-===== NVIDIA
-
-If you also want to use NVIDIA functionality, for example for `davinci-resolve`, you would need to install their proprietary driver
+We already have `clang-format` as a code formatter, but this only works for `C` languages. For the `java` part, we can use `astyle`.
 
 [source, console]
 ----
-dustvoice@DustArch ~
-$ sudo pacman -S nvidia nvidia-utils nvidia-settings opencl-nvidia
+[I] dustvoice@DustArch ~
+$ sudo pacman -S astyle
 ----
 
-[NOTE]
-====
-You would have to reboot sooner or later after installing the NVIDIA drivers.
+===== Documentation
 
-Also to get the best performance, at least for something like screen capturing in `obs`, go to *X Server Display Configuration* inside `nvidia-settings`, switch to *Advanced* and enable *Force Composition Pipeline*, as well as *Force Full Composition Pipeline*.
-====
-
-===== Compositer
-
-To get buttery smooth animation as well as e.g. video playback in `brave`, you might want to consider using a fork of `compton` named `picom`
+To generate a documentation from source code, I mostly use `doxygen`
 
 [source, console]
 ----
-dustvoice@DustArch ~
-$ sudo pacman -S picom
+[I] dustvoice@DustArch ~
+$ sudo pacman -S doxygen
 ----
 
-After installing `picom` you'll still have to add a line to the bottom of your `~/.config/i3/config` file
+===== Build tools
 
-.~/.config/i3/config
-[source, text]
-----
-exec picom -bCG --backend glx --vsync
-----
-
-[WARNING]
-====
-In order for ``obs``' screen capture to work correctly, you need to kill `picom` completely before using `obs`.
+In addition to `make`, I'll often times use `ninja` for my builds
 
 [source, console]
 ----
-dustvoice@DustArch ~
-$ pkill picom
+[I] dustvoice@DustArch ~
+$ sudo pacman -S ninja
 ----
 
-or
+=== Audio
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ ps aux | grep picom
-dustvoice@DustArch ~
-$ kill <pid>
-----
-====
+Well, why wouldn't you want audio...
 
-===== Launching the grahpical environment
-
-After that you can now do `startx` in order to launch the graphical environment.
-
-If anything goes wrong in the process, remember that you can press *Ctrl+Alt+<Number>* to switch ``tty``s.
-
-==== Audio
-
-===== ALSA
+==== ALSA
 
 To quickly setup audio, install `alsa` and `alsa-utils`
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S alsa alsa-utils
 ----
 
@@ -746,7 +738,7 @@ Now choose the soundcard you want to use
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ cat /proc/asound/cards
 ----
 
@@ -764,14 +756,226 @@ defaults.ctl.card 2
 It should be apparent, that you would have to switch out `2` witht the number corresponding to the soundcard you want to use.
 ====
 
-===== Pulse Audio
+==== Pulse Audio
 
 Some applications require `pulseaudio` or work better with it (for example `discord`), so it might make sense to use `pulseaudio`
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S pulseaudio pulsemixer
+----
+
+For enabling realtime priority for `pulseaudio` on arch, please make sure your user is part of the `audio` group and edit the file `/etc/pulse/daemon.conf` so that you uncomment the lines
+
+[source, text]
+----
+; high-priority = yes
+; nice-level = -11
+
+; realtime-scheduling = yes
+; realtime-priority = 5
+----
+
+to
+
+[source, text]
+----
+high-priority = yes
+nice-level = -11
+
+realtime-scheduling = yes
+realtime-priority = 5
+----
+
+If your system can handle the load, you can also increase the remixing quality, by changing
+
+[source, text]
+----
+; resample-method = speex-float-1
+----
+
+to
+
+[source, text]
+----
+resample-method = speex-float-10
+----
+
+Of course a restart of the `pulseaudio` daemon is mandatory.
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ pulseaudio --kill
+[I] dustvoice@DustArch ~
+$ pulseaudio --start
+----
+
+=== Graphical desktop environment
+
+If you decide, that you want to use a graphical desktop environment, you have to install additional packages in order for that to work.
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S xorg xorg-xinit xorg-drivers i3 i3status rofi ttf-hack xfce4-terminal alsa alsa-utils wicd arandr
+----
+
+==== NVIDIA
+
+If you also want to use NVIDIA functionality, for example for `davinci-resolve`, you would need to install their proprietary driver
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S nvidia nvidia-utils nvidia-settings opencl-nvidia
+----
+
+[NOTE]
+====
+You would have to reboot sooner or later after installing the NVIDIA drivers.
+
+Also to get the best performance, at least for something like screen capturing in `obs`, go to *X Server Display Configuration* inside `nvidia-settings`, switch to *Advanced* and enable *Force Composition Pipeline*, as well as *Force Full Composition Pipeline*.
+====
+
+==== Launching the grahpical environment
+
+After that you can now do `startx` in order to launch the graphical environment.
+
+If anything goes wrong in the process, remember that you can press *Ctrl+Alt+<Number>* to switch ``tty``s.
+
+=== GUI Software
+
+As you now have a working graphical desktop environment, you might want to install some software to utilize your newly gained power
+
+==== Desktop background
+
+You might want to consider installing `nitrogen`, in order to be able to set a background image
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S nitrogen
+----
+
+==== Compositing software
+
+To get buttery smooth animation as well as e.g. video playback in `brave`, you might want to consider using a `compton` based software named `picom`
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S picom
+----
+
+Now edit the file `~/.config/i3/config` and uncomment the `picom` line in order to start `picom` with `i3`.
+
+[WARNING]
+====
+In order for ``obs``' screen capture to work correctly, you need to kill `picom` completely before using `obs`.
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ pkill picom
+----
+
+or
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ ps aux | grep picom
+[I] dustvoice@DustArch ~
+$ kill <pid>
+----
+====
+
+==== X clipboard
+
+To copy something from the terminal to the x clipboard, use `xclip`
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S xclip
+[I] dustvoice@DustArch ~
+$ xclip some_random_text
+----
+
+==== Taking screenshots
+
+For this functionality, especially in combination with `rofi`, use `scrot`
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S scrot
+[I] dustvoice@DustArch ~
+$ scrot filename.png
+----
+
+==== Image viewer
+
+Now that we can create screenshots, we might also want to view those
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S ristretto
+[I] dustvoice@DustArch ~
+$ ristretto filename.png
+----
+
+==== File manager
+
+You probably also want to use a file manager. In my case, `thunar`, the `xfce` file manager, worked best.
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S thunar
+----
+
+To also be able to mount removable drives, without root, and in order to have a GUI for mounting stuff, you would need to install `gigolo` and `gvfs`
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S gigolo gvfs
+----
+
+==== Archive manager
+
+As we now have a file manager, it might be annoying, to open up a terminal everytime you simply want to extract an archive of some sort.
+
+That's why we'll install `xarchiver`.
+
+In order for `xarchiver` to work its full potential we're first gonna install some additional archive types
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S p7zip zip unrar cpio
+----
+
+Now we can proceed to install `xarchiver`
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ xarchiver
+----
+
+==== Partition management
+
+You may also choose to use a graphical partitioning software instead of `fdisk` or `cfdisk`. For that you can install `gparted`
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S gparted
 ----
 
 ==== PDF viewer
@@ -784,7 +988,7 @@ Installing `mupdf` is as simple as issuing
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S mupdf
 ----
 
@@ -792,7 +996,7 @@ If you want to have changes made to the pdf reflected immediately in the viewer,
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S evince
 ----
 
@@ -804,7 +1008,7 @@ This software renders a pdf document using the native framebuffer. To install it
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ pacman -S fbida ghostscript
 ----
 
@@ -812,7 +1016,7 @@ and to view this pdf document (`Documentation.pdf`) for example, you would run
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ fbgs Documentation.pdf
 ----
 
@@ -821,35 +1025,21 @@ $ fbgs Documentation.pdf
 You can view all the controls by pressing `h`.
 ====
 
-==== Partition management
-
-You may also choose to use a graphical partitioning software instead of `fdisk` or `cfdisk`. For that you can install `gparted`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S gparted
-----
-
-==== Password management
-
-I'm using `pass` as my password manager. We already installed it in the <<additional-tools-setup-home>> step.
-
 ==== Web browser
 
 As you're already using a GUI, you also might be interested in a web browser. In my case, I'll install `brave` from the AUR as well as `browserpass` from the official repositories for using my passwords in `brave`.
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ git clone https://aur.archlinux.org/brave-bin.git
-dustvoice@DustArch ~/brave-bin
+[I] dustvoice@DustArch ~/brave-bin
 $ makepkg -si
-dustvoice@DustArch ~/brave-bin
+[I] dustvoice@DustArch ~/brave-bin
 $ cd ..
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ rm -rf brave-bin
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S browserpass
 ----
 
@@ -857,13 +1047,13 @@ Now we still have to setup `browserpass`
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ cd /usr/local/lib/browserpass
-dustvoice@DustArch /usr/local/lib/browserpass
+[I] dustvoice@DustArch /usr/local/lib/browserpass
 $ make hosts-brave-user
-dustvoice@DustArch /usr/local/lib/browserpass
+[I] dustvoice@DustArch /usr/local/lib/browserpass
 $ make policies-brave-user
-dustvoice@DustArch /usr/local/lib/browserpass
+[I] dustvoice@DustArch /usr/local/lib/browserpass
 $ cd ~
 ----
 
@@ -875,50 +1065,16 @@ You might have to be completely anonymous whilst browsing the web at some point.
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ git clone https://aur.archlinux.org/tor-browser.git
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ cd tor-browser
-dustvoice@DustArch ~/tor-browser
+[I] dustvoice@DustArch ~/tor-browser
 $ makepkg -si
-dustvoice@DustArch ~/tor-browser
+[I] dustvoice@DustArch ~/tor-browser
 $ cd ..
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ rm -rf tor-browser
-----
-
-==== Additional Development tools
-
-Here are just some examples of development tools one could install in addition to what we already have.
-
-===== Code formatting
-
-We already have `clang-format` as a code formatter, but this only works for `C` languages. For the `java` part, we can use `astyle`.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S astyle
-----
-
-===== Documentation
-
-To generate a documentation from source code, I mostly use `doxygen`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S doxygen
-----
-
-===== Build tools
-
-In addition to `make`, I'll often times use `ninja` for my builds
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S ninja
 ----
 
 ==== Office utilities
@@ -927,7 +1083,7 @@ For now we'll install `libreoffice-fresh`
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S libreoffice-fresh
 ----
 
@@ -937,23 +1093,23 @@ In order for printing to work with my printer, which is a _Brother MFC J497DW_, 
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S avahi
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S cups cups-pdf nss-mdns
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ git clone https://aur.archlinux.org/brother-mfc-j497dw.git
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ cd brother-mfc-j497dw
-dustvoice@DustArch ~/brother-mfc-j497dw
+[I] dustvoice@DustArch ~/brother-mfc-j497dw
 $ makepkg -si
-dustvoice@DustArch ~/brother-mfc-j497dw
+[I] dustvoice@DustArch ~/brother-mfc-j497dw
 $ cd ..
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ rm -rf brother-mfc-j497dw
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo systemctl enable avahi-daemon.service
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo systemctl start avahi-daemon.service
 ----
 
@@ -961,7 +1117,7 @@ Now you have to edit `/etc/nsswitch.conf`
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo nvim /etc/nsswitch.conf
 ----
 
@@ -983,19 +1139,39 @@ Now continue with this
 
 [source, text]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ avahi-browse --all --ignore-local --resolve --terminate
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo systemctl enable org.cups.cupsd.service
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo systemctl start org.cups.cupsd.service
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S system-config-printer print-manager
 ----
 
 Now just open up `system-config-printer` and configure your printer.
 
 To test if everything is working, you could open up `brave`, the go to *Print* and then try printing.
+
+==== Process management
+
+The native linux tool to have a CLI task-manager, is `top`.
+
+The next evolutionary step would be `htop`, which is a improved version of `top` (like `vi` and `vim` for example)
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S htop
+----
+
+If you prefer a GUI for that kind of task, install `xfce4-taskmanager`
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S xfce4-taskmanager
+----
 
 ==== Communication
 
@@ -1007,7 +1183,7 @@ There is nothing better than some classical email.
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S thunderbird
 ----
 
@@ -1017,7 +1193,7 @@ You want to have your `telegram` messages on your desktop pc?
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S telegram-desktop
 ----
 
@@ -1027,7 +1203,7 @@ Wanna chat with your gaming friends and they have a `teamspeak3` server? Go for 
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S teamspeak3
 ----
 
@@ -1037,7 +1213,7 @@ You'd rather use `discord`? No problem
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S discord
 ----
 
@@ -1051,7 +1227,7 @@ You might consider using `vlc`
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S vlc
 ----
 
@@ -1061,15 +1237,15 @@ $ sudo pacman -S vlc
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ git clone https://aur.archlinux.org/obs-studio-git
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ cd obs-studio-git
-dustvoice@DustArch ~/obs-studio-git
+[I] dustvoice@DustArch ~/obs-studio-git
 $ makepkg -si
-dustvoice@DustArch ~/obs-studio-git
+[I] dustvoice@DustArch ~/obs-studio-git
 $ cd ..
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ rm -rf obs-studio-git
 ----
 
@@ -1079,7 +1255,7 @@ For this task, you'll need a program called `tmate`. Just install it
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S tmate
 ----
 
@@ -1087,7 +1263,7 @@ and run it
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ tmate
 ----
 
@@ -1102,7 +1278,7 @@ Then update your packages
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -Sy
 ----
 
@@ -1110,15 +1286,15 @@ and install `davinci-resolve`
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ git clone https://aur.archlinux.org/davinci-resolve.git
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ cd davinci-resolve
-dustvoice@DustArch ~/davinci-resolve
+[I] dustvoice@DustArch ~/davinci-resolve
 $ makepkg -si
-dustvoice@DustArch ~/davinci-resolve
+[I] dustvoice@DustArch ~/davinci-resolve
 $ cd ..
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ rm -rf davinci-resolve
 ----
 
@@ -1128,17 +1304,131 @@ Wanna remote control your/another pc? `teamviewer` might just be the right choic
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ git clone https://aur.archlinux.org/teamviewer.git
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ cd teamviewer
-dustvoice@DustArch ~/teamviewer
+[I] dustvoice@DustArch ~/teamviewer
 $ makepkg -si
-dustvoice@DustArch ~/teamviewer
+[I] dustvoice@DustArch ~/teamviewer
 $ cd ..
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ rm -rf teamviewer
 ----
+
+==== Ardour
+
+To e.g. edit and produce audio, I would recommend `ardour`, because it's easy to use, stable and cross platform.
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S ardour
+----
+
+[NOTE]
+====
+You might have to edit `/etc/security/limits.conf`, to increase the allowed locked memory amount.
+
+In my case I have 32GB of RAM and I want the `audio` group to be allocate most of the RAM, which is why I added the following line to the file
+
+[source, text]
+----
+@audio - memlock 29360128
+----
+====
+
+[INFO]
+====
+Ardour won't natively save in the `mp3` format due to licensing stuff. In order to create `mp3` files, for sharing with other devices that have problems with `wav` files for example, you can just use `ffmpeg`.
+
+First make sure it's installed
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S ffmpeg
+----
+
+and after that we're going to convert `in.wav` to `out.mp3`
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ ffmpeg -i in.wav -acodec mp3 out.mp3
+----
+====
+
+==== Switching GPUs (NVIDIA)
+
+To switch from the NVIDIA GPU to the Intel integraded one, one could use `optimus-manager`
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ git clone https://aur.archlinux.org/optimus-manager.git
+[I] dustvoice@DustArch ~
+$ cd optimus-manager
+[I] dustvoice@DustArch ~/optimus-manager
+$ makepkg -si
+[I] dustvoice@DustArch ~/optimus-manager
+$ cd ..
+[I] dustvoice@DustArch ~
+$ rm optimus-manager
+[I] dustvoice@DustArch ~
+$ sudo systemctl enable optimus-manager.service
+[I] dustvoice@DustArch ~
+$ sudo systemctl start optimus-manager.service
+----
+
+[NOTE]
+====
+As the installation script correctly informs you, a full reboot is required before using `optimus-manager`.
+====
+
+Now you can simply switch to the Intel GPU, by using
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ optimus-manager --switch intel
+----
+
+and switch back to NVIDIA by using
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ optimus-manager --switch nvidia
+----
+
+[WARNING]
+====
+This will close all graphical sessions and tehrefore close all current applications.
+====
+
+Furthermore, you can set the default GPU to use.
+
+If you want Intel GPU at startup use
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ optimus-manager --set-startup intel
+----
+
+or if you want the NVIDIA GPU, use
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ optimus-manager --set-startup nvidia
+----
+
+[NOTE]
+====
+For enabling power management, read link:https://github.com/Askannz/optimus-manager/wiki[] in the section _A guide to power management options_.
+====
 
 ==== Virtualization
 
@@ -1146,8 +1436,36 @@ You might need to run another os, for example Mac OS, from within Linux, e.g. fo
 
 [source, console]
 ----
-dustvoice@DustArch ~
+[I] dustvoice@DustArch ~
 $ sudo pacman -S virtualbox
+----
+
+// TODO: After getting a system with 2 GPUs, add part for KVMing a Windows.
+// Resources:
+// - virt-manager
+// - wiki.archlinux.org/index.php/KVM
+// - wiki.debian.org/VGAPassthrough
+// - ycnrg.org/vga-passthrough-with-ovmf-vfio
+// - bufferoverflow.io/gpu-passthrough
+// - heiko-sieger.info/running-windows-10-on-linux-using-kvm-with-vga-passthrough
+// - openwebit.com/c/how-to-run-windows-vm-on-more-than-2-cores-under-kvm
+
+==== Gaming
+
+The first option for native/emulated gaming on linux is obviously `steam`.
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S steam lib32-nvidia-utils pulseaudio pulseaudio-alsa lib32-libpulse
+----
+
+The second option would be `lutris`, a program, that configures a wine instance correctly, etc.
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S lutris
 ----
 
 == DustArch package list
@@ -1162,6 +1480,7 @@ acl
 adobe-source-code-pro-fonts
 adwaita-icon-theme
 alsa-lib
+alsa-plugins
 alsa-topology-conf
 alsa-ucm-conf
 alsa-utils
@@ -1172,16 +1491,21 @@ apr-util
 arandr
 arch-install-scripts
 archlinux-keyring
+ardour
 argon2
 aribb24
+aspell
 astyle
 at-spi2-atk
 at-spi2-core
 atk
 atkmm
+attica
 attr
+aubio
 audit
 autoconf
+autoconf-archive
 automake
 avahi
 b43-fwcutter
@@ -1191,6 +1515,7 @@ bc
 bind-tools
 binutils
 bison
+bluez-libs
 boost-libs
 brave-bin
 broadcom-wl
@@ -1219,6 +1544,7 @@ colord
 compiler-rt
 confuse
 coreutils
+cpio
 cracklib
 crda
 cryptsetup
@@ -1243,6 +1569,7 @@ dialog
 diffutils
 ding-libs
 discord
+djvulibre
 dkms
 dmraid
 dnsmasq
@@ -1261,10 +1588,11 @@ efivar
 egl-wayland
 eglexternalplatform
 elinks
+enchant
 ethtool
-exempi
+evince
 exfat-utils
-exiv2
+exo
 expat
 f2fs-tools
 faad2
@@ -1279,6 +1607,7 @@ fish
 flac
 flex
 fontconfig
+freeglut
 freetype2
 fribidi
 fsarchiver
@@ -1289,6 +1618,7 @@ gawk
 gc
 gcc
 gcc-libs
+gconf
 gcr
 gdbm
 gdk-pixbuf2
@@ -1296,15 +1626,19 @@ geoip
 geoip-database
 gettext
 ghostscript
+giblib
 giflib
+gigolo
 git
+glew
 glib-networking
 glib2
+glib2-docs
 glibc
 glibmm
 glu
 gmp
-gnome-autoar
+gnome-common
 gnome-desktop
 gnu-free-fonts
 gnu-netcat
@@ -1325,16 +1659,18 @@ grub
 gsettings-desktop-schemas
 gsfonts
 gsm
+gspell
 gssproxy
 gst-plugins-base
 gst-plugins-base-libs
 gstreamer
+gtk-doc
 gtk-update-icon-cache
 gtk2
 gtk3
+gtkmm
 gtkmm3
 guile
-gupnp-dlna
 gvfs
 gzip
 harfbuzz
@@ -1342,6 +1678,8 @@ harfbuzz-icu
 haveged
 hdparm
 hicolor-icon-theme
+hspell
+htop
 hunspell
 hwids
 hyphen
@@ -1353,8 +1691,10 @@ iana-etc
 icu
 ijs
 imagemagick
+imlib2
 inetutils
 intel-ucode
+intltool
 iproute2
 iptables
 iputils
@@ -1380,10 +1720,37 @@ js60
 json-c
 json-glib
 jsoncpp
+karchive
+kauth
 kbd
+kbookmarks
+kcmutils
+kcodecs
+kcompletion
+kconfig
+kconfigwidgets
+kcoreaddons
+kcrash
+kdbusaddons
+kdeclarative
 keyutils
+kglobalaccel
+kguiaddons
+ki18n
+kiconthemes
+kio
+kitemviews
+kjobwidgets
 kmod
+knotifications
+kpackage
 krb5
+kservice
+ktextwidgets
+kwallet
+kwidgetsaddons
+kwindowsystem
+kxmlgui
 l-smash
 lame
 lbzip2
@@ -1391,9 +1758,107 @@ lcms2
 ldns
 less
 lftp
+lib32-acl
+lib32-alsa-lib
+lib32-alsa-plugins
+lib32-atk
+lib32-attr
+lib32-bzip2
+lib32-cairo
+lib32-dbus
+lib32-e2fsprogs
+lib32-expat
+lib32-flac
+lib32-fontconfig
+lib32-freetype2
+lib32-fribidi
+lib32-gcc-libs
+lib32-gdk-pixbuf2
+lib32-gettext
+lib32-glib2
 lib32-glibc
+lib32-glu
+lib32-gmp
+lib32-gnutls
+lib32-gtk2
+lib32-harfbuzz
+lib32-icu
+lib32-keyutils
+lib32-krb5
+lib32-lcms2
+lib32-libappindicator-gtk2
+lib32-libasyncns
+lib32-libcap
+lib32-libcups
+lib32-libdatrie
+lib32-libdbusmenu-glib
+lib32-libdbusmenu-gtk2
+lib32-libdrm
+lib32-libelf
+lib32-libffi
+lib32-libgcrypt
+lib32-libglvnd
+lib32-libgpg-error
+lib32-libice
+lib32-libidn
+lib32-libindicator-gtk2
+lib32-libjpeg-turbo
+lib32-libldap
+lib32-libnl
+lib32-libogg
+lib32-libpcap
+lib32-libpciaccess
+lib32-libpng
 lib32-libpng12
+lib32-libpulse
+lib32-libsm
+lib32-libsndfile
+lib32-libtasn1
+lib32-libthai
+lib32-libtiff
+lib32-libusb
+lib32-libvorbis
+lib32-libx11
+lib32-libxau
+lib32-libxcb
+lib32-libxcomposite
+lib32-libxcursor
+lib32-libxdamage
+lib32-libxdmcp
+lib32-libxext
+lib32-libxfixes
+lib32-libxft
+lib32-libxi
+lib32-libxinerama
+lib32-libxml2
+lib32-libxrandr
+lib32-libxrender
+lib32-libxshmfence
+lib32-libxss
+lib32-libxtst
+lib32-libxxf86vm
+lib32-llvm-libs
+lib32-lm_sensors
+lib32-lz4
+lib32-mesa
+lib32-ncurses
+lib32-nettle
+lib32-nspr
+lib32-nss
+lib32-nvidia-utils
+lib32-openssl
+lib32-p11-kit
+lib32-pango
+lib32-pcre
+lib32-pixman
+lib32-readline
+lib32-sqlite
+lib32-systemd
+lib32-util-linux
+lib32-wayland
+lib32-xz
 lib32-zlib
+lib32-zstd
 libabw
 libaio
 libarchive
@@ -1414,11 +1879,14 @@ libcdio
 libcdio-paranoia
 libcdr
 libcmis
+libconfig
 libcroco
-libcue
 libcups
 libdaemon
 libdatrie
+libdbusmenu-glib
+libdbusmenu-gtk2
+libdbusmenu-qt5
 libdca
 libdmx
 libdrm
@@ -1440,33 +1908,34 @@ libffi
 libfontenc
 libfreehand
 libgcrypt
-libgexiv2
 libglvnd
 libgnome-keyring
 libgpg-error
-libgrss
-libgsf
 libgudev
 libgusb
 libgxps
 libibus
 libice
+libid3tag
 libidn
 libidn2
 libiec61883
 libimobiledevice
+libindicator-gtk2
 libinput
-libiptcdata
 libixion
 libjpeg-turbo
 libksba
 liblangtag
 libldap
+liblo
 liblouis
 liblqr
+liblrdf
 libluv
 libmad
 libmatroska
+libmm-glib
 libmng
 libmnl
 libmodplug
@@ -1475,7 +1944,7 @@ libmpcdec
 libmpeg2
 libmspub
 libmwaw
-libnautilus-extension
+libndp
 libnet
 libnetfilter_conntrack
 libnewt
@@ -1491,12 +1960,12 @@ libodfgen
 libogg
 libomxil-bellagio
 liborcus
-libosinfo
 libotr
 libpagemaker
 libpaper
 libpcap
 libpciaccess
+libpgm
 libpipeline
 libplist
 libpng
@@ -1504,8 +1973,6 @@ libpng12
 libproxy
 libpsl
 libpulse
-libquvi
-libquvi-scripts
 libqxp
 libraqm
 libraw1394
@@ -1519,14 +1986,17 @@ libsecret
 libsigc++
 libsm
 libsndfile
+libsodium
 libsoup
 libsoxr
+libspectre
 libssh
 libssh2
 libstaroffice
-libstemmer
+libsynctex
 libtar
 libtasn1
+libteam
 libtermkey
 libthai
 libtheora
@@ -1534,12 +2004,14 @@ libtiff
 libtirpc
 libtommath
 libtool
+libuiohook
 libunistring
 libunwind
 libupnp
 libusb
 libusb-compat
 libusbmuxd
+libutempter
 libutf8proc
 libutil-linux
 libuv
@@ -1547,12 +2019,15 @@ libva
 libvdpau
 libvisio
 libvisual
+libvoikko
 libvorbis
 libvpx
 libvterm
 libwacom
 libwebp
+libwnck3
 libwpd
+libwpe
 libwpg
 libwps
 libx11
@@ -1577,10 +2052,12 @@ libxkbcommon-x11
 libxkbfile
 libxml2
 libxmu
+libxnvctrl
 libxp
 libxpm
 libxrandr
 libxrender
+libxres
 libxshmfence
 libxslt
 libxss
@@ -1593,6 +2070,7 @@ libxxf86vm
 libyaml
 libzmf
 licenses
+lilv
 linux
 linux-api-headers
 linux-atm
@@ -1602,15 +2080,10 @@ lm_sensors
 lmdb
 lpsolve
 lrzip
+lsb-release
 lsscsi
 lua
 lua51
-lua52
-lua52-bitop
-lua52-expat
-lua52-lpeg
-lua52-luajson
-lua52-socket
 luajit
 lvm2
 lz4
@@ -1619,13 +2092,17 @@ lzop
 m4
 mailcap
 make
+mallard-ducktype
 man-db
 man-pages
 mc
 mdadm
+media-player-info
 memtest86+
 mercurial
 mesa
+mesa-demos
+meson
 minizip
 mkinitcpio
 mkinitcpio-busybox
@@ -1637,8 +2114,6 @@ mtdev
 mtools
 mupdf
 nano
-nautilus
-nautilus-sendto
 nbd
 ncurses
 ndctl
@@ -1648,10 +2123,12 @@ neovim
 net-tools
 netctl
 nettle
+networkmanager
 nfs-utils
 nfsidmap
 nilfs-utils
 ninja
+nitrogen
 nmap
 node-gyp
 nodejs
@@ -1663,7 +2140,10 @@ nss-mdns
 ntfs-3g
 ntp
 nvidia
+nvidia-settings
 nvidia-utils
+obs-input-overlay-bin
+obs-linuxbrowser-bin
 obs-studio-git
 ocl-icd
 oniguruma
@@ -1680,11 +2160,12 @@ openssl
 openssl-1.0
 openvpn
 opera-ffmpeg-codecs
+optimus-manager
 opus
 orc
 os-prober
-osinfo-db
 p11-kit
+p7zip
 pacman
 pacman-mirrorlist
 pam
@@ -1706,6 +2187,9 @@ perl
 perl-error
 perl-mailtools
 perl-timedate
+perl-uri
+perl-xml-parser
+picom
 pigz
 pinentry
 pixman
@@ -1714,21 +2198,28 @@ pkcs11-helper
 pkgconf
 po4a
 polkit
+polkit-qt5
 poppler
 poppler-glib
 popt
 ppp
 pptpclient
+print-manager
 procps-ng
 progsreiserfs
 psmisc
+pulseaudio
+pulseaudio-alsa
+pulsemixer
 pygobject-devel
 python
+python-anytree
 python-appdirs
 python-cachecontrol
 python-cairo
 python-chardet
 python-colorama
+python-dbus
 python-dbus-common
 python-distlib
 python-distro
@@ -1737,6 +2228,7 @@ python-html5lib
 python-idna
 python-importlib-metadata
 python-lockfile
+python-lxml
 python-more-itertools
 python-msgpack
 python-ordered-set
@@ -1744,6 +2236,9 @@ python-packaging
 python-pep517
 python-pip
 python-progress
+python-pycups
+python-pycurl
+python-pygments
 python-pyparsing
 python-pytoml
 python-requests
@@ -1763,8 +2258,10 @@ qt5-base
 qt5-declarative
 qt5-imageformats
 qt5-location
+qt5-multimedia
 qt5-quickcontrols
 qt5-sensors
+qt5-speech
 qt5-svg
 qt5-webchannel
 qt5-webengine
@@ -1780,19 +2277,24 @@ refind-efi
 reiserfsprogs
 rest
 rhash
+ristretto
 rofi
 rp-pppoe
 rpcbind
 rsync
+rtkit
+rubberband
 ruby
 rubygems
 run-parts
 screen
+scrot
 sdl
 sdl2
 sdparm
 sed
 semver
+serd
 serf
 sg3_utils
 shadow
@@ -1800,22 +2302,30 @@ shared-mime-info
 slang
 smartmontools
 snappy
+solid
+sonnet
+sord
 sound-theme-freedesktop
 speex
 speexdsp
 spice
 sqlite
+sratom
 sshfs
 startup-notification
+steam
 stoken
 subversion
 sudo
+suil
 swig
 sysfsutils
 syslinux
+system-config-printer
 systemd
 systemd-libs
 systemd-sysvcompat
+t1lib
 taglib
 tar
 tcl
@@ -1827,23 +2337,26 @@ telegram-desktop
 testdisk
 texinfo
 thin-provisioning-tools
+thunar
 thunderbird
-totem-pl-parser
-tracker
-tracker-miners
+tmate
 tre
 tree
 tslib
 ttf-hack
+tumbler
 tzdata
 udisks2
 unibilium
+unrar
+unzip
 upower
 usb_modeswitch
 usbmuxd
 usbutils
 util-linux
 v4l-utils
+vamp-plugin-sdk
 vi
 vid.stab
 vim
@@ -1858,17 +2371,22 @@ vte3
 vulkan-icd-loader
 wayland
 wayland-protocols
+webkit2gtk
+webrtc-audio-processing
 wget
 which
 wicd
+wine-staging
 wireless-regdb
 wireless_tools
 woff2
 wpa_supplicant
+wpebackend-fdo
 wvdial
 wvstreams
 x264
 x265
+xarchiver
 xcb-proto
 xcb-util
 xcb-util-cursor
@@ -1878,6 +2396,7 @@ xcb-util-renderutil
 xcb-util-wm
 xcb-util-xrm
 xclip
+xdg-dbus-proxy
 xdg-user-dirs
 xdg-utils
 xf86-input-evdev
@@ -1898,6 +2417,7 @@ xf86-video-qxl
 xf86-video-vesa
 xf86-video-vmware
 xf86-video-voodoo
+xfce4-taskmanager
 xfce4-terminal
 xfconf
 xfsprogs
@@ -1963,6 +2483,11 @@ xplc
 xvidcore
 xz
 yajl
+yelp-tools
+yelp-xsl
+zenity
+zeromq
+zip
 zita-alsa-pcmi
 zita-resampler
 zlib
