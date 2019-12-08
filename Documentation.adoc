@@ -1198,6 +1198,118 @@ To also be able to mount removable drives, without root, and in order to have a 
 $ sudo pacman -S gigolo gvfs
 ----
 
+===== Android file transfer
+
+To furthermore enable the transfer of files between your pc and your android phone, you'll habe to install the `mtp` libraries
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S libmtp gvfs-mtp
+----
+
+Now you should be able to see your phone inside either `thunar`, or `gigolo`.
+
+If you want to access the android's filesystem from the command line, you will need to either install `simple-mtpfs`
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ git clone https://aur.archlinux.org/simple-mtpfs.git
+[I] dustvoice@DustArch ~
+$ cd simple-mtpfs
+[I] dustvoice@DustArch ~/simple-mtpfs
+$ makepkg -si
+[I] dustvoice@DustArch ~/simple-mtpfs
+$ cd ..
+[I] dustvoice@DustArch ~
+$ rm -rf simple-mtpfs
+----
+
+edit `/etc/fuse.conf` to uncomment
+
+./etc/fuse.conf
+[source, text]
+----
+user_allow_other
+----
+
+and mount the android device
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ simple-mtpfs -l
+[I] dustvoice@DustArch ~
+$ mkdir ~/mnt
+[I] dustvoice@DustArch ~
+$ simple-mtpfs --device <number> ~/mnt -allow_other
+----
+
+and respectively unmount it
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ fusermount -u mnt
+[I] dustvoice@DustArch ~
+$ rmdir mnt
+----
+
+or you need to install `adb`
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S adb
+----
+
+And kill the `adb` server (if it is running)
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ adb kill-server
+----
+
+[NOTE]
+====
+If the server is currently not running, `adb` will output an error with a `Connection refused` message.
+====
+
+Now connect your phone and unlock it and start the `adb` server
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ adb start-server
+----
+
+If the pc is unknown to the android device, it will display a confirmation dialog. Accept it and ensure that the device was recognized
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ adb devices
+----
+
+Now you can ``push``/``pull`` files.
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ adb pull /storage/emulated/0/DCIM/Camera/IMG.jpg .
+[I] dustvoice@DustArch ~
+$ adb push IMG.jpg /storage/emulated/0/DCIM/Camera/IMG2.jpg
+[I] dustvoice@DustArch ~
+$ adb kill-server
+----
+
+[NOTE]
+====
+Of course you would need to have the _developer options_ unlocked as well as the _USB debugging_ option enabled within them for `adb` to even work.
+====
+
 ==== Archive manager
 
 As we now have a file manager, it might be annoying, to open up a terminal everytime you simply want to extract an archive of some sort.
