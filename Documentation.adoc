@@ -1,6 +1,6 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v4.2, 2019-12-28
+v4.3, 2019-12-28
 :toc: left
 :toc-title: Table Of Contents
 :toclevels: 4
@@ -612,7 +612,7 @@ We already set the correct shell for the `dustvoice` user in the <<create-a-pers
 
 [source, console]
 ----
-dustvoice@DustArch ~> chsh -s /usr/bin/fish root
+dustvoice@DustArch ~> sudo chsh -s /usr/bin/fish root
 ----
 
 Don't worry about the looks by the way, we're gonna change all that in just a second.
@@ -666,7 +666,7 @@ To minimize the effort required in the following steps, we'll install most of th
 
 [source, console]
 ----
-dustvoice@DustArch ~> pacman -S make cmake clang jdk-openjdk pyhton pyhton-pip pass openssh
+dustvoice@DustArch ~> sudo pacman -S make cmake clang jdk-openjdk python python-pip pass openssh
 ----
 
 [#setup-home]
@@ -743,7 +743,7 @@ $ echo 'let g:use_clang_format = 1' >> custom.vim
 [I] dustvoice@DustArch ~/.config/nvim
 $ echo 'let g:use_font = 0' >> custom.vim
 [I] dustvoice@DustArch ~/.config/nvim
-$ pip3 install neovim
+$ sudo pip3 install neovim
 [I] dustvoice@DustArch ~/.config/nvim
 $ nvim --headless +PlugInstall +qa
 [I] dustvoice@DustArch ~/.config/nvim
@@ -869,13 +869,7 @@ After that we can install `asciidoctor` and all its required gems.
 [I] dustvoice@DustArch ~
 $ sudo pacman -S ruby rubygems
 [I] dustvoice@DustArch ~
-$ gem install asciidoctor --pre
-[I] dustvoice@DustArch ~
-$ gem install asciidoctor-pdf --pre
-[I] dustvoice@DustArch ~
-$ gem install asciidoctor-epub3 --pre
-[I] dustvoice@DustArch ~
-$ gem install pygments.rb --pre
+$ gem install asciidoctor asciidoctor-pdf asciidoctor-epub3 asciidoctor-latex pygments.rb --pre
 ----
 
 Now the only thing left, in my case at least, is adding `~/.gem/ruby/2.6.0/bin` to your path.
@@ -1091,7 +1085,7 @@ To also play audio, we need to install some other packages too
 [source, console]
 ----
 [I] dustvoice@DustArch ~
-$ sudo pacman -S soc libao libmad libid3tag wavpack libpulse opus file twolame
+$ sudo pacman -S sox libao libmad libid3tag wavpack libpulse opus file twolame
 ----
 
 Now you can simply do
@@ -1108,7 +1102,7 @@ etc. to play audio.
 
 === Bluetooth
 
-To set up Bluetooth, we need to install the `bluez` and `bluez-util` packages in order to have at least a command line utility `bluetoothctl` to configure connections
+To set up Bluetooth, we need to install the `bluez` and `bluez-utils` packages in order to have at least a command line utility `bluetoothctl` to configure connections
 
 [source, console]
 ----
@@ -1124,7 +1118,7 @@ Now we need to check if the `btusb` kernel module was already loaded
 $ sudo lsmod | grep btusb
 ----
 
-After that we'll enable and start the `bluetooth.service` service
+After that we can enable and start the `bluetooth.service` service
 
 [source, console]
 ----
@@ -1548,7 +1542,17 @@ To also be able to `mount` removable drives, without being `root` or using `sudo
 [source, console]
 ----
 [I] dustvoice@DustArch ~
-$ sudo pacman -S gigolo gvfs
+$ sudo pacman -S gvfs
+[I] dustvoice@DustArch ~
+$ git clone https://aur.archlinux.org/gigolo.git
+[I] dustvoice@DustArch ~
+$ cd gigolo
+[I] dustvoice@DustArch ~/gigolo
+$ makepkg -si
+[I] dustvoice@DustArch ~/gigolo
+$ cd ..
+[I] dustvoice@DustArch ~
+$ rm -rf gigolo
 ----
 
 ===== Android file transfer
@@ -1775,12 +1779,12 @@ Now we still have to setup `browserpass`
 [source, console]
 ----
 [I] dustvoice@DustArch ~
-$ cd /usr/local/lib/browserpass
-[I] dustvoice@DustArch /usr/local/lib/browserpass
+$ cd /usr/lib/browserpass
+[I] dustvoice@DustArch /usr/lib/browserpass
 $ make hosts-brave-user
-[I] dustvoice@DustArch /usr/local/lib/browserpass
+[I] dustvoice@DustArch /usr/lib/browserpass
 $ make policies-brave-user
-[I] dustvoice@DustArch /usr/local/lib/browserpass
+[I] dustvoice@DustArch /usr/lib/browserpass
 $ cd ~
 ----
 
@@ -1805,6 +1809,11 @@ $ cd ..
 $ rm -rf tor-browser
 ----
 
+[NOTE]
+====
+You might have to check out how to import the `gpg` keys on the `AUR` page of `tor-browser`.
+====
+
 ==== Office utilities
 
 For now we'll install `libreoffice-fresh`
@@ -1826,16 +1835,6 @@ In order to be able to print from the `gtk` print dialog, we'll also need to ins
 $ sudo pacman -S avahi
 [I] dustvoice@DustArch ~
 $ sudo pacman -S cups cups-pdf nss-mdns
-[I] dustvoice@DustArch ~
-$ git clone https://aur.archlinux.org/brother-mfc-j497dw.git
-[I] dustvoice@DustArch ~
-$ cd brother-mfc-j497dw
-[I] dustvoice@DustArch ~/brother-mfc-j497dw
-$ makepkg -si
-[I] dustvoice@DustArch ~/brother-mfc-j497dw
-$ cd ..
-[I] dustvoice@DustArch ~
-$ rm -rf brother-mfc-j497dw
 [I] dustvoice@DustArch ~
 $ sudo systemctl enable avahi-daemon.service
 [I] dustvoice@DustArch ~
