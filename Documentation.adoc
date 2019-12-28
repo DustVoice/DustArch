@@ -1,6 +1,6 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v3.2, 2019-12-19
+v4.2, 2019-12-28
 :toc: left
 :toc-title: Table Of Contents
 :toclevels: 4
@@ -13,21 +13,16 @@ v3.2, 2019-12-19
 
 == Inside the `archiso`
 
-This section is aimed at providing help with the general installation of the customized archlinux from within official archlinux image.
+This section is aimed at providing help with the general installation of the customized Arch Linux from within official Arch Linux image.
 
-=== Updating the system
+=== ``Sy``nc up `pacman`
 
-First of we need to sync pacman up
+First of all we need to sync up `pacman` in order to be able to install packages
 
 [source, console]
 ----
 root@archiso ~ # pacman -Sy
 ----
-
-[NOTE]
-====
-After that, you will now be able to install packages with pacman.
-====
 
 === Formatting the drive
 
@@ -43,18 +38,18 @@ root@archiso ~ # fdisk -l
 The output of `fdisk -l` is dependent on your system configuration.
 ====
 
-In my case, the partition I want to install the root filesystem on is `/dev/sdb2`.
-`/dev/sdb3` will be my swap partition.
+In my case, the partition I want to install the root file system on is `/dev/sdb2`.
+`/dev/sdb3` will be my `swap` partition.
 
 [NOTE]
 ====
-A swap size twice the size of your RAM is recommended by a lot of people.
-You should make the swap size *at least your RAM size* though.
+A `swap` size *twice the size of your RAM* is recommended by a lot of people.
+You should make the `swap` size *at least your RAM size* though.
 ====
 
 [IMPORTANT]
 ====
-If you haven't yet partitioned your disk, please refer to a general partitioning tutorial in the arch-wiki.
+If you haven't yet partitioned your disk, please refer to the link:https://wiki.archlinux.org/index.php/Partitioning[general partitioning tutorial] in the arch-wiki.
 ====
 
 Now we need to format the partitions accordingly
@@ -65,7 +60,7 @@ root@archiso ~ # mkfs.ext4 /dev/sdb2
 root@archiso ~ # mkswap /dev/sdb3
 ----
 
-After doing that, we can enable the swap and mount the root partition.
+After doing that, we can turn on the `swap` and `mount` the root partition.
 
 [source, console]
 ----
@@ -75,7 +70,7 @@ root@archiso ~ # mount /dev/sdb2 /mnt
 
 [NOTE]
 ====
-If you have an additional *EFI system partition*, because of a _UEFI - GPT_ setup or e.g. an existing Windows installation, which we will assume to be located under `/dev/sda2` (`/dev/sda` is the disk of my Windows install), you'll have to mount this partition to the new systems `/boot` folder
+If you have an additional `EFI system partition`, because of a _UEFI - GPT_ setup or e.g. an existing Windows installation, which we will assume to be located under `/dev/sda2` (`/dev/sda` is the disk of my Windows install), you'll have to `mount` this partition to the new systems `/boot` folder
 
 [source, console]
 ----
@@ -88,21 +83,21 @@ root@archiso ~ # mount /dev/sda2 /mnt/boot
 
 First it might make sense to edit `/etc/pacman.d/mirrorlist` to move the mirror(s) geographically closest to you to the top.
 
-After that we can either install the bare minimum packages needed
+After that we can either install the *bare minimum packages* needed
 
 [source, console]
 ----
 root@archiso ~ # pacstrap /mnt base linux linux-firmware
 ----
 
-or install all packages present on the archiso, which makes sense in our case
+or install *all packages present* on the archiso, which makes sense in our case
 
 [source, console]
 ----
 root@archiso ~ # pacstrap /mnt base base-devel linux linux-firmware $(pacman -Qq | tr '\n' ' ')
 ----
 
-This could take quite some time depending on your internet connection speed.
+_This could take quite some time depending on your Internet connection speed._
 
 After that generate a `fstab` using `genfstab`
 
@@ -111,18 +106,18 @@ After that generate a `fstab` using `genfstab`
 root@archiso ~ # genfstab -U /mnt >> /mnt/etc/fstab
 ----
 
-and you're ready to go entering the chroot environment.
+and you're ready to enter the `chroot` environment.
 
-=== Entering the `chroot`
+== Entering the `chroot`
 
 [source, console]
 ----
 root@archiso ~ # arch-chroot /mnt
 ----
 
-Et voila, you're inside the new os, greeted by a bash prompt.
+Et Voila! You successfully ``chroot``ed inside your new system, greeted by a `bash` prompt.
 
-==== Installing additional packages
+=== Installing additional packages
 
 First off you'll probably need an editor.
 I'll use `neovim`
@@ -132,7 +127,7 @@ I'll use `neovim`
 [root@archiso /]# pacman -S neovim
 ----
 
-After that we'll make sure we get ourselves some basic utilities and enable the `NetworkManager.service` service, in order for the internet connection to work upon booting in our fresh system later.
+After that we'll make sure we get ourselves some basic utilities and enable the `NetworkManager.service` service, in order for the Internet connection to work upon booting into our fresh system later on.
 
 [source, console]
 ----
@@ -166,52 +161,13 @@ If you use `UEFI`, you'll also need
 [root@archiso /]# pacman -S efibootmgr
 ----
 
-==== Changing the keyboard layout
-
-The next thing you probably wanna do, at least if you're me, is to change the keyboard layout.
-In my case I'll adapt the standard `us` layout, so the `Caps_Lock` key will be mapped to `Escape`.
-
-`Neovim` saves me from a ton of headaches, by providing the functionality to edit `gzip` files directly.
-
-In my case I'll copy the `us` and `us-acentos` to `custom-us` and `custom-us-acentos` respectively
-
-[source, console]
-----
-[root@archiso /]# cp /usr/share/kbd/keymaps/i386/qwerty/us.map.gz /usr/share/kbd/keymaps/i386/qwerty/custom-us.map.gz
-[root@archiso /]# cp /usr/share/kbd/keymaps/i386/qwerty/us-acentos.map.gz /usr/share/kbd/keymaps/i386/qwerty/custom-us-acentos.map.gz
-----
-
-and change the line
-
-./usr/share/kbd/keymaps/i386/qwerty/custom-us.map.gz
-[source, text]
-----
-keycode 58 = Caps_Lock
-----
-
-to
-
-./usr/share/kbd/keymaps/i386/qwerty/custom-us.map.gz
-[source, text]
-----
-keycode 58 = Escape
-----
-
-in both created files.
-
-Now you are able to load the keymap and set it as the default one to use respectively
-
-[source, console]
-----
-root@archiso ~ # loadkeys custom-us
-root@archiso ~ # localectl set-keymap custom-us
-----
-
-==== Master of time
+=== Master of time
 
 After that you have to set your timezone and update the system clock.
+
 Generally speaking, you can find all the different timezones under `/usr/share/zoneinfo`.
-For me it is `/usr/share/zoneinfo/Europe/Berlin` and I had to issue
+For me it is `/usr/share/zoneinfo/Europe/Berlin`.
+Now I would have to issue
 
 [source, console]
 ----
@@ -228,29 +184,23 @@ Now you can also enable time synchronization over network and check that everyth
 [root@archiso /]# timedatectl status
 ----
 
-==== Master of locales
+=== Master of locales
 
-After that you have to generate your locale information.
-For that you have to edit `/etc/locale.gen` and uncomment the locale lines you want to enable.
+Now you have to generate your locale information.
+
+For that you have to edit `/etc/locale.gen` and uncomment the `locale` lines you want to enable.
+
+[NOTE]
+====
 I recommend to always uncomment `en_US.UTF-8 UTF8` for development purposes, even if you want to use another language primarily.
-In my case I uncommented
+====
+
+In my case I only uncommented the `en_US.UTF-8 UTF8` line
 
 ./etc/locale.gen
 [source, text]
 ----
-[...]
-#en_US.UTF-8 UTF8
-[...]
-----
-
-which then became
-
-./etc/locale.gen
-[source, text]
-----
-[...]
 en_US.UTF-8 UTF8
-[...]
 ----
 
 After that you still have to actually generate the locales by issuing
@@ -269,20 +219,13 @@ and set the locale
 
 and we're done with this part.
 
-==== Naming your machine
+=== Naming your machine
 
 Now we can set the `hostname` and add `hosts` entries.
 
-===== `hostname`
+==== `hostname`
 
 To change the `hostname`, simply edit `/etc/hostname`, enter the desired name, then save and quit.
-
-[source, console]
-----
-[root@archiso /]# nvim /etc/hostname
-----
-
-which in my case then cointains
 
 ./etc/hostname
 [source, text]
@@ -290,25 +233,9 @@ which in my case then cointains
 DustArch
 ----
 
-===== `hosts`
+==== `hosts`
 
 Now we need to specify some `hosts` entries by editing `/etc/hosts`
-
-[source, console]
-----
-[root@archiso /]# nvim /etc/hosts
-----
-
-And originall looked like this
-
-./etc/hosts
-[source, text]
-----
-# Static table lookup for hostnames.
-# See hosts(5) for details.
-----
-
-and now looks like this
 
 ./etc/hosts
 [source, text]
@@ -321,61 +248,51 @@ and now looks like this
 127.0.1.1   DustArch.localhost  DustArch
 ----
 
-==== User setup
+[source, console]
+----
+[root@archiso /]# exit
+root@archiso ~ # arch-chroot /mnt
+----
 
-Now you should probably change the default root password and create a new user for yourself, as using your new system purley through the native root user is not recommended from a security standpoint.
+=== User setup
 
-===== Give `root` a password
+Now you should probably change the default `root` password and create a new non-``root`` user for yourself, as using your new system purely through the native `root` user is not recommended from a security standpoint.
 
-To change the password for the current user (the root user) do
+==== Give `root` a password
+
+To change the password for the current user (the `root` user) do
 
 [source, console]
 ----
-[root@archiso /]# passwd
+[root@DustArch /]# passwd
 ----
 
 and choose a new password.
 
-[#creating-my-personal-user]
-===== Creating my personal user
+[#create-a-personal-user]
+==== Create a personal user
 
-We are going to make sure the `fish` shell is installed, create a new user, set the password for this user, make sure the `sudo` package is installed and allow the `wheel` group sudo access.
-
-[source, console]
-----
-[root@archiso /]# pacman -S fish
-[root@archiso /]# useradd -m -p "" -G "adm,audio,floppy,kvm,log,lp,network,rfkill,scanner,storage,users,optical,power,wheel" -s /usr/bin/fish dustvoice
-[root@archiso /]# passwd dustvoice
-[root@archiso /]# pacman -S sudo
-----
-
-We now have to allow the `wheel` group sudo access.
-For that we edit
+We are going to make sure the `fish` shell is installed, create a new user, set the password for this user, make sure the `sudo` package is installed and allow the `wheel` group `sudo` access.
 
 [source, console]
 ----
-[root@archiso /]# sudo nvim /etc/sudoers
+[root@DustArch /]# pacman -S fish
+[root@DustArch /]# useradd -m -p "" -G "adm,audio,floppy,kvm,log,lp,network,rfkill,scanner,storage,users,optical,power,wheel" -s /usr/bin/fish dustvoice
+[root@DustArch /]# passwd dustvoice
+[root@DustArch /]# pacman -S sudo
 ----
 
-and uncomment the following line
+We now have to allow the `wheel` group `sudo` access.
+
+For that we edit `/etc/sudoers` and uncomment the `%wheel` line
 
 ./etc/sudoers
 [source, text]
 ----
-## Uncomment to allow members of group wheel to execute any command
-# %wheel ALL=(ALL) ALL
-----
-
-so that it becomes the following
-
-./etc/sudoers
-[source, text]
-----
-## Uncomment to allow members of group wheel to execute any command
 %wheel ALL=(ALL) ALL
 ----
 
-You could also add a new line below
+You could also add a new line below the `root` line
 
 ./etc/sudoers
 [source, text]
@@ -391,7 +308,7 @@ with your new username
 dustvoice ALL=(ALL) ALL
 ----
 
-to solely grant yourself sudo privileges.
+to solely grant yourself `sudo` privileges.
 
 === Preparing to boot
 
@@ -402,48 +319,51 @@ First make sure, all the required packages are installed
 
 [source, console]
 ----
-[root@archiso /]# pacman -S grub dosfstools os-prober mtools
+[root@DustArch /]# pacman -S grub dosfstools os-prober mtools
 ----
 
 and if you want to use `UEFI`, also
 
 [source, console]
 ----
-[root@archiso /]# pacman -S efibootmgr
+[root@DustArch /]# pacman -S efibootmgr
 ----
 
 ==== `BIOS`
 
-If you chose the `BIOS - MBR` variation, have to do nothing special
+If you chose the `BIOS - MBR` variation, you'll have to *do nothing special*
 
-If you chose the `BIOS - GPT` variation, you'll have to have a `+1M` boot partition created with the partition type set to `BIOS boot` for `fdisk`.
+If you chose the `BIOS - GPT` variation, you'll have to *have a `+1M` boot partition* created with the partition type set to `BIOS boot`.
 
-In both cases you now have to run the following command
+In both cases you'll have to *run the following comman* now
 
 [source, console]
 ----
-[root@archiso /]# grub-install --target=i386-pc /dev/sdb
+[root@DustArch /]# grub-install --target=i386-pc /dev/sdb
 ----
 
 [NOTE]
 ====
-It is obvious, you have to replace `/dev/sda` with the disk you want to use.
+It should obvious that you would need to replace `/dev/sdb` with the disk you actually want to use.
 Note however that you have to specify a *disk* and *not a partition*, so *no number*.
 ====
 
 ==== `UEFI`
 
-If you chose the `UEFI - GPT` variation, you'll have to have the `EFI System Partition` mounted (where `/dev/sda2` is the partition holding said `EFI System Partition` in my particular setup) and execute the following command
+If you chose the `UEFI - GPT` variation, you'll have to *have the `EFI System Partition` mounted* at `/boot` (where `/dev/sda2` is the partition holding said `EFI System Partition` in my particular setup)
+
+Now *install `grub` to the `EFI System Partition`*
 
 [source, console]
 ----
-[root@archiso /]# grub_install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
+[root@DustArch /]# grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
 ----
 
 [IMPORTANT]
 ====
 If you've planned on dual booting arch with Windows and therefore reused the `EFI System Partition` created by Windows, you might not be able to boot to grub just yet.
-In this case, boot into Windows, open a `cmd` window as administrator and type in
+
+In this case, boot into Windows, open a `cmd` window as Administrator and type in
 
 [source, console]
 ----
@@ -454,21 +374,131 @@ To make sure that the path is correct, you can just
 
 [source, console]
 ----
-[root@archiso /]# ls /boot/EFI/grub
+[root@DustArch /]# ls /boot/EFI/grub
 ----
 
 to make sure, that the `grubx64.efi` file is really there.
-
-Now you should be good to go.
 ====
 
 ==== `grub` config
 
-In all cases, you now have to create the main configuration file
+In all cases, you now have to create the main configuration file.
+
+But before we actually generate it, we'll make some changes to the default `grub` settings.
+
+===== Adjust the timeout
+
+First of all, I want my `grub` menu to wait indefinitely for my command to boot a OS.
+
+./etc/default/grub
+[source, text]
+----
+GRUB_TIMEOUT=-1
+----
+
+[NOTE]
+====
+I decided on this, because I'm dual booting with Windows and after Windows updates itself, I don't want to accidentally boot into my Arch Linux, just because I wasn't quick enough to select it from the `grub` menu.
+
+Of course you can set this parameter to whatever you want.
+====
+
+Another way of achieving what I described previously, would be to make `grub` remember the last selection.
+For that we would have to adjust the file accordingly
+
+./etc/default/grub
+[source, text]
+----
+GRUB_DEFAULT=saved
+GRUB_SAVEDEFAULT="true"
+----
+
+===== Enable the recovery
+
+After that I also want the recovery option showing up, which means that besides the standard and fallback images, also the recovery one would show up.
+
+./etc/default/grub
+[source, text]
+----
+GRUB_DISABLE_RECOVERY=false
+----
+
+===== NVIDIA fix
+
+Now, as I'm using the binary nvidia driver for my graphics card, I also want to make sure, to revert `grub` back to text mode, after I selected a boot entry.
+
+./etc/default/grub
+[source, text]
+----
+GRUB_GFXPAYLOAD_LINUX=text
+----
+
+===== Add power options
+
+I also want to add 2 new menu entries, to enable me to shut down the PC, or reboot it, right from the `grub` menu.
+
+./etc/grub.d/40-custom
+[source, text]
+----
+menuentry '=> Shutdown' {
+    halt
+}
+
+menuentry '=> Reboot' {
+    reboot
+}
+----
+
+===== Installing `memtest`
+
+As I want all possible options to possibly troubleshoot my PC, without booting into a live image, right there in my `grub` menu, I also want to have a memory tester there.
+
+====== `BIOS`
+
+For a `BIOS` setup, you'll need `memtest86+`
 
 [source, console]
 ----
-[root@archiso /]# grub-mkconfig -o /boot/grub/grub.cfg
+[root@DustArch /]# pacman -S memtest86+
+----
+
+====== `UEFI`
+
+For a `UEFI` setup, you'll need `memtest86-efi`.
+
+[WARNING]
+====
+In order to install that `AUR` package, you'll need to switch to your normal user, because `makepkg` doesn't run as root.
+====
+
+[source, console]
+----
+[root@DustArch /]# pacman -S base-devel
+[root@DustArch /]# sudo -iu dustvoice
+[dustvoice@DustArch ~]$ git clone https://aur.archlinux.org/memtest86-efi
+[dustvoice@DustArch ~]$ cd memtest86-efi
+[dustvoice@DustArch ~/memtest86-efi]$ makepkg -si
+[dustvoice@DustArch ~/memtest86-efi]$ cd ..
+[dustvoice@DustArch ~]$ rm -rf memtest86-efi
+[dustvoice@DustArch ~]$ exit
+----
+
+Now we still need to tell `memtest86-efi` how to install itself.
+
+[source, console]
+----
+[root@DustArch /]# memtest86-efi -i
+----
+
+Now select option 3, to install it as a `grub2` menu item.
+
+===== Generating the config
+
+Now we can finally generate our `grub.cfg`
+
+[source, console]
+----
+[root@DustArch /]# grub-mkconfig -o /boot/grub/grub.cfg
 ----
 
 Now you're good to boot into your new system
@@ -485,7 +515,8 @@ dustvoice@DustArch ~> ip link
 ----
 
 This outputs the interface status report.
-To make sure that you really have a working _internet_ connection, issue
+
+To make sure that you really have a working _Internet_ connection, issue
 
 [source, console]
 ----
@@ -502,16 +533,28 @@ dustvoice@DustArch ~> sudo systemctl restart NetworkManager.service
 
 and then try `ping` again.
 
-If you're indeed trying to utilize a WiFi connection, use `nmcli`, the `NetworkManager` command line tool, or `nmtui`, the `NetworkManager` terminal ui, to connect to a WiFi network.
+If you're indeed trying to utilize a Wi-Fi connection, use `nmcli`, the `NetworkManager` command line tool, or `nmtui`, the `NetworkManager` terminal user interface, to connect to a Wi-Fi network.
 
-First make sure, that our WiFi `radio` is up and running
+[NOTE]
+====
+I never got `nmtui` to behave like I wanted it to, in my particular case at least, which is the reason why I use `nmcli` or the GUI tools.
+====
+
+First make sure, the scanning of nearby Wi-Fi networks is enabled for your Wi-Fi device
 
 [source, console]
 ----
-dustvoice@DustArch ~> nmcli radio
+dustvoice@DustArch ~> nmcli r
 ----
 
-Now make sure your WiFi interface appears under
+and if not, enable it
+
+[source, console]
+----
+dustvoice@DustArch ~> nmcli r wifi on
+----
+
+Now make sure your Wi-Fi interface appears under
 
 [source, console]
 ----
@@ -536,27 +579,36 @@ After that connect to the network
 
 [source, console]
 ----
-dustvoice@DustArch ~> nmcli --ask d wifi connect <SSID> password wireless-password
+dustvoice@DustArch ~> nmcli d wifi connect --ask
 ----
 
 Now try ``ping``ing again.
 
-
-
 === Update and upgrade
 
-After making sure that you have established an internet connection, you can then proceed to update and upgrade all installed packages by issuing
+After making sure that you have established an Internet connection, you can then proceed to update and upgrade all installed packages by issuing
 
 [source, console]
 ----
 dustvoice@DustArch ~> sudo pacman -Syu
 ----
 
+=== Enabling the `multilib` repository
+
+In order to make 32-bit packages available to `pacman`, we'll need to enable the `multilib` entry in `/etc/pacman.conf` first. Simply uncomment
+
+./etc/pacman.conf
+[source, text]
+----
+[multilib]
+Include = /etc/pacman.d/mirrorlist
+----
+
 === Setting the correct shell
 
 I'll be using the `fish` shell.
 
-We already set the correct shell for the `dustvoice` user in the <<creating-my-personal-user>> step, but I want to use `fish` for the `root` user too, so I'll have to change ``root``'s default shell to it.
+We already set the correct shell for the `dustvoice` user in the <<create-a-personal-user>> step, but I want to use `fish` for the `root` user too, so I'll have to change ``root``'s default shell to it.
 
 [source, console]
 ----
@@ -580,7 +632,7 @@ We'll care about the `.gitconfig` in just a second.
 
 === Security is important
 
-If you've followed the tutorial using a recent version of arch linux, you'll probably already have the most recent version of `gnupg` installed by default.
+If you've followed the tutorial using a recent version of Arch Linux, you'll probably already have the most recent version of `gnupg` installed by default.
 Just to make sure, issue
 
 [source, console]
@@ -607,10 +659,10 @@ dustvoice@DustArch ~> sudo systemctl enable pcscd.service
 dustvoice@DustArch ~> sudo systemctl start pcscd.service
 ----
 
-Note however that your mileage may vary.
-
 [#additional-tools-setup-home]
 === Additional required tools
+
+To minimize the effort required in the following steps, we'll install most of the required tools now
 
 [source, console]
 ----
@@ -624,15 +676,17 @@ In this step we're going to setup a home environment for both the `root` and my 
 
 [NOTE]
 ====
-In my case these 2 home environments are mostly equivalent, which is why I'll execute the follwing commands as the `dustvoice` user first and then `su` into the `root` user and repeat the same commands.
+In my case these 2 home environments are mostly equivalent, which is why I'll execute the following commands as the `dustvoice` user first and then switch to the `root` user and repeat the same commands.
 ====
 
 [NOTE]
 ====
-In my case, I want to access all my git repositories with my `gpg` key on my smartcard.
+In my case, I want to access all my `git` repositories with my `gpg` key on my smartcard.
 For that I have to configure the `gpg-agent` though.
 So I will have to reside to first use the `https` url and later change the url in the corresponding `.git/config` file.
 ====
+
+==== Use `dotfiles` for a base config
 
 [source, console]
 ----
@@ -642,6 +696,8 @@ dustvoice@DustArch ~> git fetch
 dustvoice@DustArch ~> git reset origin/master --hard
 dustvoice@DustArch ~> git branch --set-upstream-to=origin/master master
 ----
+
+==== Set up `gpg`
 
 Before we'll be able to update the ``submodule``s (`nvim` config files and ``pass``word-store), we will have to setup our `gpg` key as a `ssh` key
 
@@ -665,8 +721,10 @@ $ exit
 
 [NOTE]
 ====
-You would have to adapt the keygrip present in the sshcontrol file to your keygrip, retrieved with `gpg -K --with-keygrip`.
+You would have to adapt the `keygrip` present in the `~/.gnupg/sshcontrol` file to your specific `keygrip`, retrieved with `gpg -K --with-keygrip`.
 ====
+
+==== Finalize the `dotfiles`
 
 Now log back in and continue
 
@@ -696,6 +754,51 @@ $ python3 install.py --clang-completer --java-completer
 $ cd ~
 ----
 
+==== `gpg-agent` forwarding
+
+Now there is only one thing left to do, in order to make the `gpg` setup complete: `gpg-agent` forwarding over ssh.
+This is very important for me, as I want to use my smartcard on my development server too, which requires me, to forward/tunnel my `gpg-agent` to my remote machine.
+
+First of all, I want to setup a config file for `ssh`, as I don't want to pass all parameters manually to ssh every time.
+
+.~/.ssh/config
+[source, text]
+----
+Host <connection name>
+    HostName <remote address>
+    ForwardAgent yes
+    ForwardX11 yes
+    RemoteForward <remote agent-socket> <local agent-extra-socket>
+    RemoteForward <remote agent-ssh-socket> <local agent-ssh-socket>
+----
+
+[NOTE]
+====
+You would of course, need to adapt the content in between the `<` and `>` brackets.
+
+To get the paths needed as parameters for `RemoteForward`, issue
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ !gpgconf --list-dirs
+----
+====
+
+Now you'll still need to enable some settings on the remote machine.
+
+./etc/ssh/sshd_config
+[source, text]
+----
+StreamLocalBindUnlink yes
+AllowAgentForwarding yes
+X11Forwarding yes
+----
+
+Now just restart your remote machine and you're ready to go.
+
+==== `JUCE` and `FRUT`
+
 Your personal environment will be complete, after getting `JUCE` and `FRUT`
 
 [source, console]
@@ -712,34 +815,54 @@ $ cd ..
 $ git clone https://github.com/McMartin/FRUT.git
 ----
 
-[NOTE]
+==== Back to your ``root``s
+
+As mentioned before, you would now switch to the `root` user, either by logging in as `root`, or by using
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo -iu root
+----
+
+Now go back to <<setup-home>> to repeat all commands for the `root` user.
+
+[WARNING]
 ====
-As mentioned before, you would now switch to the `root` user, either by logging in as root, or ``su``ing, and go back to <<setup-home>> to repeat all commands for the root user.
+A native login would be better compared to `sudo -iu root`, as there could be some complications, like already running `gpg-agent` instances, etc., which you would need to manually resolve, when using `sudo -iu root`.
 ====
 
 === Password management
 
 I'm using `pass` as my password manager.
-We already installed it in the <<additional-tools-setup-home>> step.
+As we already installed it in the <<additional-tools-setup-home>> step and updated the `submodule` that holds our `.password-store`, there is nothing left to do in this step
 
 === `python`
 
 Python has become really important for a magnitude of use cases.
-We need `python3` in particular as well as the `pip` for it.
-For `asciidoctor` _(will be installed in just a second)_ we also need to install the `pygments` package.
+We need `python3` in particular as well as `pip` for it.
 
 [source, console]
 ----
 [I] dustvoice@DustArch ~
 $ sudo pacman -S python python-pip
+----
+
+[NOTE]
+====
+For `asciidoctor`, which will be installed in just a second, we also need to install the `pygments` module
+
+[source, console]
+----
 [I] dustvoice@DustArch ~
 $ sudo pip3 install pygments
 ----
+====
 
 === `ruby` & `asciidoctor`
 
 In order to use `asciidoctor`, we have to install `ruby` and `rubygems`.
-After that we can install `asciidoctor` and all it's required gems.
+After that we can install `asciidoctor` and all its required gems.
 
 [source, console]
 ----
@@ -755,7 +878,13 @@ $ gem install asciidoctor-epub3 --pre
 $ gem install pygments.rb --pre
 ----
 
-Now the only thing left (in my case) is adding `~/.gem/ruby/2.6.0/bin` to your path.
+Now the only thing left, in my case at least, is adding `~/.gem/ruby/2.6.0/bin` to your path.
+
+[NOTE]
+====
+Please note that if you run a ruby version different from `2.6.0`, you have to use the `bin` path for that version.
+====
+
 For `fish` you'll want to run the following command
 
 [source, console]
@@ -767,8 +896,6 @@ $ set -U fish_user_paths $fish_user_paths ~/.gem/ruby/2.6.0/bin
 [NOTE]
 ====
 If you use another shell than `fish`, you might have to do something different to add a directory to your `PATH`.
-
-Also please note that if you run a ruby version different from `2.6.0`, you have to use the `bin` path for that version.
 ====
 
 === Using `JUCE`
@@ -795,8 +922,8 @@ Here are just some examples of development tools one could install in addition t
 
 ==== Code formatting
 
-We already have `clang-format` as a code formatter, but this only works for `C` languages.
-For the `java` part, we can use `astyle`.
+We already have `clang-format` as a code formatter, but this only works for ``C``-family languages.
+For `java` stuff, we can use `astyle`
 
 [source, console]
 ----
@@ -843,15 +970,17 @@ UUID="DC88-5A4E"                                /mnt/projects   exfat           
 UUID=7A16569B51903310                           /mnt/data       ntfs            ro,nosuid,nodev,noauto  0 0
 ----
 
-The first entry should be pretty straight forward.
+The
+
+. entry should be pretty straight forward.
 It's my root partition of my `DustArch` install.
 
-The second entry is quite important too.
-It's my `EFI System Partition`, which get's mounted at boot time, in order to prevent kernel orphaning, which means, that the kernel version installed on the system doesn't match the one on the `boot` partition.
+. entry is quite important too.
+It's my `EFI System Partition`, which gets mounted at boot time, in order to prevent kernel orphaning, which means, that the kernel version installed on the system doesn't match the one on the `boot` partition.
 
-The third entry is my shared `exFat` partition, which we are allowed to write to.
+. entry is my shared `exFat` partition, which we are allowed to write to.
 
-The fourth entry is important, because of the options.
+. entry is important, because of the options.
 These options prevent me from modifying files on that `NTFS` partition.
 
 === Audio
@@ -860,7 +989,12 @@ Well, why wouldn't you want audio...
 
 ==== `alsa`
 
-To quickly setup audio, install `alsa` and `alsa-utils`
+[NOTE]
+====
+You're probably better off using `pulseaudio` and/or `jack`.
+====
+
+To quickly setup audio this way, install `alsa` and `alsa-utils`
 
 [source, console]
 ----
@@ -868,7 +1002,7 @@ To quickly setup audio, install `alsa` and `alsa-utils`
 $ sudo pacman -S alsa alsa-utils
 ----
 
-Now choose the soundcard you want to use
+Now choose the sound card you want to use
 
 [source, console]
 ----
@@ -887,32 +1021,22 @@ defaults.ctl.card 2
 
 [NOTE]
 ====
-It should be apparent, that you would have to switch out `2` witht the number corresponding to the soundcard you want to use.
+It should be apparent, that you would have to switch out `2` with the number corresponding to the sound card you want to use.
 ====
 
 ==== `pulseaudio`
 
-Some applications require `pulseaudio` or work better with it (for example `discord`), so it might make sense to use `pulseaudio`
+Some applications require `pulseaudio`, or work better with it, for example `discord`, so it might make sense to use `pulseaudio`
 
 [source, console]
 ----
 [I] dustvoice@DustArch ~
-$ sudo pacman -S pulseaudio pulsemixer
+$ sudo pacman -S pulseaudio pulsemixer pavucontrol
 ----
 
-For enabling realtime priority for `pulseaudio` on arch, please make sure your user is part of the `audio` group and edit the file `/etc/pulse/daemon.conf` so that you uncomment the lines
+For enabling real-time priority for `pulseaudio` on Arch Linux, please make sure your user is part of the `audio` group and edit the file `/etc/pulse/daemon.conf`, so that you uncomment the lines
 
-[source, text]
-----
-; high-priority = yes
-; nice-level = -11
-
-; realtime-scheduling = yes
-; realtime-priority = 5
-----
-
-to
-
+./etc/pulse/daemon.conf
 [source, text]
 ----
 high-priority = yes
@@ -922,21 +1046,15 @@ realtime-scheduling = yes
 realtime-priority = 5
 ----
 
-If your system can handle the load, you can also increase the remixing quality, by changing
+If your system can handle the load, you can also increase the remixing quality, by changing the `resample-method`
 
-[source, text]
-----
-; resample-method = speex-float-1
-----
-
-to
-
+./etc/pulse/daemon.conf
 [source, text]
 ----
 resample-method = speex-float-10
 ----
 
-Of course a restart of the `pulseaudio` daemon is mandatory.
+Of course a restart of the `pulseaudio` daemon is necessary to reflect the changes you just made
 
 [source, console]
 ----
@@ -946,9 +1064,29 @@ $ pulseaudio --kill
 $ pulseaudio --start
 ----
 
+==== `jack`
+
+If you either want to manually control audio routing, or if you use some kind of audio application like `ardour`, you'll probably want to use `jack`.
+
+To install `jack` and a GUI to configure it, just do
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S jack2 cadence
+----
+
+If you also want to use `pulseaudio` applications, that don't have native support for `jack`, you'll need to install `pulseaudio-jack`
+
+[source, console]
+----
+[I] dustvoice@DustArch ~
+$ sudo pacman -S pulseaudio-jack
+----
+
 ==== Audio handling
 
-To also play audio, for example we need to install some other packages too
+To also play audio, we need to install some other packages too
 
 [source, console]
 ----
@@ -970,7 +1108,7 @@ etc. to play audio.
 
 === Bluetooth
 
-To set up bluetooth, we need to install the `bluez` and `bluez-util` packages in order to have at least a command line utility `bluetoothctl` to configure connections
+To set up Bluetooth, we need to install the `bluez` and `bluez-util` packages in order to have at least a command line utility `bluetoothctl` to configure connections
 
 [source, console]
 ----
@@ -998,7 +1136,7 @@ $ sudo systemctl start bluetooth.service
 
 [NOTE]
 ====
-To use `bluetoothctl` and get access to the bluetooth device of your pc, your user needs to be a member of the `lp` group.
+To use `bluetoothctl` and get access to the Bluetooth device of your PC, your user needs to be a member of the `lp` group.
 ====
 
 Now simply enter `bluetoothctl`
@@ -1009,7 +1147,7 @@ Now simply enter `bluetoothctl`
 $ bluetoothctl
 ----
 
-In most cases your bluetooth interface will be pre-selected and defaulted, but in some cases, you might need to first select the bluetooth controller
+In most cases your Bluetooth interface will be preselected and defaulted, but in some cases, you might need to first select the Bluetooth controller
 
 [source, console]
 ----
@@ -1040,7 +1178,7 @@ and list found devices
 
 [NOTE]
 ====
-You can turn device discovery mode off again, after your desired device has already be found
+You can turn device discovery mode off again, after your desired device has been found
 
 [source, console]
 ----
@@ -1048,7 +1186,7 @@ You can turn device discovery mode off again, after your desired device has alre
 ----
 ====
 
-Now turn the agent on
+Now turn on the agent
 
 [source, console]
 ----
@@ -1081,9 +1219,9 @@ Finally connect to your device
 
 [NOTE]
 ====
-If your device is an audio device, of some kind you might have to install `pulseaudio-bluetooth` and append 2 lines to `/etc/pulse/system.pa` as well as restart the `pulseaudio` daemon.
+If your device is an audio device, of some kind you might have to install `pulseaudio-bluetooth` and append 2 lines to `/etc/pulse/system.pa` as well.
 
-So first the install
+So first install `pulseaudio-bluetooth`
 
 [source, console]
 ----
@@ -1091,7 +1229,7 @@ So first the install
 $ sudo pacman -S pulseaudio-bluetooth
 ----
 
-now append the following 2 lines
+append the following 2 lines
 
 ./etc/pulse/system.pa
 [source, text]
@@ -1110,7 +1248,6 @@ $ pulseaudo --kill
 $ pulseaudo --start
 ----
 
-to `/etc/pulse/system.pa`.
 ====
 
 If you want a GUI to do all of this, just install `blueman` and launch `blueman-manager`
@@ -1119,8 +1256,6 @@ If you want a GUI to do all of this, just install `blueman` and launch `blueman-
 ----
 [I] dustvoice@DustArch ~
 $ sudo pacman -S blueman
-[I] dustvoice@DustArch ~
-$ blueman-manager &
 ----
 
 === Graphical desktop environment
@@ -1135,7 +1270,7 @@ $ sudo pacman -S xorg xorg-xinit xorg-drivers i3 i3status rofi ttf-hack xfce4-te
 
 ==== NVIDIA
 
-If you also want to use NVIDIA functionality, for example for `davinci-resolve`, you would need to install their proprietary driver
+If you also want to use NVIDIA functionality, for example for `davinci-resolve`, you'll most likely need to install their proprietary driver
 
 [source, console]
 ----
@@ -1150,7 +1285,7 @@ You would have to reboot sooner or later after installing the NVIDIA drivers.
 Also to get the best performance, at least for something like screen capturing in `obs`, go to *X Server Display Configuration* inside `nvidia-settings`, switch to *Advanced* and enable *Force Composition Pipeline*, as well as *Force Full Composition Pipeline*.
 ====
 
-==== Launching the grahpical environment
+==== Launching the graphical environment
 
 After that you can now do `startx` in order to launch the graphical environment.
 
@@ -1159,13 +1294,12 @@ If anything goes wrong in the process, remember that you can press *Ctrl+Alt+<Nu
 ===== The NVIDIA way
 
 If you're using an NVIDIA graphics card, you might want to use `nvidia-xrun` instead of `startx`.
-This has the advantage, of the `nvidia` kernel modules not being loaded at boot (neither are the `nouveau` modules), thus saving power.
+This has the advantage, of the `nvidia` kernel modules, as well as the `nouveau` ones not loaded at boot time, thus saving power.
 `nvidia-xrun` will then load the correct kernel modules and run the `.nvidia-xinitrc` script in your home directory (for more file locations look into the documentation for `nvidia-xrun`).
 
 [IMPORTANT]
 ====
-In most cases, `sudo` is required to run `nvidia-xrun`, as it needs to load kernel modules.
-You can alternatively enable non-``sudo`` users to load kernel modules, although I haven't tested that variation.
+At the time of writing, `nvidia-xrun` needs `sudo` permissions before executing its task.
 ====
 
 Simply install `nvidia-xrun`
@@ -1188,7 +1322,7 @@ $ rm -rf nvidia-xrun
 
 [NOTE]
 ====
-If your hardware doesn't support bbswitch, you would need to run
+If your hardware doesn't support `bbswitch`, you would need to run
 
 [source, console]
 ----
@@ -1212,9 +1346,8 @@ instead.
 Now we need to blacklist *both `nouveau` and `nvidia`* kernel modules.
 
 To do that, we first have to find out, where our active `modprobe.d` directory is located.
-There are 2 possible locations, generally speaking: `/etc/modprobe.d` or `/usr/lib/modprobe.d`.
+There are 2 possible locations, generally speaking: `/etc/modprobe.d` and `/usr/lib/modprobe.d`.
 In my case it was the latter, which I could tell, because this directory already had files in it.
-You might have to try it out tho.
 
 Now I'll create a new file named `nvidia-xrun.conf` and write the following into it
 
@@ -1228,7 +1361,7 @@ blacklist nvidia-uvm
 blacklist nouveau
 ----
 
-With this config in place
+With this config in place,
 
 [source, console]
 ----
@@ -1246,6 +1379,11 @@ $ lsmod | grep nouveau
 
 should return no output.
 Else you might have to place some additional entries into the file.
+
+[NOTE]
+====
+Of course, you'll need to reboot, after blacklisting the modules and before issuing the 2 commands mentioned.
+====
 
 [NOTE]
 ====
@@ -1267,7 +1405,7 @@ Now instead of `startx`, just run `nvidia-xrun`, enter your `sudo` password and 
 
 === GUI Software
 
-As you now have a working graphical desktop environment, you might want to install some software to utilize your newly gained power
+As you now have a working graphical desktop environment, you might want to install some software to utilize your newly gained power.
 
 ==== Desktop background
 
@@ -1281,7 +1419,7 @@ $ sudo pacman -S nitrogen
 
 ==== Compositing software
 
-To get buttery smooth animation as well as e.g. video playback in `brave`, you might want to consider using a `compton` based software named `picom`
+To get buttery smooth animation as well as e.g. smooth video playback in `brave` without screen tearing, you might want to consider using a compositor, in my case one named `picom`
 
 [source, console]
 ----
@@ -1308,7 +1446,7 @@ or
 [I] dustvoice@DustArch ~
 $ ps aux | grep picom
 [I] dustvoice@DustArch ~
-$ kill <pid>
+$ kill -9 <pid>
 ----
 ====
 
@@ -1330,17 +1468,17 @@ Now you can start the applet with
 $ nm-applet &
 ----
 
-If you want to edit the network connections with a more fullscreen approach you can also launch `nm-connection-editor`.
+If you want to edit the network connections with a more full screen approach, you can also launch `nm-connection-editor`.
 
 [NOTE]
 ====
-The `nm-connection-editor` doesn't search for available WiFis.
-You would have to set up a WiFi connection completely by hand, which could be desireable depending on how difficult your WiFi is to set up.
+The `nm-connection-editor` doesn't search for available Wi-Fis.
+You would have to set up a Wi-Fi connection completely by hand, which could be desirable depending on how difficult to set up your Wi-Fi is.
 ====
 
 ==== Keyboard
 
-To show, which keyboard layout and variant is currently in use, you can use `xkblayout-state`, which you can aquire from the `aur`
+To show, which keyboard layout and variant is currently in use, you can use `xkblayout-state`, which you can acquire from the `AUR`
 
 [source, console]
 ----
@@ -1360,7 +1498,7 @@ Now simply issue the `layout` alias, provided by our custom `fish` configuration
 
 ==== X clipboard
 
-To copy something from the terminal to the x clipboard, use `xclip`
+To copy something from the terminal to the `xorg` clipboard, use `xclip`
 
 [source, console]
 ----
@@ -1370,7 +1508,7 @@ $ sudo pacman -S xclip
 $ xclip some_random_text
 ----
 
-==== Taking screenshots
+==== Taking screen shots
 
 For this functionality, especially in combination with `rofi`, use `scrot`
 
@@ -1378,13 +1516,13 @@ For this functionality, especially in combination with `rofi`, use `scrot`
 ----
 [I] dustvoice@DustArch ~
 $ sudo pacman -S scrot
-[I] dustvoice@DustArch ~
-$ scrot filename.png
 ----
+
+`scrot ~/Pictures/filename.png` then saves the screen shot under `~/Pictures/filename.png`.
 
 ==== Image viewer
 
-Now that we can create screenshots, we might also want to view those
+Now that we can create screen shots, we might also want to view those
 
 [source, console]
 ----
@@ -1405,7 +1543,7 @@ In my case, `thunar`, the `xfce` file manager, worked best.
 $ sudo pacman -S thunar
 ----
 
-To also be able to mount removable drives, without root, and in order to have a GUI for mounting stuff, you would need to install `gigolo` and `gvfs`
+To also be able to `mount` removable drives, without being `root` or using `sudo`, and in order to have a GUI for mounting stuff, you would need to install `gigolo` and `gvfs`
 
 [source, console]
 ----
@@ -1415,7 +1553,7 @@ $ sudo pacman -S gigolo gvfs
 
 ===== Android file transfer
 
-To furthermore enable the transfer of files between your pc and your android phone, you'll habe to install the `mtp` libraries
+To furthermore enable the transfer of files between your PC and your android phone, you'll have to install `mtp` and `gvfs-mtp`
 
 [source, console]
 ----
@@ -1425,7 +1563,11 @@ $ sudo pacman -S libmtp gvfs-mtp
 
 Now you should be able to see your phone inside either `thunar`, or `gigolo`.
 
-If you want to access the android's filesystem from the command line, you will need to either install `simple-mtpfs`
+If you want to access the android's file system from the command line, you will need to either install and use `simple-mtpfs`, or `adb`
+
+====== `simple-mtpfs`
+
+Install `simple-mtpfs`
 
 [source, console]
 ----
@@ -1471,7 +1613,9 @@ $ fusermount -u mnt
 $ rmdir mnt
 ----
 
-or you need to install `adb`
+====== `adb`
+
+Install `adb`
 
 [source, console]
 ----
@@ -1479,7 +1623,7 @@ or you need to install `adb`
 $ sudo pacman -S adb
 ----
 
-And kill the `adb` server (if it is running)
+kill the `adb` server, if it is running
 
 [source, console]
 ----
@@ -1492,7 +1636,7 @@ $ adb kill-server
 If the server is currently not running, `adb` will output an error with a `Connection refused` message.
 ====
 
-Now connect your phone and unlock it and start the `adb` server
+Now connect your phone, unlock it and start the `adb` server
 
 [source, console]
 ----
@@ -1500,7 +1644,7 @@ Now connect your phone and unlock it and start the `adb` server
 $ adb start-server
 ----
 
-If the pc is unknown to the android device, it will display a confirmation dialog.
+If the PC is unknown to the android device, it will display a confirmation dialog.
 Accept it and ensure that the device was recognized
 
 [source, console]
@@ -1523,16 +1667,15 @@ $ adb kill-server
 
 [NOTE]
 ====
-Of course you would need to have the _developer options_ unlocked as well as the _USB debugging_ option enabled within them for `adb` to even work.
+Of course you would need to have the _developer options_ unlocked, as well as the _USB debugging_ option enabled within them, for `adb` to even work.
 ====
 
 ==== Archive manager
 
-As we now have a file manager, it might be annoying, to open up a terminal everytime you simply want to extract an archive of some sort.
-
+As we now have a file manager, it might be annoying, to open up a terminal every time you simply want to extract an archive of some sort.
 That's why we'll install `xarchiver`.
 
-In order for `xarchiver` to work its full potential we're first gonna install some additional archive types
+In order for `xarchiver` to work at its full potential, we're first gonna install some additional archive types
 
 [source, console]
 ----
@@ -1545,7 +1688,7 @@ Now we can proceed to install `xarchiver`
 [source, console]
 ----
 [I] dustvoice@DustArch ~
-$ xarchiver
+$ sudo pacman -S xarchiver
 ----
 
 ==== Partition management
@@ -1559,9 +1702,9 @@ For that you can install `gparted`
 $ sudo pacman -S gparted
 ----
 
-==== PDF viewer
+==== PDF viewer 
 
-As we've installed `asciidoctor-pdf` previously, you might be wondering how you are supposed to open the generated pdfs.
+As we've installed `asciidoctor-pdf` previously, you might be wondering how you are supposed to open the generated PDFs.
 There are two ways.
 
 ===== Using the GUI
@@ -1574,7 +1717,7 @@ Installing `mupdf` is as simple as issuing
 $ sudo pacman -S mupdf
 ----
 
-If you want to have changes made to the pdf reflected immediately in the viewer, you would need `evince` instead
+If you want to have changes made to the PDF reflected immediately in the viewer, you would need `evince` instead
 
 [source, console]
 ----
@@ -1586,7 +1729,7 @@ $ sudo pacman -S evince
 
 If you want to not always use the graphical desktop with `mupdf`, you might be interested in the `fbgs` software.
 
-This software renders a pdf document using the native framebuffer.
+This software renders a PDF document using the native framebuffer.
 To install it simply do
 
 [source, console]
@@ -1595,7 +1738,7 @@ To install it simply do
 $ pacman -S fbida ghostscript
 ----
 
-and to view this pdf document (`Documentation.pdf`) for example, you would run
+and to view this PDF document (`Documentation.pdf`) for example, you would run
 
 [source, console]
 ----
@@ -1611,7 +1754,7 @@ You can view all the controls by pressing `h`.
 ==== Web browser
 
 As you're already using a GUI, you also might be interested in a web browser.
-In my case, I'll install `brave` from the AUR as well as `browserpass` from the official repositories for using my passwords in `brave`.
+In my case, I'll install `brave` from the `AUR`, as well as `browserpass` from the official repositories, in order to use my passwords in `brave`.
 
 [source, console]
 ----
@@ -1645,8 +1788,8 @@ Now the only thing left is, to fire up `brave` and install the `browserpass` ext
 
 ===== Entering the dark side
 
-You might have to be completely anonymous whilst browsing the web at some point.
-Although this shouldn't be your only precaution, using `tor-browser` would be the first thing to use
+You might want to be completely anonymous whilst browsing the web at some point.
+Although this shouldn't be your only precaution, using `tor-browser` would be the first thing to do
 
 [source, console]
 ----
@@ -1674,8 +1817,8 @@ $ sudo pacman -S libreoffice-fresh
 
 ===== Printing
 
-In order for printing to work with my printer, which is a _Brother MFC J497DW_, I had do install `avahi`, `cups`, `cups-pdf`, `nss-mdns` and the correspoding driver for my printer.
-In order to be able to print from the `gtk` print dialogue, we'll also need to install `system-config-printer` and `print-manager`.
+In order for printing to work with my printer, I had to install `avahi`, `cups`, `cups-pdf`, `nss-mdns` and the correspoding driver for my printer.
+In order to be able to print from the `gtk` print dialog, we'll also need to install `system-config-printer` and `print-manager`.
 
 [source, console]
 ----
@@ -1701,14 +1844,9 @@ $ sudo systemctl start avahi-daemon.service
 
 Now you have to edit `/etc/nsswitch.conf`
 
-[source, console]
-----
-[I] dustvoice@DustArch ~
-$ sudo nvim /etc/nsswitch.conf
-----
-
 so this line
 
+./etc/nsswitch.conf
 [source, text]
 ----
 hosts: files mymachines myhostname resolve [!UNAVAIL=return] dns
@@ -1716,6 +1854,7 @@ hosts: files mymachines myhostname resolve [!UNAVAIL=return] dns
 
 becomes this line
 
+./etc/nsswitch.conf
 [source, text]
 ----
 hosts: files mymachines myhostname mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns
@@ -1723,7 +1862,7 @@ hosts: files mymachines myhostname mdns4_minimal [NOTFOUND=return] resolve [!UNA
 
 Now continue with this
 
-[source, text]
+[source, console]
 ----
 [I] dustvoice@DustArch ~
 $ avahi-browse --all --ignore-local --resolve --terminate
@@ -1735,15 +1874,15 @@ $ sudo systemctl start org.cups.cupsd.service
 $ sudo pacman -S system-config-printer print-manager
 ----
 
-Now just open up `system-config-printer` and configure your printer.
+Just open up `system-config-printer` now and configure your printer.
 
-To test if everything is working, you could open up `brave`, the go to *Print* and then try printing.
+To test if everything is working, you could open up `brave`, then go to *Print* and then try printing.
 
 ==== Process management
 
-The native linux tool to have a CLI task-manager, is `top`.
+The native tool is `top`.
 
-The next evolutionary step would be `htop`, which is a improved version of `top` (like `vi` and `vim` for example)
+The next evolutionary step would be `htop`, which is an improved version of `top` (like `vi` and `vim` for example)
 
 [source, console]
 ----
@@ -1776,7 +1915,7 @@ $ sudo pacman -S thunderbird
 
 ===== Telegram
 
-You want to have your `telegram` messages on your desktop pc?
+You want to have your `telegram` messages on your desktop PC?
 
 [source, console]
 ----
@@ -1786,7 +1925,8 @@ $ sudo pacman -S telegram-desktop
 
 ===== TeamSpeak 3
 
-Wanna chat with your gaming friends and they have a `teamspeak3` server? Go for it
+Wanna chat with your gaming friends and they have a `teamspeak3` server?
+Go for it
 
 [source, console]
 ----
@@ -1796,7 +1936,8 @@ $ sudo pacman -S teamspeak3
 
 ===== Discord
 
-You'd rather use `discord`? No problem
+You'd rather use `discord`?
+No problem
 
 [source, console]
 ----
@@ -1864,7 +2005,7 @@ For ideal use with `obs`, my `dotfiles` repository already provides you with the
 ===== Live stream a terminal session
 
 For this task, you'll need a program called `tmate`.
-Just install it
+Just install
 
 [source, console]
 ----
@@ -1884,19 +2025,6 @@ $ tmate
 
 In my case, I'm using `davinci-resolve`.
 
-But before installing `davinci-resolve`, we have to enable 32-bit packages.
-Just edit `/etc/pacman.conf` and uncomment the `multilib` lines.
-
-Then update your packages
-
-[source, console]
-----
-[I] dustvoice@DustArch ~
-$ sudo pacman -Sy
-----
-
-and install `davinci-resolve`
-
 [source, console]
 ----
 [I] dustvoice@DustArch ~
@@ -1913,7 +2041,8 @@ $ rm -rf davinci-resolve
 
 ===== Utilizing video
 
-Wanna remote control your/another pc? `teamviewer` might just be the right choice for you
+Wanna remote control your own or another PC?
+`teamviewer` might just be the right choice for you
 
 [source, console]
 ----
@@ -1945,6 +2074,7 @@ You might have to edit `/etc/security/limits.conf`, to increase the allowed lock
 
 In my case I have 32GB of RAM and I want the `audio` group to be allocate most of the RAM, which is why I added the following line to the file
 
+./etc/security/limits.conf
 [source, text]
 ----
 @audio - memlock 29360128
@@ -1953,8 +2083,8 @@ In my case I have 32GB of RAM and I want the `audio` group to be allocate most o
 
 [INFO]
 ====
-Ardour won't natively save in the `mp3` format due to licensing stuff.
-In order to create `mp3` files, for sharing with other devices that have problems with `wav` files for example, you can just use `ffmpeg`.
+Ardour won't natively save in the `mp3` format, due to licensing stuff.
+In order to create `mp3` files, for sharing with other devices, because they have problems with `wav` files, for example, you can just use `ffmpeg`.
 
 First make sure it's installed
 
@@ -1975,7 +2105,7 @@ $ ffmpeg -i in.wav -acodec mp3 out.mp3
 
 ==== Virtualization
 
-You might need to run another os, for example Mac OS, from within Linux, e.g. for development/testing purposes.
+You might need to run another OS, for example Mac OS, from within Linux, e.g. for development/testing purposes.
 For that you can use `virtualbox`
 
 [source, console]
@@ -2022,7 +2152,7 @@ Now just re-login and you're good to go.
 
 ==== Gaming
 
-The first option for native/emulated gaming on linux is obviously `steam`.
+The first option for native/emulated gaming on Linux is obviously `steam`.
 
 [source, console]
 ----
@@ -2040,7 +2170,7 @@ $ sudo pacman -S lutris
 
 ==== Wacom
 
-In order to use a wacom graphics tablet, you'll have to install some packages
+In order to use a Wacom graphics tablet, you'll have to install some packages
 
 [source, console]
 ----
@@ -2084,6 +2214,7 @@ $ rm -rf wacom-utility
 == Upgrading the system
 
 You're probably wondering why this gets a dedicated section.
+
 You'll probably think that it would be just a matter of issuing
 
 [source, console]
@@ -2093,8 +2224,10 @@ $ sudo pacman -Syu
 ----
 
 That's both true and false.
+
 You have to make sure, *that your boot partition is mounted at `/boot`* in order for everything to upgrade correctly.
 That's because the moment you upgrade the `linux` package without having the correct partition mounted at `/boot`, your system won't boot.
+You also might have to do `grub-mkconfig -o /boot/grub/grub.cfg` after you install a different kernel image.
 
 If your system *indeed doesn't boot* and *boots to a recovery console*, then double check that the issue really is the not perfectly executed kernel update by issuing
 
@@ -2114,7 +2247,7 @@ $ pacman -Q linux
 
 *The version of these two packages should be exactly the same!*
 
-If it isn't there is an easy fix for it
+If it isn't there is an easy fix for it.
 
 === Fixing a faulty kernel upgrade
 
@@ -2165,7 +2298,7 @@ $ rm -rf /boot
 $ mkdir /boot
 ----
 
-Now reboot and mount the `boot` partition, in my case an `EFI System Partition`.
+Now reboot and `mount` the `boot` partition, in my case an `EFI System Partition`.
 
 Now simply rerun
 
@@ -2179,7 +2312,7 @@ and you should be fine now.
 
 [NOTE]
 ====
-Consider setting up a `fstab` entry for the boot partition, in order to avoid such dilemma in the future.
+Consider setting up a `fstab` entry for the `boot` partition, in order to avoid such dilemma in the future.
 
 See <<setting-up-fstab>> for more.
 ====
@@ -2188,7 +2321,7 @@ See <<setting-up-fstab>> for more.
 
 A complete list of all the packages present on my full fledged system at the time of writing
 
-.packages-x86_64
+..packages-x86_64
 [source, text, linenums]
 ----
 include::.packages-x86_64[]

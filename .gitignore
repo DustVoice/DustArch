@@ -1,3 +1,6 @@
 *.pdf
 *.html
 *.xml
+
+!/Documentation_A4.pdf
+!/Documentation_A5.pdf
