@@ -1,17 +1,17 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v6.0, 2020-01-24
+v7.1, 2020-01-24
 :doctype: book
 :docinfo: shared
 :title-logo-image: image:arch.png[]
 :toc: left
 :toc-title: Table Of Contents
-:toclevels: 4
+:toclevels: 5
 :sectnums:
-:sectnumlevels: 4
+:sectnumlevels: 5
 :chapter-label:
 :pagenums!:
-:source-highlighter: pygments
+:source-highlighter: rouge
 :icons: font
 :last-update-label: Last modified:
 :table-caption!:
@@ -30,7 +30,7 @@ If you encounter any problems along the way, you will either have to resolve the
 
 <<<
 
-=== ``Sy``nc up `pacman`
+=== ``Sy``ncing up `pacman`
 
 First of all we need to sync up ``pacman``'s package repository, in order to be able to install packages
 
@@ -38,6 +38,10 @@ First of all we need to sync up ``pacman``'s package repository, in order to be 
 ----
 root@archiso ~ # pacman -Sy
 ----
+
+<<<
+
+==== Official repositories
 
 After doing that, we can now install any software from the official repositories by issuing
 
@@ -71,6 +75,10 @@ If you have to force remove, which you should use *with extreme caution*, you ca
 root@archiso ~ # pacman -Rdd <package_name>
 ----
 ====
+
+<<<
+
+==== `AUR`
 
 If you want to install a package from the https://aur.archlinux.org/[`AUR`], I would proceed as follows
 
@@ -120,6 +128,17 @@ You might have to resolve any `AUR` dependencies, which can't be resolved with `
 In order to install that `AUR` package, you *must* switch to your normal user, because `makepkg` doesn't run as root.
 ====
 
+<<<
+
+==== Software categories
+
+In this guide, I'll be marking some headings according to which kind of software it uses.
+
+There are three categories of software:
+
+* `Console` software is intended to be used with either the native linux console, or with a terminal emulator
+* `GUI` software is intended to be used in a graphical desktop environment
+* `Hybrid` software can either be used within both a console and a graphical desktop environment (`networkmanager`), or there are packages available for both console and a graphical desktop environment (`pulseaudio` with `pulsemixer` for ^`console`^ and `pavucontrol` for ^`GUI`^
 
 <<<
 
@@ -615,6 +634,8 @@ menuentry '=> Reboot' {
 
 As I want all possible options to possibly troubleshoot my PC right there in my `grub` menu,  without the need to boot into a live OS, I also want to have a memory tester there.
 
+<<<
+
 ====== `BIOS`
 
 For a `BIOS` setup, you'll need `memtest86+`
@@ -624,9 +645,11 @@ For a `BIOS` setup, you'll need `memtest86+`
 [root@archiso /]# pacman -S memtest86+
 ----
 
+<<<
+
 ====== `UEFI`
 
-For a `UEFI` setup, you'll need `memtest86-efi` from the `AUR`.
+For a `UEFI` setup, you'll need ``memtest86-efi``^`AUR`^.
 
 [source, console]
 ----
@@ -641,7 +664,7 @@ For a `UEFI` setup, you'll need `memtest86-efi` from the `AUR`.
 [dustvoice@archiso ~/AUR/memtest86-efi]$ exit
 ----
 
-Now we still need to tell `memtest86-efi` how to install itself
+Now we still need to tell ``memtest86-efi``^`AUR`^ how to install itself
 
 [source, console]
 ----
@@ -661,7 +684,7 @@ After that we need to perform two tasks
 . Add the `resume` hook to `/etc/mkinitcpio.conf`, before `fsck` and definetely after `block`
 +
 ./etc/mkinitcpio.conf
-[source, console]
+[source, text]
 ----
 HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)
 ----
@@ -701,11 +724,12 @@ Now you're good to boot into your new system.
 
 === Secure Boot
 
-I know I told you that you're now good to boot into your new system. That is only correct, if you're *not* using Secure Boot.
+I know I told you that you're now good to boot into your new system.
+That is only correct, if you're *not* using Secure Boot.
 
 You can either proceed by disabling Secure Boot in your firmware settings, or by using `shim` as kind of a pre-bootloader, as well as signing your bootloader (`grub`) and your kernel.
 
-If you decided on using Secure Boot, you will first have to install `shim-signed` from `AUR`.
+If you decided on using Secure Boot, you will first have to install ``shim-signed``^`AUR`^.
 
 [source, console]
 ----
@@ -731,7 +755,7 @@ Now we just need to copy `shimx64.efi`, as well as `mmx64.efi` to our `EFI Syste
 ====
 If you have to use `bcdedit` from within Windows, as explained previously, you need to adapt the command accordingly
 
-[source, console]
+[source, text]
 ----
 bcdedit /set {bootmgr} path \EFI\grub\shimx64.efi
 ----
@@ -769,14 +793,14 @@ First we have to check if the network interfaces are set up properly.
 
 To view the network interfaces with all their properties, we can issue
 
-[source, console]
+[source, text]
 ----
 DustArch% ip link
 ----
 
 To make sure that you have a working _Internet_ connection, issue
 
-[source, console]
+[source, text]
 ----
 DustArch% ping archlinux.org
 ----
@@ -785,7 +809,7 @@ Everything should run smoothly if you have a wired connection.
 
 If there is no connection and you're indeed using a wired connection, try restarting the `NetworkManager` service
 
-[source, console]
+[source, text]
 ----
 DustArch% sudo systemctl restart NetworkManager.service
 ----
@@ -801,42 +825,42 @@ I never got `nmtui` to behave like I wanted it to, in my particular case at leas
 
 First make sure, the scanning of nearby Wi-Fi networks is enabled for your Wi-Fi device
 
-[source, console]
+[source, text]
 ----
 DustArch% nmcli radio
 ----
 
 and if not, enable it
 
-[source, console]
+[source, text]
 ----
 DustArch% nmcli radio wifi on
 ----
 
 Now make sure your Wi-Fi interface appears under
 
-[source, console]
+[source, text]
 ----
 DustArch% nmcli device
 ----
 
 Rescan for available networks
 
-[source, console]
+[source, text]
 ----
 DustArch% nmcli device wifi rescan
 ----
 
 and list all found networks
 
-[source, console]
+[source, text]
 ----
 DustArch% nmcli device wifi list
 ----
 
 After that connect to the network
 
-[source, console]
+[source, text]
 ----
 DustArch% nmcli device wifi connect --ask
 ----
@@ -849,7 +873,7 @@ Now try ``ping``ing again.
 
 After making sure that you have a working Internet connection, you can then proceed to update and upgrade all installed packages by issuing
 
-[source, console]
+[source, text]
 ----
 DustArch% sudo pacman -Syu
 ----
@@ -870,14 +894,14 @@ Include = /etc/pacman.d/mirrorlist
 
 and update ``pacman``'s package repositories afterwards
 
-[source, console]
+[source, text]
 ----
 DustArch% sudo pacman -Sy
 ----
 
 <<<
 
-=== Setting the correct shell
+=== `zsh` for president
 
 Of course you can use any shell you want.
 In my case I'll be using the `zsh` shell.
@@ -889,7 +913,7 @@ I am using `zsh` because of its auto completion functionality and extensibility,
 
 We already set the correct shell for the `dustvoice` user in the <<create-a-personal-user>> step, but I want to use `zsh` for the `root` user too, so I'll have to change ``root``'s default shell to it.
 
-[source, console]
+[source, text]
 ----
 DustArch% sudo chsh -s /usr/bin/zsh root
 ----
@@ -898,12 +922,12 @@ Don't worry about the looks by the way, we're gonna change all that in just a se
 
 <<<
 
-=== Version control
+=== `git`
 
 Next you'll probably want to install `git`.
 Just do
 
-[source, console]
+[source, text]
 ----
 DustArch% sudo pacman -S git
 ----
@@ -918,7 +942,7 @@ We'll care about the `.gitconfig` in just a second.
 If you've followed the tutorial using a recent version of the archiso, you'll probably already have the most recent version of `gnupg` installed by default.
 Just to make sure, issue
 
-[source, console]
+[source, text]
 ----
 DustArch% sudo pacman -S gnupg
 ----
@@ -932,14 +956,14 @@ In my case I have my private keys stored on a smartcard.
 
 To use it, I'll have to install some packages first
 
-[source, console]
+[source, text]
 ----
 DustArch% sudo pacman -S pcsclite libusb-compat ccid opensc
 ----
 
 and then enable and start the `pcscd` service
 
-[source, console]
+[source, text]
 ----
 DustArch% sudo systemctl enable pcscd.service
 DustArch% sudo systemctl start pcscd.service
@@ -947,7 +971,7 @@ DustArch% sudo systemctl start pcscd.service
 
 After that, you should be able to see your smartcard being detected
 
-[source, console]
+[source, text]
 ----
 DustArch% gpg --card-status
 ----
@@ -964,7 +988,7 @@ If your smartcard still isn't detected, try logging off completely or even resta
 
 To minimize the effort required by the following steps, we'll install most of the required packages beforehand
 
-[source, console]
+[source, text]
 ----
 DustArch% sudo pacman -S make cmake clang jdk-openjdk python python-pip pass openssh
 ----
@@ -1009,7 +1033,7 @@ By using a curated `.gitignore` file, I'm able to only include the configuration
 
 To achieve this very specific setup, I have to turn my home directory into said `dotfiles` repository first
 
-[source, console]
+[source, text]
 ----
 DustArch% git init
 DustArch% git remote add origin https://github.com/DustVoice/dotfiles.git
@@ -1124,8 +1148,7 @@ This is very important for me, as I want to use my smartcard on my development s
 
 First of all, I want to setup a config file for `ssh`, as I don't want to pass all parameters manually to ssh every time.
 
-.~/.ssh/config
-
+.++~++/.ssh/config
 [source, text]
 ----
 Host <connection name>
@@ -1163,26 +1186,6 @@ Now just restart your remote machine(s) and you're ready to go.
 
 <<<
 
-==== `JUCE` and `FRUT`
-
-Your personal environment will be complete, after getting `JUCE` and `FRUT`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ git clone https://github.com/WeAreROLI/JUCE.git
-dustvoice@DustArch ~
-$ cd JUCE
-dustvoice@DustArch ~/JUCE
-$ git checkout develop
-dustvoice@DustArch ~/JUCE
-$ cd ..
-dustvoice@DustArch ~
-$ git clone https://github.com/McMartin/FRUT.git
-----
-
-<<<
-
 ==== Back to your ``root``s
 
 As mentioned before, you would now switch to the `root` user, either by logging in as `root`, or by using
@@ -1199,161 +1202,6 @@ Now go back to <<setup-home>> to repeat all commands for the `root` user.
 ====
 A native login would be better compared to `sudo -iu root`, as there could be some complications, like already running `gpg-agent` instances, etc., which you would need to manually resolve, when using `sudo -iu root`.
 ====
-
-<<<
-
-=== Password management
-
-I'm using `pass` as my password manager.
-As we already installed it in the <<additional-tools-setup-home>> step and updated the `submodule` that holds our `.password-store`, there is nothing left to do in this step
-
-<<<
-
-=== `python`
-
-Python has become really important for a magnitude of use cases.
-We need `python3` in particular as well as `pip` for it.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S python python-pip
-----
-
-[NOTE]
-====
-For `asciidoctor`, which will be installed in just a second, we also need to install the `pygments` module
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pip3 install pygments
-----
-====
-
-<<<
-
-=== `ruby` & `asciidoctor`
-
-In order to use `asciidoctor`, we have to install `ruby` and `rubygems`.
-After that we can install `asciidoctor` and all its required gems.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S ruby rubygems
-dustvoice@DustArch ~
-$ gem install asciidoctor asciidoctor-pdf asciidoctor-epub3 asciidoctor-latex pygments.rb --pre
-----
-
-Now the only thing left, in my case at least, is adding `~/.gem/ruby/2.7.0/bin` to your path.
-
-[NOTE]
-====
-Please note that if you run a ruby version different from `2.7.0`, or if you upgrade your ruby version, you have to use the `bin` path for that version.
-====
-
-For `zsh` you'll want to add a new entry inside the `.zshpath` file
-
-.~/.zshpath
-
-[source, text]
-----
-path=("$HOME/.gem/ruby/2.7.0/bin")
-----
-
-which then gets sourced by the provided `.zshenv` file.
-
-[NOTE]
-====
-You might have to re-``source`` the `.zshenv` file to make the changes take effect immediately
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ source .zshenv
-----
-====
-
-[NOTE]
-====
-If you want to add a new entry to the `path` variable, you have to append it to the array
-
-.~/.zshpath
-
-[source, text]
-----
-path=("$HOME/.gem/ruby/2.7.0/bin" "$HOME/.gem/ruby/2.6.0/bin")
-----
-====
-
-[NOTE]
-====
-If you use another shell than `zsh`, you might have to do something different, to add a directory to your `PATH`.
-====
-
-<<<
-
-=== Using `JUCE`
-
-In order to use `JUCE`, you'll need to have some dependency packages installed
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S clang gcc freeglut alsa-lib gnutls libcurl-gnutls freetype2 jack2 libx11 libxcomposite libxinerama libxrandr mesa webkit2gtk
-----
-
-If you want to use every feature of `JUCE` you'll need to install 2 more packages
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S ladspa lib32-freeglut
-----
-
-<<<
-
-=== Additional development tools
-
-Here are just some examples of development tools one could install in addition to what we already have.
-
-<<<
-
-==== Code formatting
-
-We already have `clang-format` as a code formatter, but this only works for ``C``-family languages.
-For `java` stuff, we can use `astyle`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S astyle
-----
-
-<<<
-
-==== Documentation
-
-To generate a documentation from source code, I mostly use `doxygen`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S doxygen
-----
-
-<<<
-
-==== Build tools
-
-In addition to `make`, I'll often times use `ninja` for my builds
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S ninja
-----
 
 <<<
 
@@ -1678,24 +1526,6 @@ $ sudo pacman -S blueman
 
 <<<
 
-=== `tmux`
-
-As I assume that you're still inside the native linux terminal, I would reccommend to install `tmux` which enables you to have multiple terminal instances (called `windows` in `tmux`) open at the same time.
-This makes working with the linux terminal much easier.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S tmux
-----
-
-[NOTE]
-====
-To view a list of keybinds, you just need to press `CTRL+b` followed by `?`.
-====
-
-<<<
-
 === Graphical desktop environment
 
 If you decide, that you want to use a graphical desktop environment, you have to install additional packages in order for that to work.
@@ -1737,16 +1567,16 @@ If anything goes wrong in the process, remember that you can press *Ctrl+Alt+<Nu
 
 ===== The NVIDIA way
 
-If you're using an NVIDIA graphics card, you might want to use `nvidia-xrun` instead of `startx`.
+If you're using an NVIDIA graphics card, you might want to use ``nvidia-xrun``^`AUR`^ instead of `startx`.
 This has the advantage, of the `nvidia` kernel modules, as well as the `nouveau` ones not loaded at boot time, thus saving power.
-`nvidia-xrun` will then load the correct kernel modules and run the `.nvidia-xinitrc` script in your home directory (for more file locations look into the documentation for `nvidia-xrun`).
+``nvidia-xrun``^`AUR`^ will then load the correct kernel modules and run the `.nvidia-xinitrc` script in your home directory (for more file locations look into the documentation for ``nvidia-xrun``^`AUR`^).
 
 [IMPORTANT]
 ====
-At the time of writing, `nvidia-xrun` needs `sudo` permissions before executing its task.
+At the time of writing, ``nvidia-xrun``^`AUR`^ needs `sudo` permissions before executing its task.
 ====
 
-Simply install `nvidia-xrun`
+Simply install ``nvidia-xrun``^`AUR`^
 
 [source, console]
 ----
@@ -1768,7 +1598,7 @@ $ git clean -fdx
 
 [NOTE]
 ====
-If your hardware doesn't support `bbswitch`, you would need to run
+If your hardware doesn't support `bbswitch`, you would need to use ``nvidia-xrun-pm``^`AUR`^ instead
 
 [source, console]
 ----
@@ -1787,8 +1617,6 @@ $ git reset HEAD --hard
 dustvoice@DustArch ~/AUR/nvidia-xrun-pm
 $ git clean -fdx
 ----
-
-instead.
 ====
 
 Now we need to blacklist *both `nouveau` and `nvidia`* kernel modules.
@@ -1853,7 +1681,578 @@ Now instead of `startx`, just run `nvidia-xrun`, enter your `sudo` password and 
 
 <<<
 
-=== GUI Software
+=== Additional `console` software
+
+Software that is useful in combination with a `console`.
+
+<<<
+
+==== `tmux`
+
+I would reccommend to install `tmux` which enables you to have multiple terminal instances (called `windows` in `tmux`) open at the same time.
+This makes working with the linux terminal much easier.
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S tmux
+----
+
+[NOTE]
+====
+To view a list of keybinds, you just need to press `CTRL+b` followed by `?`.
+====
+
+<<<
+
+==== Communication
+
+Life is all about communicating.
+Here are some pieces of software to do exactly that.
+
+<<<
+
+===== `weechat`
+
+`weechat` is an `IRC` client for the terminal, with the best features and even a `vim` mode, by using a plugin
+
+First off, install `weechat`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S weechat
+----
+
+Now open `weechat`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ weechat
+----
+
+and install `vimode`, as well as configure it
+
+[source, text]
+----
+/script install vimode.py
+/vimode bind_keys
+/set plugins.var.python.vimode.mode_indicator_normal_color_bg "blue"
+----
+
+Now add `mode_indicator+` in front of and `,[vi_buffer]` to the end of `weechat.bar.input.items`, in my case
+
+[source, text]
+----
+/set weechat.bar.input.items "mode_indicator+[input_prompt]+(away),[input_search],[input_paste],input_text,[vi_buffer]
+----
+
+Now add `,cmd_completion` to the end of `weechat.bar.status.items`, in my case
+
+[source, text]
+----
+/set weechat.bar.status.items "[time],[buffer_last_number],[buffer_plugin],buffer_number+:+buffer_name+(buffer_modes)+{buffer_nicklist_count}+buffer_zoom+buffer_filter,scroll,[lag],[hotlist],completion,cmd_completion"
+----
+
+Now enable `vimode` searching
+
+[source, text]
+----
+/set plugins.var.python.vimode.search_vim on
+----
+
+Now you just need to add a new connection, for example `irc.freenode.net`
+
+[source, text]
+----
+/server add freenode irc.freenode.net
+----
+
+and connect to it
+
+[source, text]
+----
+/connect freenode
+----
+
+[NOTE]
+====
+You might need to authenticate with `NickServ`, before being able to write in a channel
+
+[source, text]
+----
+/msg NickServ identify <password>
+----
+====
+
+[NOTE]
+====
+Instead of directly ``/set``ting the values specified above, you can also do
+
+[source, text]
+----
+/fset weechat.var.name
+----
+
+select the entry you want to modify (for example for `plugins.var.python.vimode`) and then press `s` (make sure you're in `insert` mode) and `Return`, in order to modify the existing value.
+====
+
+<<<
+
+==== PDF viewer
+
+To use `asciidoctor-pdf`, you might be wondering how you are supposed to open the generated PDFs from the native linux console.
+
+This `fbida` package provides the `fbgs` software, which renders a PDF document using the native framebuffer.
+To install it simply do
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ pacman -S fbida ghostscript
+----
+
+and to view this PDF document (`Documentation.pdf`) for example, you would run
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ fbgs Documentation.pdf
+----
+
+[INFO]
+====
+You can view all the controls by pressing `h`.
+====
+
+<<<
+
+=== Additional `hybrid` software
+
+Some additional software providing some kind of `GUI` to work with, but that can be useful in a `console` only environment nevertheless.
+
+<<<
+
+==== ``Pass``word management
+
+I'm using `pass` as my password manager.
+As we already installed it in the <<additional-tools-setup-home>> step and updated the `submodule` that holds our `.password-store`, there is nothing left to do in this step
+
+<<<
+
+==== `python`
+
+Python has become really important for a magnitude of use cases.
+We need `python3` in particular as well as `pip` for it.
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S python python-pip
+----
+
+[NOTE]
+====
+For `asciidoctor`, which will be installed in just a second, we also need to install the `pygments` module
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pip3 install pygments
+----
+====
+
+<<<
+
+==== `ruby` & `asciidoctor`
+
+In order to use `asciidoctor`, we have to install `ruby` and `rubygems`.
+After that we can install `asciidoctor` and all its required gems.
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S ruby rubygems
+dustvoice@DustArch ~
+$ gem install asciidoctor asciidoctor-pdf asciidoctor-epub3 asciidoctor-latex --pre
+----
+
+[NOTE]
+====
+If you want to have pretty and highlighted source code, you'll need to install a code formatter too.
+
+For me there are mainly two options
+
+* `pygments.rb`, which requires python to be installed
++
+[source, console]
+----
+dustvoice@DustArch ~
+$ gem install pygments.rb
+----
+
+* `rouge` which is a native `ruby` gem
++
+[source, console]
+----
+dustvoice@DustArch ~
+$ gem install rouge
+----
+====
+
+Now the only thing left, in my case at least, is adding `~/.gem/ruby/2.7.0/bin` to your path.
+
+[NOTE]
+====
+Please note that if you run a ruby version different from `2.7.0`, or if you upgrade your ruby version, you have to use the `bin` path for that version.
+====
+
+For `zsh` you'll want to add a new entry inside the `.zshpath` file
+
+.++~++/.zshpath
+[source, text]
+----
+path=("$HOME/.gem/ruby/2.7.0/bin")
+----
+
+which then gets sourced by the provided `.zshenv` file.
+
+[NOTE]
+====
+You might have to re-``source`` the `.zshenv` file to make the changes take effect immediately
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ source .zshenv
+----
+====
+
+[NOTE]
+====
+If you want to add a new entry to the `path` variable, you have to append it to the array
+
+.++~++/.zshpath
+
+[source, text]
+----
+path=("$HOME/.gem/ruby/2.7.0/bin" "$HOME/.gem/ruby/2.6.0/bin")
+----
+====
+
+[NOTE]
+====
+If you use another shell than `zsh`, you might have to do something different, to add a directory to your `PATH`.
+====
+
+<<<
+
+==== `JUCE` and `FRUT`
+
+`JUCE` is a header only library for `C++` that enables you to develop cross-platform applications with a single codebase.
+
+`FRUT` makes it possible to manage `JUCE` projects purely from `cmake`.
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ git clone https://github.com/WeAreROLI/JUCE.git
+dustvoice@DustArch ~
+$ cd JUCE
+dustvoice@DustArch ~/JUCE
+$ git checkout develop
+dustvoice@DustArch ~/JUCE
+$ cd ..
+dustvoice@DustArch ~
+$ git clone https://github.com/McMartin/FRUT.git
+----
+
+<<<
+
+===== Using `JUCE`
+
+In order to use `JUCE`, you'll need to have some dependency packages installed
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S clang gcc freeglut alsa-lib gnutls libcurl-gnutls freetype2 jack2 libx11 libxcomposite libxinerama libxrandr mesa webkit2gtk
+----
+
+If you want to use every feature of `JUCE` you'll need to install 2 more packages
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S ladspa lib32-freeglut
+----
+
+<<<
+
+==== Additional development tools
+
+Here are just some examples of development tools one could install in addition to what we already have.
+
+<<<
+
+===== Code formatting
+
+We already have `clang-format` as a code formatter, but this only works for ``C``-family languages.
+For `java` stuff, we can use `astyle`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S astyle
+----
+
+<<<
+
+===== Documentation
+
+To generate a documentation from source code, I mostly use `doxygen`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S doxygen
+----
+
+<<<
+
+===== Build tools
+
+In addition to `make`, I'll often times use `ninja` for my builds
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S ninja
+----
+
+<<<
+
+==== Android file transfer
+
+To furthermore enable the transfer of files between your PC and your android phone, you'll have to install `mtp` and `gvfs-mtp`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S libmtp gvfs-mtp
+----
+
+Now you should be able to see your phone inside either your preferred filemanager, in my case `thunar`, or ``gigolo``^`AUR`^.
+
+If you want to access the android's file system from the command line, you will need to either install and use ``simple-mtpfs``^`AUR`^, or `adb`
+
+<<<
+
+===== `simple-mtpfs`
+
+Install `simple-mtpfs`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ cd AUR
+dustvoice@DustArch ~/AUR
+$ git clone https://aur.archlinux.org/simple-mtpfs.git
+dustvoice@DustArch ~/AUR
+$ cd simple-mtpfs
+dustvoice@DustArch ~/AUR/simple-mtpfs
+$ makepkg -si
+dustvoice@DustArch ~/AUR/simple-mtpfs
+$ git reset HEAD --hard
+dustvoice@DustArch ~/AUR/simple-mtpfs
+$ git clean -fdx
+----
+
+edit `/etc/fuse.conf` to uncomment
+
+./etc/fuse.conf
+[source, text]
+----
+user_allow_other
+----
+
+and mount the android device
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ simple-mtpfs -l
+dustvoice@DustArch ~
+$ mkdir ~/mnt
+dustvoice@DustArch ~
+$ simple-mtpfs --device <number> ~/mnt -allow_other
+----
+
+and respectively unmount it
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ fusermount -u mnt
+dustvoice@DustArch ~
+$ rmdir mnt
+----
+
+<<<
+
+===== `adb`
+
+Install `adb`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S adb
+----
+
+kill the `adb` server, if it is running
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ adb kill-server
+----
+
+[NOTE]
+====
+If the server is currently not running, `adb` will output an error with a `Connection refused` message.
+====
+
+Now connect your phone, unlock it and start the `adb` server
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ adb start-server
+----
+
+If the PC is unknown to the android device, it will display a confirmation dialog.
+Accept it and ensure that the device was recognized
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ adb devices
+----
+
+Now you can ``push``/``pull`` files.
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ adb pull /storage/emulated/0/DCIM/Camera/IMG.jpg .
+dustvoice@DustArch ~
+$ adb push IMG.jpg /storage/emulated/0/DCIM/Camera/IMG2.jpg
+dustvoice@DustArch ~
+$ adb kill-server
+----
+
+[NOTE]
+====
+Of course you would need to have the _developer options_ unlocked, as well as the _USB debugging_ option enabled within them, for `adb` to even work.
+====
+
+<<<
+
+==== Partition management
+
+You may also choose to use a graphical partitioning software instead of `fdisk` or `cfdisk`.
+For that you can install `gparted`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S gparted
+----
+
+Of course there is also an `console` equivalent
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S parted
+----
+
+<<<
+
+==== PDF viewer
+
+To use `asciidoctor-pdf`, you might be wondering how you are supposed to open the generated PDFs using the GUI.
+
+Installing `mupdf` is as simple as issuing
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S mupdf
+----
+
+If you want to have changes made to the PDF reflected immediately in the viewer, you would need `evince` instead
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S evince
+----
+
+<<<
+
+==== Process management
+
+The native tool is `top`.
+
+The next evolutionary step would be `htop`, which is an improved version of `top` (like `vi` and `vim` for example)
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S htop
+----
+
+If you prefer a GUI for that kind of task, install `xfce4-taskmanager`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S xfce4-taskmanager
+----
+
+<<<
+
+==== Video software
+
+Just some additional software related to videos.
+
+<<<
+
+===== Live streaming a terminal session
+
+For this task, you'll need a program called `tmate`.
+Just install
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S tmate
+----
+
+and run it
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ tmate
+----
+
+<<<
+
+=== Additional `GUI` software
 
 As you now have a working graphical desktop environment, you might want to install some software to utilize your newly gained power.
 
@@ -1883,11 +2282,13 @@ If you use something other than `i3`, you need to make sure this command gets ex
 xss-lock -- i3lock -n -e -c 333333
 ----
 
+<<<
+
 ==== `xfce-polkit`
 
 In order for GUI applications to acquire `sudo` permissions, we need to install a `PolicyKit` authentication agent.
 
-We could use `gnome-polkit` for that purpose, which resides inside the official repositories, but I decided on using `xfce-polkit` from the `AUR`.
+We could use `gnome-polkit` for that purpose, which resides inside the official repositories, but I decided on using ``xfce-polkit``^`AUR`^.
 
 [source, console]
 ----
@@ -1905,9 +2306,11 @@ dustvoice@DustArch ~/AUR/xfce-polkit
 $ git clean -fdx
 ----
 
-Now you just need to startup `xfce-polkit` before trying to execute something like `gparted` and you'll be prompted for your password.
+Now you just need to startup ``xfce-polkit``^`AUR`^ before trying to execute something like `gparted` and you'll be prompted for your password.
 
 As I already launch it as a part of my `i3` configuration, I won't have to worry about that.
+
+<<<
 
 ==== Desktop background
 
@@ -1984,9 +2387,9 @@ You would have to set up a Wi-Fi connection completely by hand, which could be d
 
 <<<
 
-==== Keyboard
+==== Show keyboard layout
 
-To show, which keyboard layout and variant is currently in use, you can use `xkblayout-state`, which you can acquire from the `AUR`
+To show, which keyboard layout and variant is currently in use, you can use ``xkblayout-state``^`AUR`^
 
 [source, console]
 ----
@@ -2004,7 +2407,7 @@ dustvoice@DustArch ~/AUR/xkblayout-state
 $ git clean -fdx
 ----
 
-Now simply issue the `layout` alias, provided by our custom `fish` configuration.
+Now simply issue the `layout` alias, provided by our custom `zsh` configuration.
 
 <<<
 
@@ -2061,7 +2464,7 @@ dustvoice@DustArch ~
 $ sudo pacman -S thunar
 ----
 
-To also be able to `mount` removable drives, without being `root` or using `sudo`, and in order to have a GUI for mounting stuff, you would need to install `gigolo` and `gvfs`
+To also be able to `mount` removable drives, without being `root` or using `sudo`, and in order to have a GUI for mounting stuff, you would need to install ``gigolo``^`AUR`^ and `gvfs`
 
 [source, console]
 ----
@@ -2080,129 +2483,6 @@ $ git reset HEAD --hard
 dustvoice@DustArch ~/AUR/gigolo
 $ git clean -fdx
 ----
-
-<<<
-
-===== Android file transfer
-
-To furthermore enable the transfer of files between your PC and your android phone, you'll have to install `mtp` and `gvfs-mtp`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S libmtp gvfs-mtp
-----
-
-Now you should be able to see your phone inside either `thunar`, or `gigolo`.
-
-If you want to access the android's file system from the command line, you will need to either install and use `simple-mtpfs`, or `adb`
-
-====== `simple-mtpfs`
-
-Install `simple-mtpfs`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/simple-mtpfs.git
-dustvoice@DustArch ~/AUR
-$ cd simple-mtpfs
-dustvoice@DustArch ~/AUR/simple-mtpfs
-$ makepkg -si
-dustvoice@DustArch ~/AUR/simple-mtpfs
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/simple-mtpfs
-$ git clean -fdx
-----
-
-edit `/etc/fuse.conf` to uncomment
-
-./etc/fuse.conf
-[source, text]
-----
-user_allow_other
-----
-
-and mount the android device
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ simple-mtpfs -l
-dustvoice@DustArch ~
-$ mkdir ~/mnt
-dustvoice@DustArch ~
-$ simple-mtpfs --device <number> ~/mnt -allow_other
-----
-
-and respectively unmount it
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ fusermount -u mnt
-dustvoice@DustArch ~
-$ rmdir mnt
-----
-
-====== `adb`
-
-Install `adb`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S adb
-----
-
-kill the `adb` server, if it is running
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ adb kill-server
-----
-
-[NOTE]
-====
-If the server is currently not running, `adb` will output an error with a `Connection refused` message.
-====
-
-Now connect your phone, unlock it and start the `adb` server
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ adb start-server
-----
-
-If the PC is unknown to the android device, it will display a confirmation dialog.
-Accept it and ensure that the device was recognized
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ adb devices
-----
-
-Now you can ``push``/``pull`` files.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ adb pull /storage/emulated/0/DCIM/Camera/IMG.jpg .
-dustvoice@DustArch ~
-$ adb push IMG.jpg /storage/emulated/0/DCIM/Camera/IMG2.jpg
-dustvoice@DustArch ~
-$ adb kill-server
-----
-
-[NOTE]
-====
-Of course you would need to have the _developer options_ unlocked, as well as the _USB debugging_ option enabled within them, for `adb` to even work.
-====
 
 <<<
 
@@ -2229,78 +2509,10 @@ $ sudo pacman -S xarchiver
 
 <<<
 
-==== Partition management
-
-You may also choose to use a graphical partitioning software instead of `fdisk` or `cfdisk`.
-For that you can install `gparted`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S gparted
-----
-
-<<<
-
-==== PDF viewer
-
-As we've installed `asciidoctor-pdf` previously, you might be wondering how you are supposed to open the generated PDFs.
-There are two ways.
-
-<<<
-
-===== Using the GUI
-
-Installing `mupdf` is as simple as issuing
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S mupdf
-----
-
-If you want to have changes made to the PDF reflected immediately in the viewer, you would need `evince` instead
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S evince
-----
-
-<<<
-
-===== Using the framebuffer
-
-If you want to not always use the graphical desktop with `mupdf`, you might be interested in the `fbgs` software.
-
-This software renders a PDF document using the native framebuffer.
-To install it simply do
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ pacman -S fbida ghostscript
-----
-
-and to view this PDF document (`Documentation.pdf`) for example, you would run
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ fbgs Documentation.pdf
-----
-
-[INFO]
-====
-You can view all the controls by pressing `h`.
-====
-
-<<<
-
 ==== Web browser
 
 As you're already using a GUI, you also might be interested in a web browser.
-In my case, I'll install `brave` from the `AUR`, as well as `browserpass` from the official repositories, in order to use my passwords in `brave`.
+In my case, I'll install ``brave-bin``^`AUR`^, as well as `browserpass` from the official repositories, in order to use my passwords in `brave`.
 
 [source, console]
 ----
@@ -2341,7 +2553,7 @@ Now the only thing left is, to fire up `brave` and install the `browserpass` ext
 ===== Entering the dark side
 
 You might want to be completely anonymous whilst browsing the web at some point.
-Although this shouldn't be your only precaution, using `tor-browser` would be the first thing to do
+Although this shouldn't be your only precaution, using ``tor-browser``^`AUR`^ would be the first thing to do
 
 [source, console]
 ----
@@ -2433,28 +2645,6 @@ To test if everything is working, you could open up `brave`, then go to *Print* 
 
 <<<
 
-==== Process management
-
-The native tool is `top`.
-
-The next evolutionary step would be `htop`, which is an improved version of `top` (like `vi` and `vim` for example)
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S htop
-----
-
-If you prefer a GUI for that kind of task, install `xfce4-taskmanager`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S xfce4-taskmanager
-----
-
-<<<
-
 ==== Communication
 
 Life is all about communicating.
@@ -2532,7 +2722,7 @@ $ sudo pacman -S vlc
 
 ===== Creating video
 
-`obs` should be the right choice
+``obs-studio-git``^`AUR`^ should be the right choice
 
 [source, console]
 ----
@@ -2550,9 +2740,11 @@ dustvoice@DustArch ~/AUR/obs-studio-git
 $ git clean -fdx
 ----
 
+<<<
+
 ====== Showing keystrokes
 
-In order to show the viewers what keystrokes you're pressing, you can use something like `screenkey`
+In order to show the viewers what keystrokes you're pressing, you can use something like ``screenkey``^`AUR`^
 
 [source, console]
 ----
@@ -2574,35 +2766,14 @@ $ screenkey
 
 [NOTE]
 ====
-For ideal use with `obs`, my `dotfiles` repository already provides you with the `screenkey-obs` script for you to run with `fish`.
+For ideal use with `obs`, my `dotfiles` repository already provides you with the `screenkey-obs` alias for you to run with `zsh`.
 ====
-
-<<<
-
-===== Live stream a terminal session
-
-For this task, you'll need a program called `tmate`.
-Just install
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S tmate
-----
-
-and run it
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ tmate
-----
 
 <<<
 
 ===== Editing video
 
-In my case, I'm using `davinci-resolve`.
+In my case, I'm using ``davinci-resolve``^`AUR`^.
 
 [source, console]
 ----
@@ -2625,7 +2796,7 @@ $ git clean -fdx
 ===== Utilizing video
 
 Wanna remote control your own or another PC?
-`teamviewer` might just be the right choice for you
+``teamviewer``^`AUR`^ might just be the right choice for you
 
 [source, console]
 ----
@@ -2772,7 +2943,7 @@ $ sudo pacman -S libwacom xf86-input-wacom
 ----
 
 You could now configure your tablet using the `xsetwacom` command.
-But on the other hand there is also `wacom-utility`, a GUI software for all of that, so you could try if that works first.
+But on the other hand there is also ``wacom-utility``^`AUR`^, a GUI software for all of that, so you could try if that works first.
 
 [source, console]
 ----
@@ -2818,7 +2989,7 @@ $ git clean -fdx
 
 ==== `VNC` & `RDP`
 
-In order to connect to a machine over `VNC` or to connect to a machine using the `Remote Desktop Protocol`, for example to connect to a Windows machine, I'll need to install `freerdp` from the `AUR`, as well as `libvncserver`, for `RDP` and `VNC` functionality respectively, as well as `remmina`, to have a GUI client for those two protocols.
+In order to connect to a machine over `VNC` or to connect to a machine using the `Remote Desktop Protocol`, for example to connect to a Windows machine, I'll need to install ``freerdp``^`AUR`^, as well as `libvncserver`, for `RDP` and `VNC` functionality respectively, as well as `remmina`, to have a GUI client for those two protocols.
 
 [source, console]
 ----
@@ -2841,6 +3012,8 @@ $ sudo pacman -S libvncserver remmina
 ----
 
 Now you can set up all your connections inside `remmina`.
+
+<<<
 
 == Upgrading the system
 
@@ -2949,3 +3122,7 @@ Consider setting up an `fstab` entry for the `boot` partition, in order to avoid
 
 See <<setting-up-fstab>> for more.
 ====
+
+== Additional notes
+
+If you've printed this guide, you might want to add some additional blank pages for notes.
