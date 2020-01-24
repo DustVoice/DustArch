@@ -1,6 +1,6 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v5.2, 2020-01-09
+v6.0, 2020-01-24
 :doctype: book
 :docinfo: shared
 :title-logo-image: image:arch.png[]
@@ -74,11 +74,10 @@ root@archiso ~ # pacman -Rdd <package_name>
 
 If you want to install a package from the https://aur.archlinux.org/[`AUR`], I would proceed as follows
 
-. `cd` into a dedicated directory
+. `cd` into the dedicated directory, if you're using the `dotfiles` repo, which provides an `update.sh` script within that folder, to check every subfolder for updates
 +
 [source, console]
 ----
-dustvoice@archiso ~ $ mkdir AUR
 dustvoice@archiso ~ $ cd AUR
 ----
 
@@ -416,12 +415,12 @@ and choose a new password.
 [#create-a-personal-user]
 ==== Create a personal user
 
-We are going to make sure the `fish` shell is installed, create a new user, set the password for this user, make sure the `sudo` package is installed and allow the `wheel` group `sudo` access.
+We are going to make sure the `zsh` shell is installed, create a new user, set the password for this user, make sure the `sudo` package is installed and allow the `wheel` group `sudo` access.
 
 [source, console]
 ----
-[root@archiso /]# pacman -S fish
-[root@archiso /]# useradd -m -p "" -G "adm,audio,disk,floppy,kvm,log,lp,network,rfkill,scanner,storage,users,optical,power,wheel" -s /usr/bin/fish dustvoice
+[root@archiso /]# pacman -S zsh
+[root@archiso /]# useradd -m -p "" -G "adm,audio,disk,floppy,kvm,log,lp,network,rfkill,scanner,storage,users,optical,power,wheel" -s /usr/bin/zsh dustvoice
 [root@archiso /]# passwd dustvoice
 [root@archiso /]# pacman -S sudo
 ----
@@ -772,14 +771,14 @@ To view the network interfaces with all their properties, we can issue
 
 [source, console]
 ----
-dustvoice@DustArch ~> ip link
+DustArch% ip link
 ----
 
 To make sure that you have a working _Internet_ connection, issue
 
 [source, console]
 ----
-dustvoice@DustArch ~> ping archlinux.org
+DustArch% ping archlinux.org
 ----
 
 Everything should run smoothly if you have a wired connection.
@@ -788,7 +787,7 @@ If there is no connection and you're indeed using a wired connection, try restar
 
 [source, console]
 ----
-dustvoice@DustArch ~> sudo systemctl restart NetworkManager.service
+DustArch% sudo systemctl restart NetworkManager.service
 ----
 
 and then try ``ping``ing again.
@@ -804,42 +803,42 @@ First make sure, the scanning of nearby Wi-Fi networks is enabled for your Wi-Fi
 
 [source, console]
 ----
-dustvoice@DustArch ~> nmcli radio
+DustArch% nmcli radio
 ----
 
 and if not, enable it
 
 [source, console]
 ----
-dustvoice@DustArch ~> nmcli radio wifi on
+DustArch% nmcli radio wifi on
 ----
 
 Now make sure your Wi-Fi interface appears under
 
 [source, console]
 ----
-dustvoice@DustArch ~> nmcli device
+DustArch% nmcli device
 ----
 
 Rescan for available networks
 
 [source, console]
 ----
-dustvoice@DustArch ~> nmcli device wifi rescan
+DustArch% nmcli device wifi rescan
 ----
 
 and list all found networks
 
 [source, console]
 ----
-dustvoice@DustArch ~> nmcli device wifi list
+DustArch% nmcli device wifi list
 ----
 
 After that connect to the network
 
 [source, console]
 ----
-dustvoice@DustArch ~> nmcli device wifi connect --ask
+DustArch% nmcli device wifi connect --ask
 ----
 
 Now try ``ping``ing again.
@@ -852,7 +851,7 @@ After making sure that you have a working Internet connection, you can then proc
 
 [source, console]
 ----
-dustvoice@DustArch ~> sudo pacman -Syu
+DustArch% sudo pacman -Syu
 ----
 
 <<<
@@ -873,7 +872,7 @@ and update ``pacman``'s package repositories afterwards
 
 [source, console]
 ----
-dustvoice@DustArch ~> sudo pacman -Sy
+DustArch% sudo pacman -Sy
 ----
 
 <<<
@@ -881,20 +880,18 @@ dustvoice@DustArch ~> sudo pacman -Sy
 === Setting the correct shell
 
 Of course you can use any shell you want.
-In my case I'll be using the `fish` shell.
+In my case I'll be using the `zsh` shell.
 
 [NOTE]
 ====
-I am using `fish` because of its superb auto completion functionality, though that might not be what you're looking for.
-
-Also, be aware that `fish` might not have the best documentation and is also not `sh` compliant.
+I am using `zsh` because of its auto completion functionality and extensibility, as well as a brilliant `vim` like navigation implementation through a plugin, though that might not be what you're looking for.
 ====
 
-We already set the correct shell for the `dustvoice` user in the <<create-a-personal-user>> step, but I want to use `fish` for the `root` user too, so I'll have to change ``root``'s default shell to it.
+We already set the correct shell for the `dustvoice` user in the <<create-a-personal-user>> step, but I want to use `zsh` for the `root` user too, so I'll have to change ``root``'s default shell to it.
 
 [source, console]
 ----
-dustvoice@DustArch ~> sudo chsh -s /usr/bin/fish root
+DustArch% sudo chsh -s /usr/bin/zsh root
 ----
 
 Don't worry about the looks by the way, we're gonna change all that in just a second.
@@ -908,7 +905,7 @@ Just do
 
 [source, console]
 ----
-dustvoice@DustArch ~> sudo pacman -S git
+DustArch% sudo pacman -S git
 ----
 
 and you're good to go.
@@ -923,7 +920,7 @@ Just to make sure, issue
 
 [source, console]
 ----
-dustvoice@DustArch ~> sudo pacman -S gnupg
+DustArch% sudo pacman -S gnupg
 ----
 
 <<<
@@ -937,22 +934,22 @@ To use it, I'll have to install some packages first
 
 [source, console]
 ----
-dustvoice@DustArch ~> sudo pacman -S pcsclite libusb-compat ccid opensc
+DustArch% sudo pacman -S pcsclite libusb-compat ccid opensc
 ----
 
 and then enable and start the `pcscd` service
 
 [source, console]
 ----
-dustvoice@DustArch ~> sudo systemctl enable pcscd.service
-dustvoice@DustArch ~> sudo systemctl start pcscd.service
+DustArch% sudo systemctl enable pcscd.service
+DustArch% sudo systemctl start pcscd.service
 ----
 
 After that, you should be able to see your smartcard being detected
 
 [source, console]
 ----
-dustvoice@DustArch ~> gpg --card-status
+DustArch% gpg --card-status
 ----
 
 [NOTE]
@@ -969,7 +966,7 @@ To minimize the effort required by the following steps, we'll install most of th
 
 [source, console]
 ----
-dustvoice@DustArch ~> sudo pacman -S make cmake clang jdk-openjdk python python-pip pass openssh
+DustArch% sudo pacman -S make cmake clang jdk-openjdk python python-pip pass openssh
 ----
 
 This will ensure, we proceed through the following section without the need for interruption, because a package needs to be installed, so the following content can be condensed to the relevant informations.
@@ -1014,11 +1011,11 @@ To achieve this very specific setup, I have to turn my home directory into said 
 
 [source, console]
 ----
-dustvoice@DustArch ~> git init
-dustvoice@DustArch ~> git remote add origin https://github.com/DustVoice/dotfiles.git
-dustvoice@DustArch ~> git fetch
-dustvoice@DustArch ~> git reset origin/master --hard
-dustvoice@DustArch ~> git branch --set-upstream-to=origin/master master
+DustArch% git init
+DustArch% git remote add origin https://github.com/DustVoice/dotfiles.git
+DustArch% git fetch
+DustArch% git reset origin/master --hard
+DustArch% git branch --set-upstream-to=origin/master master
 ----
 
 Now I can issue any `git` command in my `~` directory, because it now is a `git` repository.
@@ -1035,15 +1032,23 @@ Before we'll be able to update the ``submodule``s (`nvim` config files and ``pas
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~>
+dustvoice@DustArch ~
 $ chmod 700 .gnupg
-[I] dustvoice@DustArch ~>
+dustvoice@DustArch ~
 $ gpg --card-status
-[I] dustvoice@DustArch ~>
+dustvoice@DustArch ~
 $ gpg --card-edit
+----
+
+[source, console]
+----
 (insert) gpg/card> fetch
 (insert) gpg/card> q
-[I] dustvoice@DustArch ~>
+----
+
+[source, console]
+----
+dustvoice@DustArch ~
 $ gpg-connect-agent updatestartuptty /bye
 ----
 
@@ -1056,15 +1061,15 @@ Now, as mentioned before, I'll switch to using `ssh` for authentication, rather 
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~>
+dustvoice@DustArch ~
 $ git remote set-url origin git@github.com:DustVoice/dotfiles.git
 ----
 
-As the best method to both make `fish` recognize all the configuration changes, as well as the `gpg-agent` behave properly, is to re-login, we'll do just that
+As the best method to both make `zsh` recognize all the configuration changes, as well as the `gpg-agent` behave properly, is to re-login, we'll do just that
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~>
+dustvoice@DustArch ~
 $ exit
 ----
 
@@ -1084,27 +1089,29 @@ Now log back in and continue
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ git submodule update --init --recursive
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
+$ source .zshrc
+dustvoice@DustArch ~
 $ cd .config/nvim
-[I] dustvoice@DustArch ~/.config/nvim
+dustvoice@DustArch ~/.config/nvim
 $ echo 'let g:platform = "linux"' >> platform.vim
-[I] dustvoice@DustArch ~/.config/nvim
+dustvoice@DustArch ~/.config/nvim
 $ echo 'let g:use_autocomplete = 3' >> custom.vim
-[I] dustvoice@DustArch ~/.config/nvim
+dustvoice@DustArch ~/.config/nvim
 $ echo 'let g:use_clang_format = 1' >> custom.vim
-[I] dustvoice@DustArch ~/.config/nvim
+dustvoice@DustArch ~/.config/nvim
 $ echo 'let g:use_font = 0' >> custom.vim
-[I] dustvoice@DustArch ~/.config/nvim
+dustvoice@DustArch ~/.config/nvim
 $ sudo pip3 install neovim
-[I] dustvoice@DustArch ~/.config/nvim
+dustvoice@DustArch ~/.config/nvim
 $ nvim --headless +PlugInstall +qa
-[I] dustvoice@DustArch ~/.config/nvim
+dustvoice@DustArch ~/.config/nvim
 $ cd plugged/YouCompleteMe
-[I] dustvoice@DustArch ~/.config/nvim/plugged/YouCompleteMe
+dustvoice@DustArch ~/.config/nvim/plugged/YouCompleteMe
 $ python3 install.py --clang-completer --java-completer
-[I] dustvoice@DustArch ~/.config/nvim/plugged/YouCompleteMe
+dustvoice@DustArch ~/.config/nvim/plugged/YouCompleteMe
 $ cd ~
 ----
 
@@ -1118,6 +1125,7 @@ This is very important for me, as I want to use my smartcard on my development s
 First of all, I want to setup a config file for `ssh`, as I don't want to pass all parameters manually to ssh every time.
 
 .~/.ssh/config
+
 [source, text]
 ----
 Host <connection name>
@@ -1136,7 +1144,7 @@ To get the paths needed as parameters for `RemoteForward`, issue
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ !gpgconf --list-dirs
 ----
 ====
@@ -1161,15 +1169,15 @@ Your personal environment will be complete, after getting `JUCE` and `FRUT`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ git clone https://github.com/WeAreROLI/JUCE.git
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd JUCE
-[I] dustvoice@DustArch ~/JUCE
+dustvoice@DustArch ~/JUCE
 $ git checkout develop
-[I] dustvoice@DustArch ~/JUCE
+dustvoice@DustArch ~/JUCE
 $ cd ..
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ git clone https://github.com/McMartin/FRUT.git
 ----
 
@@ -1181,7 +1189,7 @@ As mentioned before, you would now switch to the `root` user, either by logging 
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo -iu root
 ----
 
@@ -1208,7 +1216,7 @@ We need `python3` in particular as well as `pip` for it.
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S python python-pip
 ----
 
@@ -1218,7 +1226,7 @@ For `asciidoctor`, which will be installed in just a second, we also need to ins
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pip3 install pygments
 ----
 ====
@@ -1232,30 +1240,56 @@ After that we can install `asciidoctor` and all its required gems.
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S ruby rubygems
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ gem install asciidoctor asciidoctor-pdf asciidoctor-epub3 asciidoctor-latex pygments.rb --pre
 ----
 
-Now the only thing left, in my case at least, is adding `~/.gem/ruby/2.6.0/bin` to your path.
+Now the only thing left, in my case at least, is adding `~/.gem/ruby/2.7.0/bin` to your path.
 
 [NOTE]
 ====
 Please note that if you run a ruby version different from `2.7.0`, or if you upgrade your ruby version, you have to use the `bin` path for that version.
 ====
 
-For `fish` you'll want to run the following command
+For `zsh` you'll want to add a new entry inside the `.zshpath` file
 
-[source, console]
+.~/.zshpath
+
+[source, text]
 ----
-[I] dustvoice@DustArch ~
-$ set -U fish_user_path $fish_user_path ~/.gem/ruby/2.7.0/bin
+path=("$HOME/.gem/ruby/2.7.0/bin")
 ----
+
+which then gets sourced by the provided `.zshenv` file.
 
 [NOTE]
 ====
-If you use another shell than `fish`, you might have to do something different to add a directory to your `PATH`.
+You might have to re-``source`` the `.zshenv` file to make the changes take effect immediately
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ source .zshenv
+----
+====
+
+[NOTE]
+====
+If you want to add a new entry to the `path` variable, you have to append it to the array
+
+.~/.zshpath
+
+[source, text]
+----
+path=("$HOME/.gem/ruby/2.7.0/bin" "$HOME/.gem/ruby/2.6.0/bin")
+----
+====
+
+[NOTE]
+====
+If you use another shell than `zsh`, you might have to do something different, to add a directory to your `PATH`.
 ====
 
 <<<
@@ -1266,7 +1300,7 @@ In order to use `JUCE`, you'll need to have some dependency packages installed
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S clang gcc freeglut alsa-lib gnutls libcurl-gnutls freetype2 jack2 libx11 libxcomposite libxinerama libxrandr mesa webkit2gtk
 ----
 
@@ -1274,7 +1308,7 @@ If you want to use every feature of `JUCE` you'll need to install 2 more package
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S ladspa lib32-freeglut
 ----
 
@@ -1293,7 +1327,7 @@ For `java` stuff, we can use `astyle`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S astyle
 ----
 
@@ -1305,7 +1339,7 @@ To generate a documentation from source code, I mostly use `doxygen`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S doxygen
 ----
 
@@ -1317,7 +1351,7 @@ In addition to `make`, I'll often times use `ninja` for my builds
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S ninja
 ----
 
@@ -1374,7 +1408,7 @@ To quickly setup audio this way, install `alsa` and `alsa-utils`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S alsa alsa-utils
 ----
 
@@ -1382,7 +1416,7 @@ Now choose the sound card you want to use
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cat /proc/asound/cards
 ----
 
@@ -1408,7 +1442,7 @@ Some applications require `pulseaudio`, or work better with it, for example `dis
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S pulseaudio pulsemixer pavucontrol
 ----
 
@@ -1436,9 +1470,9 @@ Of course a restart of the `pulseaudio` daemon is necessary to reflect the chang
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ pulseaudio --kill
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ pulseaudio --start
 ----
 
@@ -1452,7 +1486,7 @@ To install `jack` and a GUI to configure it, just do
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S jack2 cadence
 ----
 
@@ -1460,7 +1494,7 @@ If you also want to use `pulseaudio` applications, that don't have native suppor
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S pulseaudio-jack
 ----
 
@@ -1472,7 +1506,7 @@ To also play audio, we need to install some other packages too
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S sox libao libmad libid3tag wavpack libpulse opus file twolame
 ----
 
@@ -1480,9 +1514,9 @@ Now you can simply do
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ play audio.wav
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ play audio.mp3
 ----
 
@@ -1496,7 +1530,7 @@ To set up Bluetooth, we need to install the `bluez` and `bluez-utils` packages i
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S bluez bluez-utils
 ----
 
@@ -1504,7 +1538,7 @@ Now we need to check if the `btusb` kernel module was already loaded
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo lsmod | grep btusb
 ----
 
@@ -1512,9 +1546,9 @@ After that we can enable and start the `bluetooth.service` service
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo systemctl enable bluetooth.service
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo systemctl start bluetooth.service
 ----
 
@@ -1527,7 +1561,7 @@ Now simply enter `bluetoothctl`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ bluetoothctl
 ----
 
@@ -1609,7 +1643,7 @@ So first install `pulseaudio-bluetooth`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S pulseaudio-bluetooth
 ----
 
@@ -1626,9 +1660,9 @@ and restart `pulseaudio`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ pulseaudo --kill
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ pulseaudo --start
 ----
 
@@ -1638,9 +1672,27 @@ If you want a GUI to do all of this, just install `blueman` and launch `blueman-
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S blueman
 ----
+
+<<<
+
+=== `tmux`
+
+As I assume that you're still inside the native linux terminal, I would reccommend to install `tmux` which enables you to have multiple terminal instances (called `windows` in `tmux`) open at the same time.
+This makes working with the linux terminal much easier.
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S tmux
+----
+
+[NOTE]
+====
+To view a list of keybinds, you just need to press `CTRL+b` followed by `?`.
+====
 
 <<<
 
@@ -1650,7 +1702,7 @@ If you decide, that you want to use a graphical desktop environment, you have to
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S xorg xorg-xinit xorg-drivers i3 i3status rofi ttf-hack xfce4-terminal arandr
 ----
 
@@ -1662,7 +1714,7 @@ If you also want to use NVIDIA functionality, for example for `davinci-resolve`,
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S nvidia nvidia-utils nvidia-settings opencl-nvidia
 ----
 
@@ -1698,19 +1750,19 @@ Simply install `nvidia-xrun`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S nvidia bbswitch
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/nvidia-xrun.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd nvidia-xrun
-[I] dustvoice@DustArch ~/AUR/nvidia-xrun
+dustvoice@DustArch ~/AUR/nvidia-xrun
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/nvidia-xrun
+dustvoice@DustArch ~/AUR/nvidia-xrun
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/nvidia-xrun
+dustvoice@DustArch ~/AUR/nvidia-xrun
 $ git clean -fdx
 ----
 
@@ -1720,19 +1772,19 @@ If your hardware doesn't support `bbswitch`, you would need to run
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S nvidia
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/nvidia-xrun-pm.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd nvidia-xrun-pm
-[I] dustvoice@DustArch ~/AUR/nvidia-xrun-pm
+dustvoice@DustArch ~/AUR/nvidia-xrun-pm
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/nvidia-xrun-pm
+dustvoice@DustArch ~/AUR/nvidia-xrun-pm
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/nvidia-xrun-pm
+dustvoice@DustArch ~/AUR/nvidia-xrun-pm
 $ git clean -fdx
 ----
 
@@ -1761,7 +1813,7 @@ With this config in place,
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ lsmod | grep nvidia
 ----
 
@@ -1769,7 +1821,7 @@ and
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ lsmod | grep nouveau
 ----
 
@@ -1787,7 +1839,7 @@ If you installed `nvidia-xrun-pm` instead of `nvidia-xrun` and `bbswitch`, you m
 
 [source, console]
 ----
-[I] dustvoice@dustArch ~
+dustvoice@dustArch ~
 $ sudo systemctl enable nvidia-xrun-pm.service
 ----
 ====
@@ -1818,7 +1870,7 @@ For that I have to install both
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S xss-lock i3lock
 ----
 
@@ -1839,17 +1891,17 @@ We could use `gnome-polkit` for that purpose, which resides inside the official 
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/xfce-polkit.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd xfce-polkit
-[I] dustvoice@DustArch ~/AUR/xfce-polkit
+dustvoice@DustArch ~/AUR/xfce-polkit
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/xfce-polkit
+dustvoice@DustArch ~/AUR/xfce-polkit
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/xfce-polkit
+dustvoice@DustArch ~/AUR/xfce-polkit
 $ git clean -fdx
 ----
 
@@ -1863,7 +1915,7 @@ You might want to consider installing `nitrogen`, in order to be able to set a b
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S nitrogen
 ----
 
@@ -1875,7 +1927,7 @@ To get buttery smooth animation as well as e.g. smooth video playback in `brave`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S picom
 ----
 
@@ -1887,7 +1939,7 @@ In order for ``obs``' screen capture to work correctly, you need to kill `picom`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ pkill picom
 ----
 
@@ -1895,9 +1947,9 @@ or
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ ps aux | grep picom
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ kill -9 <pid>
 ----
 ====
@@ -1910,7 +1962,7 @@ To install the `NetworkManager` applet, which lives in your tray and provides yo
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S network-manager-applet
 ----
 
@@ -1918,7 +1970,7 @@ Now you can start the applet with
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ nm-applet &
 ----
 
@@ -1938,17 +1990,17 @@ To show, which keyboard layout and variant is currently in use, you can use `xkb
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/xkblayout-state.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd xkblayout-state
-[I] dustvoice@DustArch ~/AUR/xkblayout-state
+dustvoice@DustArch ~/AUR/xkblayout-state
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/xkblayout-state
+dustvoice@DustArch ~/AUR/xkblayout-state
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/xkblayout-state
+dustvoice@DustArch ~/AUR/xkblayout-state
 $ git clean -fdx
 ----
 
@@ -1962,9 +2014,9 @@ To copy something from the terminal to the `xorg` clipboard, use `xclip`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S xclip
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ xclip some_random_text
 ----
 
@@ -1976,7 +2028,7 @@ For this functionality, especially in combination with `rofi`, use `scrot`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S scrot
 ----
 
@@ -1990,9 +2042,9 @@ Now that we can create screen shots, we might also want to view those
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S ristretto
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ ristretto filename.png
 ----
 
@@ -2005,7 +2057,7 @@ In my case, `thunar`, the `xfce` file manager, worked best.
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S thunar
 ----
 
@@ -2013,19 +2065,19 @@ To also be able to `mount` removable drives, without being `root` or using `sudo
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S gvfs
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/gigolo.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd gigolo
-[I] dustvoice@DustArch ~/AUR/gigolo
+dustvoice@DustArch ~/AUR/gigolo
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/gigolo
+dustvoice@DustArch ~/AUR/gigolo
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/gigolo
+dustvoice@DustArch ~/AUR/gigolo
 $ git clean -fdx
 ----
 
@@ -2037,7 +2089,7 @@ To furthermore enable the transfer of files between your PC and your android pho
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S libmtp gvfs-mtp
 ----
 
@@ -2051,17 +2103,17 @@ Install `simple-mtpfs`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/simple-mtpfs.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd simple-mtpfs
-[I] dustvoice@DustArch ~/AUR/simple-mtpfs
+dustvoice@DustArch ~/AUR/simple-mtpfs
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/simple-mtpfs
+dustvoice@DustArch ~/AUR/simple-mtpfs
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/simple-mtpfs
+dustvoice@DustArch ~/AUR/simple-mtpfs
 $ git clean -fdx
 ----
 
@@ -2077,11 +2129,11 @@ and mount the android device
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ simple-mtpfs -l
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ mkdir ~/mnt
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ simple-mtpfs --device <number> ~/mnt -allow_other
 ----
 
@@ -2089,9 +2141,9 @@ and respectively unmount it
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ fusermount -u mnt
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ rmdir mnt
 ----
 
@@ -2101,7 +2153,7 @@ Install `adb`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S adb
 ----
 
@@ -2109,7 +2161,7 @@ kill the `adb` server, if it is running
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ adb kill-server
 ----
 
@@ -2122,7 +2174,7 @@ Now connect your phone, unlock it and start the `adb` server
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ adb start-server
 ----
 
@@ -2131,7 +2183,7 @@ Accept it and ensure that the device was recognized
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ adb devices
 ----
 
@@ -2139,11 +2191,11 @@ Now you can ``push``/``pull`` files.
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ adb pull /storage/emulated/0/DCIM/Camera/IMG.jpg .
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ adb push IMG.jpg /storage/emulated/0/DCIM/Camera/IMG2.jpg
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ adb kill-server
 ----
 
@@ -2163,7 +2215,7 @@ In order for `xarchiver` to work at its full potential, we're first gonna instal
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S p7zip zip unrar cpio
 ----
 
@@ -2171,7 +2223,7 @@ Now we can proceed to install `xarchiver`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S xarchiver
 ----
 
@@ -2184,7 +2236,7 @@ For that you can install `gparted`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S gparted
 ----
 
@@ -2203,7 +2255,7 @@ Installing `mupdf` is as simple as issuing
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S mupdf
 ----
 
@@ -2211,7 +2263,7 @@ If you want to have changes made to the PDF reflected immediately in the viewer,
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S evince
 ----
 
@@ -2226,7 +2278,7 @@ To install it simply do
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ pacman -S fbida ghostscript
 ----
 
@@ -2234,7 +2286,7 @@ and to view this PDF document (`Documentation.pdf`) for example, you would run
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ fbgs Documentation.pdf
 ----
 
@@ -2252,19 +2304,19 @@ In my case, I'll install `brave` from the `AUR`, as well as `browserpass` from t
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/brave-bin.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd brave-bin
-[I] dustvoice@DustArch ~/AUR/brave-bin
+dustvoice@DustArch ~/AUR/brave-bin
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/brave-bin
+dustvoice@DustArch ~/AUR/brave-bin
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/brave-bin
+dustvoice@DustArch ~/AUR/brave-bin
 $ git clean -fdx
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S browserpass
 ----
 
@@ -2272,13 +2324,13 @@ Now we still have to setup `browserpass`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd /usr/lib/browserpass
-[I] dustvoice@DustArch /usr/lib/browserpass
+dustvoice@DustArch /usr/lib/browserpass
 $ make hosts-brave-user
-[I] dustvoice@DustArch /usr/lib/browserpass
+dustvoice@DustArch /usr/lib/browserpass
 $ make policies-brave-user
-[I] dustvoice@DustArch /usr/lib/browserpass
+dustvoice@DustArch /usr/lib/browserpass
 $ cd ~
 ----
 
@@ -2293,17 +2345,17 @@ Although this shouldn't be your only precaution, using `tor-browser` would be th
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/tor-browser.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd tor-browser
-[I] dustvoice@DustArch ~/AUR/tor-browser
+dustvoice@DustArch ~/AUR/tor-browser
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/tor-browser
+dustvoice@DustArch ~/AUR/tor-browser
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/tor-browser
+dustvoice@DustArch ~/AUR/tor-browser
 $ git clean -fdx
 ----
 
@@ -2320,7 +2372,7 @@ For now we'll install `libreoffice-fresh`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S libreoffice-fresh
 ----
 
@@ -2333,13 +2385,13 @@ In order to be able to print from the `gtk` print dialog, we'll also need to ins
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S avahi
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S cups cups-pdf nss-mdns
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo systemctl enable avahi-daemon.service
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo systemctl start avahi-daemon.service
 ----
 
@@ -2365,13 +2417,13 @@ Now continue with this
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ avahi-browse --all --ignore-local --resolve --terminate
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo systemctl enable org.cups.cupsd.service
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo systemctl start org.cups.cupsd.service
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S system-config-printer print-manager
 ----
 
@@ -2389,7 +2441,7 @@ The next evolutionary step would be `htop`, which is an improved version of `top
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S htop
 ----
 
@@ -2397,7 +2449,7 @@ If you prefer a GUI for that kind of task, install `xfce4-taskmanager`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S xfce4-taskmanager
 ----
 
@@ -2416,7 +2468,7 @@ There is nothing better than some classical email.
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S thunderbird
 ----
 
@@ -2428,7 +2480,7 @@ You want to have your `telegram` messages on your desktop PC?
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S telegram-desktop
 ----
 
@@ -2441,7 +2493,7 @@ Go for it
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S teamspeak3
 ----
 
@@ -2454,7 +2506,7 @@ No problem
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S discord
 ----
 
@@ -2472,7 +2524,7 @@ You might consider using `vlc`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S vlc
 ----
 
@@ -2484,17 +2536,17 @@ $ sudo pacman -S vlc
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/obs-studio-git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd obs-studio-git
-[I] dustvoice@DustArch ~/AUR/obs-studio-git
+dustvoice@DustArch ~/AUR/obs-studio-git
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/obs-studio-git
+dustvoice@DustArch ~/AUR/obs-studio-git
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/obs-studio-git
+dustvoice@DustArch ~/AUR/obs-studio-git
 $ git clean -fdx
 ----
 
@@ -2504,19 +2556,19 @@ In order to show the viewers what keystrokes you're pressing, you can use someth
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/screenkey.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd screenkey
-[I] dustvoice@DustArch ~/AUR/screenkey
+dustvoice@DustArch ~/AUR/screenkey
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/screenkey
+dustvoice@DustArch ~/AUR/screenkey
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/screenkey
+dustvoice@DustArch ~/AUR/screenkey
 $ git clean -fdx
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ screenkey
 ----
 
@@ -2534,7 +2586,7 @@ Just install
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S tmate
 ----
 
@@ -2542,7 +2594,7 @@ and run it
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ tmate
 ----
 
@@ -2554,17 +2606,17 @@ In my case, I'm using `davinci-resolve`.
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/davinci-resolve.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd davinci-resolve
-[I] dustvoice@DustArch ~/AUR/davinci-resolve
+dustvoice@DustArch ~/AUR/davinci-resolve
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/davinci-resolve
+dustvoice@DustArch ~/AUR/davinci-resolve
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/davinci-resolve
+dustvoice@DustArch ~/AUR/davinci-resolve
 $ git clean -fdx
 ----
 
@@ -2577,17 +2629,17 @@ Wanna remote control your own or another PC?
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/teamviewer.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd teamviewer
-[I] dustvoice@DustArch ~/AUR/teamviewer
+dustvoice@DustArch ~/AUR/teamviewer
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/teamviewer
+dustvoice@DustArch ~/AUR/teamviewer
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/teamviewer
+dustvoice@DustArch ~/AUR/teamviewer
 $ git clean -fdx
 ----
 
@@ -2599,7 +2651,7 @@ To e.g. edit and produce audio, I would recommend `ardour`, because it's easy to
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S ardour
 ----
 
@@ -2625,7 +2677,7 @@ First make sure it's installed
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S ffmpeg
 ----
 
@@ -2633,7 +2685,7 @@ and after that we're going to convert `in.wav` to `out.mp3`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ ffmpeg -i in.wav -acodec mp3 out.mp3
 ----
 ====
@@ -2647,7 +2699,7 @@ For that you can use `virtualbox`
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S virtualbox virtualbox-host-modules-arch
 ----
 
@@ -2655,7 +2707,7 @@ Now when you want to use `virtualbox` just load the kernel module
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo modprobe vboxdrv
 ----
 
@@ -2663,7 +2715,7 @@ and add the user which is supposed to run `virtualbox` to the `vboxusers` group
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo usermod -a G vboxusers $USER
 ----
 
@@ -2671,7 +2723,7 @@ and if you want to use `rawdisk` functionality, also to the `disk` group
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo usermod -a G disk $USER
 ----
 
@@ -2695,7 +2747,7 @@ The first option for native/emulated gaming on Linux is obviously `steam`.
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S steam lib32-nvidia-utils pulseaudio pulseaudio-alsa lib32-libpulse
 ----
 
@@ -2703,7 +2755,7 @@ The second option would be `lutris`, a program, that configures a wine instance 
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S lutris
 ----
 
@@ -2715,7 +2767,7 @@ In order to use a Wacom graphics tablet, you'll have to install some packages
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S libwacom xf86-input-wacom
 ----
 
@@ -2724,41 +2776,41 @@ But on the other hand there is also `wacom-utility`, a GUI software for all of t
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/wacom-utility.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/gksu.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/libgks.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd libgks
-[I] dustvoice@DustArch ~/AUR/libgks
+dustvoice@DustArch ~/AUR/libgks
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/libgks
+dustvoice@DustArch ~/AUR/libgks
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/libgks
+dustvoice@DustArch ~/AUR/libgks
 $ git clean -fdx
-[I] dustvoice@DustArch ~/AUR/libgks
+dustvoice@DustArch ~/AUR/libgks
 $ cd ..
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd gksu
-[I] dustvoice@DustArch ~/AUR/gksu
+dustvoice@DustArch ~/AUR/gksu
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/gksu
+dustvoice@DustArch ~/AUR/gksu
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/gksu
+dustvoice@DustArch ~/AUR/gksu
 $ git clean -fdx
-[I] dustvoice@DustArch ~/AUR/gksu
+dustvoice@DustArch ~/AUR/gksu
 $ cd ..
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd wacom-utility
-[I] dustvoice@DustArch ~/AUR/wacom-utility
+dustvoice@DustArch ~/AUR/wacom-utility
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/wacom-utility
+dustvoice@DustArch ~/AUR/wacom-utility
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/wacom-utility
+dustvoice@DustArch ~/AUR/wacom-utility
 $ git clean -fdx
 ----
 
@@ -2770,21 +2822,21 @@ In order to connect to a machine over `VNC` or to connect to a machine using the
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ cd AUR
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ git clone https://aur.archlinux.org/freerdp.git
-[I] dustvoice@DustArch ~/AUR
+dustvoice@DustArch ~/AUR
 $ cd freerdp
-[I] dustvoice@DustArch ~/AUR/freerdp
+dustvoice@DustArch ~/AUR/freerdp
 $ makepkg -si
-[I] dustvoice@DustArch ~/AUR/freerdp
+dustvoice@DustArch ~/AUR/freerdp
 $ git reset HEAD --hard
-[I] dustvoice@DustArch ~/AUR/freerdp
+dustvoice@DustArch ~/AUR/freerdp
 $ git clean -fdx
-[I] dustvoice@DustArch ~/AUR/freerdp
+dustvoice@DustArch ~/AUR/freerdp
 $ cd ~
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -S libvncserver remmina
 ----
 
@@ -2798,7 +2850,7 @@ You'll probably think that it would be just a matter of issuing
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -Syu
 ----
 
@@ -2812,7 +2864,7 @@ If your system *indeed doesn't boot* and *boots to a recovery console*, then dou
 
 [source, console]
 ----
-[I] root@DustArch ~
+root@DustArch ~
 $ uname -a
 ----
 
@@ -2820,7 +2872,7 @@ and
 
 [source, console]
 ----
-[I] root@DustArch ~
+root@DustArch ~
 $ pacman -Q linux
 ----
 
@@ -2838,7 +2890,7 @@ For that note the version number of
 
 [source, console]
 ----
-[I] root@DustArch ~
+root@DustArch ~
 $ uname -a
 ----
 
@@ -2847,7 +2899,7 @@ The process will also create a new `/boot` folder, which we're going to delete a
 
 [source, console]
 ----
-[I] root@DustArch ~
+root@DustArch ~
 $ umount /boot
 ----
 
@@ -2855,7 +2907,7 @@ Now `cd` into ``pacman``'s package cache
 
 [source, console]
 ----
-[I] root@DustArch ~
+root@DustArch ~
 $ cd /var/cache/pacman/pkg
 ----
 
@@ -2865,7 +2917,7 @@ Now downgrade the `linux` package
 
 [source, console]
 ----
-[I] root@DustArch ~
+root@DustArch ~
 $ pacman -U linux-<version>.pkg.tar.xz
 ----
 
@@ -2873,9 +2925,9 @@ After that remove the possibly created `/boot` directory
 
 [source, console]
 ----
-[I] root@DustArch ~
+root@DustArch ~
 $ rm -rf /boot
-[I] root@DustArch ~
+root@DustArch ~
 $ mkdir /boot
 ----
 
@@ -2885,7 +2937,7 @@ Now simply rerun
 
 [source, console]
 ----
-[I] dustvoice@DustArch ~
+dustvoice@DustArch ~
 $ sudo pacman -Syu
 ----
 
