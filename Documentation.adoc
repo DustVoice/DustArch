@@ -1,6 +1,6 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v7.1, 2020-01-24
+v8.1, 2020-01-31
 :doctype: book
 :docinfo: shared
 :title-logo-image: image:arch.png[]
