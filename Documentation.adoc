@@ -1,6 +1,6 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v8.1, 2020-01-31
+v8.2, 2020-01-31
 :doctype: book
 :docinfo: shared
 :title-logo-image: image:arch.png[]
@@ -38,6 +38,15 @@ First of all we need to sync up ``pacman``'s package repository, in order to be 
 ----
 root@archiso ~ # pacman -Sy
 ----
+
+[WARNING]
+====
+Using `pacman -Sy` should be sufficient, in order to be able to search for packages from within the `archiso`, without upgrading the system, but might break your system, if you use this command on an existing installation!
+
+To be on the safe side, it is advised to always use `pacman -Syu` instead!
+
+`pacstrap` uses the latest packages anyways.
+====
 
 <<<
 
@@ -142,6 +151,62 @@ There are three categories of software:
 
 <<<
 
+==== Software installation
+
+In this guide, I'll be explicitly mark the packages installed in a specific section.
+
+This enables you to
+
+* clearly see what packages get installed / need to be installed in a specific section
+
+* install packages before you start with the section in order to minimize waiting time
+
+* not have to read through bloating lines like
++
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo pacman -S some-package
+----
+
+* not have to accidentally reinstall already installed packages
+
+[NOTE]
+====
+The packages are always the recommended packages.
+
+For further clarification for specific packages (e.g. `UEFI` specific packages), continue reading the section, as there is most certainly a explanation there.
+
+Of course, you can adapt everything to your needs, especially in the <<additional-setup-packages>> step.
+====
+
+===== Example section
+
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|core
+|libutil-linux
+
+|extra
+|git
+
+|community
+|ardour cadence jsampler linuxsampler qsampler sample-package 
+
+|AUR
+|sbupdate
+|===
+
+You have to configure `sample-package` by editing `/etc/sample.conf`
+
+./etc/sample.conf
+[source, text]
+----
+Sample.text=useful
+----
+
 === Formatting the drive
 
 First you have to list all the available drives by issuing
@@ -209,21 +274,26 @@ root@archiso ~ # mount /dev/sda2 /mnt/boot
 
 First it might make sense to edit `/etc/pacman.d/mirrorlist` to move the mirror(s) geographically closest to you to the top.
 
-After that we can either install the *bare minimum packages* needed
+After that we can `pacstrap` the *minimum packages* needed.
+We will install all other packages later on.
+
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|core
+|base linux linux-firmware
+|===
+
+[NOTE]
+====
+This is the actual command used in my case
 
 [source, console]
 ----
 root@archiso ~ # pacstrap /mnt base linux linux-firmware
 ----
-
-or install *all packages present* on the archiso, which makes sense in our case
-
-[source, console]
-----
-root@archiso ~ # pacstrap /mnt base base-devel linux linux-firmware $(pacman -Qq | tr '\n' ' ')
-----
-
-_This could take quite some time depending on your Internet connection speed._
+====
 
 After that generate an `fstab` using `genfstab`
 
@@ -233,6 +303,10 @@ root@archiso ~ # genfstab -U /mnt >> /mnt/etc/fstab
 ----
 
 and you're ready to enter the `chroot` environment.
+
+[NOTE]
+====
+If you want to install all packages present on the `archiso` in the <<additional-startup-packages>> step, you would need to run
 
 <<<
 
@@ -255,18 +329,30 @@ Et Voila! You successfully ``chroot``ed inside your new system and you'll be gre
 
 <<<
 
+[#additional-startup-packages]
 === Installing additional packages
+
+// TODO: Software Packages table
+
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|core
+|amd-ucode base-devel diffutils dmraid dnsmasq dosfstools exfat-utils iputils lvm2 openssh sudo usbutils
+
+|extra
+|efitools git intel-ucode networkmanager networkmanager-openconnect networkmanager-openvpn parted rsync zsh
+
+|community
+|neovim
+|===
 
 First off you'll probably need a text editor.
 
 There are many command line text editors available, like `nano`, `vi`, `vim`, `emacs`, etc.
 
 I'll be using `neovim`, though it shouldn't matter what editor you choose.
-
-[source, console]
-----
-[root@archiso /]# pacman -S neovim
-----
 
 After that we'll make sure we get ourselves some basic utilities and enable the `NetworkManager.service` service, in order for the Internet connection to work upon booting into our fresh system later on.
 
@@ -294,6 +380,8 @@ polkit.addRule(function(action, subject) {
     }
 });
 ----
+
+// TODO: Software Packages table
 
 If you use `UEFI`, you'll also need
 
@@ -434,6 +522,8 @@ and choose a new password.
 [#create-a-personal-user]
 ==== Create a personal user
 
+// TODO: Software Packages table
+
 We are going to make sure the `zsh` shell is installed, create a new user, set the password for this user, make sure the `sudo` package is installed and allow the `wheel` group `sudo` access.
 
 [source, console]
@@ -476,6 +566,8 @@ to solely grant yourself `sudo` privileges.
 
 === Preparing to boot
 
+// TODO: Software Packages table
+
 Now onto installing the boot manager.
 We will use `grub` in this guide.
 
@@ -485,6 +577,8 @@ First make sure, all the required packages are installed
 ----
 [root@archiso /]# pacman -S grub dosfstools os-prober mtools
 ----
+
+// TODO: Software Packages table
 
 and if you want to use `UEFI`, also
 
@@ -638,6 +732,8 @@ As I want all possible options to possibly troubleshoot my PC right there in my 
 
 ====== `BIOS`
 
+// TODO: Software Packages table
+
 For a `BIOS` setup, you'll need `memtest86+`
 
 [source, console]
@@ -648,6 +744,8 @@ For a `BIOS` setup, you'll need `memtest86+`
 <<<
 
 ====== `UEFI`
+
+// TODO: Software Packages table
 
 For a `UEFI` setup, you'll need ``memtest86-efi``^`AUR`^.
 
@@ -723,6 +821,8 @@ Now you're good to boot into your new system.
 <<<
 
 === Secure Boot
+
+// TODO: Software Packages table
 
 I know I told you that you're now good to boot into your new system.
 That is only correct, if you're *not* using Secure Boot.
@@ -871,6 +971,8 @@ Now try ``ping``ing again.
 
 === Update and upgrade
 
+// TODO: Software Packages table
+
 After making sure that you have a working Internet connection, you can then proceed to update and upgrade all installed packages by issuing
 
 [source, text]
@@ -881,6 +983,8 @@ DustArch% sudo pacman -Syu
 <<<
 
 === Enabling the `multilib` repository
+
+// TODO: Software Packages table
 
 In order to make 32-bit packages available to `pacman`, we'll need to enable the `multilib` repository in `/etc/pacman.conf` first.
 Simply uncomment
@@ -924,6 +1028,8 @@ Don't worry about the looks by the way, we're gonna change all that in just a se
 
 === `git`
 
+// TODO: Software Packages table
+
 Next you'll probably want to install `git`.
 Just do
 
@@ -939,6 +1045,8 @@ We'll care about the `.gitconfig` in just a second.
 
 === Security is important
 
+// TODO: Software Packages table
+
 If you've followed the tutorial using a recent version of the archiso, you'll probably already have the most recent version of `gnupg` installed by default.
 Just to make sure, issue
 
@@ -950,6 +1058,8 @@ DustArch% sudo pacman -S gnupg
 <<<
 
 ==== Smartcard shenanigans
+
+// TODO: Software Packages table
 
 After that you'll still have to setup `gnupg` correctly.
 In my case I have my private keys stored on a smartcard.
@@ -985,6 +1095,8 @@ If your smartcard still isn't detected, try logging off completely or even resta
 
 [#additional-tools-setup-home]
 === Additional required tools
+
+// TODO: Software Packages table
 
 To minimize the effort required by the following steps, we'll install most of the required packages beforehand
 
@@ -1247,6 +1359,8 @@ Well, why wouldn't you want audio...
 
 ==== `alsa`
 
+// TODO: Software Packages table
+
 [NOTE]
 ====
 You're probably better off using `pulseaudio` and/or `jack`.
@@ -1285,6 +1399,8 @@ It should be apparent, that you would have to switch out `2` with the number cor
 <<<
 
 ==== `pulseaudio`
+
+// TODO: Software Packages table
 
 Some applications require `pulseaudio`, or work better with it, for example `discord`, so it might make sense to use `pulseaudio`
 
@@ -1328,6 +1444,8 @@ $ pulseaudio --start
 
 ==== `jack`
 
+// TODO: Software Packages table
+
 If you either want to manually control audio routing, or if you use some kind of audio application like `ardour`, you'll probably want to use `jack`.
 
 To install `jack` and a GUI to configure it, just do
@@ -1349,6 +1467,8 @@ $ sudo pacman -S pulseaudio-jack
 <<<
 
 ==== Audio handling
+
+// TODO: Software Packages table
 
 To also play audio, we need to install some other packages too
 
@@ -1373,6 +1493,8 @@ etc. to play audio.
 <<<
 
 === Bluetooth
+
+// TODO: Software Packages table
 
 To set up Bluetooth, we need to install the `bluez` and `bluez-utils` packages in order to have at least a command line utility `bluetoothctl` to configure connections
 
@@ -1485,6 +1607,8 @@ Finally connect to your device
 
 [NOTE]
 ====
+// TODO: Software Packages table
+
 If your device is an audio device, of some kind you might have to install `pulseaudio-bluetooth` and append 2 lines to `/etc/pulse/system.pa` as well.
 
 So first install `pulseaudio-bluetooth`
@@ -1516,6 +1640,8 @@ $ pulseaudo --start
 
 ====
 
+// TODO: Software Packages table
+
 If you want a GUI to do all of this, just install `blueman` and launch `blueman-manager`
 
 [source, console]
@@ -1528,6 +1654,8 @@ $ sudo pacman -S blueman
 
 === Graphical desktop environment
 
+// TODO: Software Packages table
+
 If you decide, that you want to use a graphical desktop environment, you have to install additional packages in order for that to work.
 
 [source, console]
@@ -1539,6 +1667,8 @@ $ sudo pacman -S xorg xorg-xinit xorg-drivers i3 i3status rofi ttf-hack xfce4-te
 <<<
 
 ==== NVIDIA
+
+// TODO: Software Packages table
 
 If you also want to use NVIDIA functionality, for example for `davinci-resolve`, you'll most likely need to install their proprietary driver
 
@@ -1566,6 +1696,8 @@ If anything goes wrong in the process, remember that you can press *Ctrl+Alt+<Nu
 <<<
 
 ===== The NVIDIA way
+
+// TODO: Software Packages table
 
 If you're using an NVIDIA graphics card, you might want to use ``nvidia-xrun``^`AUR`^ instead of `startx`.
 This has the advantage, of the `nvidia` kernel modules, as well as the `nouveau` ones not loaded at boot time, thus saving power.
@@ -1598,6 +1730,8 @@ $ git clean -fdx
 
 [NOTE]
 ====
+// TODO: Software Packages table
+
 If your hardware doesn't support `bbswitch`, you would need to use ``nvidia-xrun-pm``^`AUR`^ instead
 
 [source, console]
@@ -1689,6 +1823,8 @@ Software that is useful in combination with a `console`.
 
 ==== `tmux`
 
+// TODO: Software Packages table
+
 I would reccommend to install `tmux` which enables you to have multiple terminal instances (called `windows` in `tmux`) open at the same time.
 This makes working with the linux terminal much easier.
 
@@ -1713,6 +1849,8 @@ Here are some pieces of software to do exactly that.
 <<<
 
 ===== `weechat`
+
+// TODO: Software Packages table
 
 `weechat` is an `IRC` client for the terminal, with the best features and even a `vim` mode, by using a plugin
 
@@ -1802,6 +1940,8 @@ select the entry you want to modify (for example for `plugins.var.python.vimode`
 
 ==== PDF viewer
 
+// TODO: Software Packages table
+
 To use `asciidoctor-pdf`, you might be wondering how you are supposed to open the generated PDFs from the native linux console.
 
 This `fbida` package provides the `fbgs` software, which renders a PDF document using the native framebuffer.
@@ -1843,6 +1983,8 @@ As we already installed it in the <<additional-tools-setup-home>> step and updat
 
 ==== `python`
 
+// TODO: Software Packages table
+
 Python has become really important for a magnitude of use cases.
 We need `python3` in particular as well as `pip` for it.
 
@@ -1866,6 +2008,8 @@ $ sudo pip3 install pygments
 <<<
 
 ==== `ruby` & `asciidoctor`
+
+// TODO: Software Packages table
 
 In order to use `asciidoctor`, we have to install `ruby` and `rubygems`.
 After that we can install `asciidoctor` and all its required gems.
@@ -1972,6 +2116,8 @@ $ git clone https://github.com/McMartin/FRUT.git
 
 ===== Using `JUCE`
 
+// TODO: Software Packages table
+
 In order to use `JUCE`, you'll need to have some dependency packages installed
 
 [source, console]
@@ -1998,6 +2144,8 @@ Here are just some examples of development tools one could install in addition t
 
 ===== Code formatting
 
+// TODO: Software Packages table
+
 We already have `clang-format` as a code formatter, but this only works for ``C``-family languages.
 For `java` stuff, we can use `astyle`
 
@@ -2011,6 +2159,8 @@ $ sudo pacman -S astyle
 
 ===== Documentation
 
+// TODO: Software Packages table
+
 To generate a documentation from source code, I mostly use `doxygen`
 
 [source, console]
@@ -2023,6 +2173,8 @@ $ sudo pacman -S doxygen
 
 ===== Build tools
 
+// TODO: Software Packages table
+
 In addition to `make`, I'll often times use `ninja` for my builds
 
 [source, console]
@@ -2034,6 +2186,8 @@ $ sudo pacman -S ninja
 <<<
 
 ==== Android file transfer
+
+// TODO: Software Packages table
 
 To furthermore enable the transfer of files between your PC and your android phone, you'll have to install `mtp` and `gvfs-mtp`
 
@@ -2049,7 +2203,9 @@ If you want to access the android's file system from the command line, you will 
 
 <<<
 
-===== `simple-mtpfs`
+===== ``simple-mtpfs``^`AUR`^
+
+// TODO: Software Packages table
 
 Install `simple-mtpfs`
 
@@ -2102,6 +2258,8 @@ $ rmdir mnt
 <<<
 
 ===== `adb`
+
+// TODO: Software Packages table
 
 Install `adb`
 
@@ -2162,6 +2320,8 @@ Of course you would need to have the _developer options_ unlocked, as well as th
 
 ==== Partition management
 
+// TODO: Software Packages table
+
 You may also choose to use a graphical partitioning software instead of `fdisk` or `cfdisk`.
 For that you can install `gparted`
 
@@ -2182,6 +2342,8 @@ $ sudo pacman -S parted
 <<<
 
 ==== PDF viewer
+
+// TODO: Software Packages table
 
 To use `asciidoctor-pdf`, you might be wondering how you are supposed to open the generated PDFs using the GUI.
 
@@ -2204,6 +2366,8 @@ $ sudo pacman -S evince
 <<<
 
 ==== Process management
+
+// TODO: Software Packages table
 
 The native tool is `top`.
 
@@ -2233,6 +2397,8 @@ Just some additional software related to videos.
 
 ===== Live streaming a terminal session
 
+// TODO: Software Packages table
+
 For this task, you'll need a program called `tmate`.
 Just install
 
@@ -2260,6 +2426,8 @@ As you now have a working graphical desktop environment, you might want to insta
 
 ==== Session Lock
 
+// TODO: Software Packages table
+
 Probably the first thing you'll want to set up is a session locker, which locks your ``X``-session after resuming from sleep, hibernation, etc.
 It then requires you to input your password again, so no unauthorized user can access you machine.
 
@@ -2284,7 +2452,9 @@ xss-lock -- i3lock -n -e -c 333333
 
 <<<
 
-==== `xfce-polkit`
+==== ``xfce-polkit``^`AUR`^
+
+// TODO: Software Packages table
 
 In order for GUI applications to acquire `sudo` permissions, we need to install a `PolicyKit` authentication agent.
 
@@ -2314,6 +2484,8 @@ As I already launch it as a part of my `i3` configuration, I won't have to worry
 
 ==== Desktop background
 
+// TODO: Software Packages table
+
 You might want to consider installing `nitrogen`, in order to be able to set a background image
 
 [source, console]
@@ -2325,6 +2497,8 @@ $ sudo pacman -S nitrogen
 <<<
 
 ==== Compositing software
+
+// TODO: Software Packages table
 
 To get buttery smooth animation as well as e.g. smooth video playback in `brave` without screen tearing, you might want to consider using a compositor, in my case one named `picom`
 
@@ -2361,6 +2535,8 @@ $ kill -9 <pid>
 
 ==== `networkmanager` applet
 
+// TODO: Software Packages table
+
 To install the `NetworkManager` applet, which lives in your tray and provides you with a quick method to connect to different networks, you have to install the `network-manager-applet` package
 
 [source, console]
@@ -2389,6 +2565,8 @@ You would have to set up a Wi-Fi connection completely by hand, which could be d
 
 ==== Show keyboard layout
 
+// TODO: Software Packages table
+
 To show, which keyboard layout and variant is currently in use, you can use ``xkblayout-state``^`AUR`^
 
 [source, console]
@@ -2413,6 +2591,8 @@ Now simply issue the `layout` alias, provided by our custom `zsh` configuration.
 
 ==== X clipboard
 
+// TODO: Software Packages table
+
 To copy something from the terminal to the `xorg` clipboard, use `xclip`
 
 [source, console]
@@ -2426,6 +2606,8 @@ $ xclip some_random_text
 <<<
 
 ==== Taking screen shots
+
+// TODO: Software Packages table
 
 For this functionality, especially in combination with `rofi`, use `scrot`
 
@@ -2441,6 +2623,8 @@ $ sudo pacman -S scrot
 
 ==== Image viewer
 
+// TODO: Software Packages table
+
 Now that we can create screen shots, we might also want to view those
 
 [source, console]
@@ -2454,6 +2638,8 @@ $ ristretto filename.png
 <<<
 
 ==== File manager
+
+// TODO: Software Packages table
 
 You probably also want to use a file manager.
 In my case, `thunar`, the `xfce` file manager, worked best.
@@ -2488,6 +2674,8 @@ $ git clean -fdx
 
 ==== Archive manager
 
+// TODO: Software Packages table
+
 As we now have a file manager, it might be annoying, to open up a terminal every time you simply want to extract an archive of some sort.
 That's why we'll install `xarchiver`.
 
@@ -2510,6 +2698,8 @@ $ sudo pacman -S xarchiver
 <<<
 
 ==== Web browser
+
+// TODO: Software Packages table
 
 As you're already using a GUI, you also might be interested in a web browser.
 In my case, I'll install ``brave-bin``^`AUR`^, as well as `browserpass` from the official repositories, in order to use my passwords in `brave`.
@@ -2552,6 +2742,8 @@ Now the only thing left is, to fire up `brave` and install the `browserpass` ext
 
 ===== Entering the dark side
 
+// TODO: Software Packages table
+
 You might want to be completely anonymous whilst browsing the web at some point.
 Although this shouldn't be your only precaution, using ``tor-browser``^`AUR`^ would be the first thing to do
 
@@ -2580,6 +2772,8 @@ You might have to check out how to import the `gpg` keys on the `AUR` page of `t
 
 ==== Office utilities
 
+// TODO: Software Packages table
+
 For now we'll install `libreoffice-fresh`
 
 [source, console]
@@ -2591,6 +2785,8 @@ $ sudo pacman -S libreoffice-fresh
 <<<
 
 ===== Printing
+
+// TODO: Software Packages table
 
 In order for printing to work with my printer, I had to install `avahi`, `cups`, `cups-pdf`, `nss-mdns` and the correspoding driver for my printer.
 In order to be able to print from the `gtk` print dialog, we'll also need to install `system-config-printer` and `print-manager`.
@@ -2654,6 +2850,8 @@ Here are some pieces of software to do exactly that.
 
 ===== Email
 
+// TODO: Software Packages table
+
 There is nothing better than some classical email.
 
 [source, console]
@@ -2665,6 +2863,8 @@ $ sudo pacman -S thunderbird
 <<<
 
 ===== Telegram
+
+// TODO: Software Packages table
 
 You want to have your `telegram` messages on your desktop PC?
 
@@ -2678,6 +2878,8 @@ $ sudo pacman -S telegram-desktop
 
 ===== TeamSpeak 3
 
+// TODO: Software Packages table
+
 Wanna chat with your gaming friends and they have a `teamspeak3` server?
 Go for it
 
@@ -2690,6 +2892,8 @@ $ sudo pacman -S teamspeak3
 <<<
 
 ===== Discord
+
+// TODO: Software Packages table
 
 You'd rather use `discord`?
 No problem
@@ -2710,6 +2914,8 @@ Just some additional software related to videos.
 
 ===== Viewing video
 
+// TODO: Software Packages table
+
 You might consider using `vlc`
 
 [source, console]
@@ -2721,6 +2927,8 @@ $ sudo pacman -S vlc
 <<<
 
 ===== Creating video
+
+// TODO: Software Packages table
 
 ``obs-studio-git``^`AUR`^ should be the right choice
 
@@ -2743,6 +2951,8 @@ $ git clean -fdx
 <<<
 
 ====== Showing keystrokes
+
+// TODO: Software Packages table
 
 In order to show the viewers what keystrokes you're pressing, you can use something like ``screenkey``^`AUR`^
 
@@ -2773,6 +2983,8 @@ For ideal use with `obs`, my `dotfiles` repository already provides you with the
 
 ===== Editing video
 
+// TODO: Software Packages table
+
 In my case, I'm using ``davinci-resolve``^`AUR`^.
 
 [source, console]
@@ -2794,6 +3006,8 @@ $ git clean -fdx
 <<<
 
 ===== Utilizing video
+
+// TODO: Software Packages table
 
 Wanna remote control your own or another PC?
 ``teamviewer``^`AUR`^ might just be the right choice for you
@@ -2817,6 +3031,8 @@ $ git clean -fdx
 <<<
 
 ==== Ardour
+
+// TODO: Software Packages table
 
 To e.g. edit and produce audio, I would recommend `ardour`, because it's easy to use, stable and cross platform.
 
@@ -2864,6 +3080,8 @@ $ ffmpeg -i in.wav -acodec mp3 out.mp3
 <<<
 
 ==== Virtualization
+
+// TODO: Software Packages table
 
 You might need to run another OS, for example Mac OS, from within Linux, e.g. for development/testing purposes.
 For that you can use `virtualbox`
@@ -2914,6 +3132,8 @@ Now just re-login and you're good to go.
 
 ==== Gaming
 
+// TODO: Software Packages table
+
 The first option for native/emulated gaming on Linux is obviously `steam`.
 
 [source, console]
@@ -2933,6 +3153,8 @@ $ sudo pacman -S lutris
 <<<
 
 ==== Wacom
+
+// TODO: Software Packages table
 
 In order to use a Wacom graphics tablet, you'll have to install some packages
 
@@ -2988,6 +3210,8 @@ $ git clean -fdx
 <<<
 
 ==== `VNC` & `RDP`
+
+// TODO: Software Packages table
 
 In order to connect to a machine over `VNC` or to connect to a machine using the `Remote Desktop Protocol`, for example to connect to a Windows machine, I'll need to install ``freerdp``^`AUR`^, as well as `libvncserver`, for `RDP` and `VNC` functionality respectively, as well as `remmina`, to have a GUI client for those two protocols.
 
