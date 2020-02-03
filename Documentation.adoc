@@ -1,6 +1,6 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v8.2, 2020-01-31
+v8.3, 2020-02-03
 :doctype: book
 :docinfo: shared
 :title-logo-image: image:arch.png[]
@@ -180,6 +180,8 @@ For further clarification for specific packages (e.g. `UEFI` specific packages),
 Of course, you can adapt everything to your needs, especially in the <<additional-setup-packages>> step.
 ====
 
+<<<
+
 ===== Example section
 
 [cols="^.^m,^.^m", options="header"]
@@ -206,6 +208,8 @@ You have to configure `sample-package` by editing `/etc/sample.conf`
 ----
 Sample.text=useful
 ----
+
+<<<
 
 === Formatting the drive
 
@@ -304,10 +308,6 @@ root@archiso ~ # genfstab -U /mnt >> /mnt/etc/fstab
 
 and you're ready to enter the `chroot` environment.
 
-[NOTE]
-====
-If you want to install all packages present on the `archiso` in the <<additional-startup-packages>> step, you would need to run
-
 <<<
 
 == Entering the `chroot`
@@ -332,44 +332,35 @@ Et Voila! You successfully ``chroot``ed inside your new system and you'll be gre
 [#additional-startup-packages]
 === Installing additional packages
 
-// TODO: Software Packages table
-
 [cols="^.^m,^.^m", options="header"]
 |===
 2+|Software Packages
 
 |core
-|amd-ucode base-devel diffutils dmraid dnsmasq dosfstools exfat-utils iputils lvm2 openssh sudo usbutils
+|amd-ucode base-devel diffutils dmraid dnsmasq dosfstools efibootmgr exfat-utils grub iputils lvm2 openssh sudo usbutils
 
 |extra
-|efitools git intel-ucode networkmanager networkmanager-openconnect networkmanager-openvpn parted rsync zsh
+|efitools git intel-ucode networkmanager networkmanager-openconnect networkmanager-openvpn parted polkit rsync zsh
 
 |community
-|neovim
+|neovim os-prober
 |===
 
-First off you'll probably need a text editor.
-
+[NOTE]
+====
 There are many command line text editors available, like `nano`, `vi`, `vim`, `emacs`, etc.
 
 I'll be using `neovim`, though it shouldn't matter what editor you choose.
+====
 
-After that we'll make sure we get ourselves some basic utilities and enable the `NetworkManager.service` service, in order for the Internet connection to work upon booting into our fresh system later on.
+Make sure to enable the `NetworkManager.service` service, in order for the Internet connection to work upon booting into our fresh system later on.
 
 [source, console]
 ----
-[root@archiso /]# pacman -S sudo iputils dhcpcd dhclient grub dosfstools os-prober mtools networkmanager networkmanager-openvpn networkmanager-openconnect
 [root@archiso /]# systemctl enable NetworkManager.service
 ----
 
-Furthermore you'll also need to make sure `polkit` is installed
-
-[source, console]
-----
-[root@archiso /]# pacman -S polkit
-----
-
-and then create a file `/etc/polkit-1/rules.de/50-org.freedesktop.NetworkManager.rules` to enable users of the `network` group to add new networks without the need of `sudo`.
+With `polkit` installed, create a file `/etc/polkit-1/rules.de/50-org.freedesktop.NetworkManager.rules` to enable users of the `network` group to add new networks without the need of `sudo`.
 
 ./etc/polkit-1/rules.de/50-org.freedesktop.NetworkManager.rules
 [source, text]
@@ -381,14 +372,7 @@ polkit.addRule(function(action, subject) {
 });
 ----
 
-// TODO: Software Packages table
-
-If you use `UEFI`, you'll also need
-
-[source, console]
-----
-[root@archiso /]# pacman -S efibootmgr
-----
+If you use `UEFI`, you'll also need the `efibootmgr` in order to modify the `UEFI` entries.
 
 <<<
 
@@ -522,16 +506,23 @@ and choose a new password.
 [#create-a-personal-user]
 ==== Create a personal user
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-We are going to make sure the `zsh` shell is installed, create a new user, set the password for this user, make sure the `sudo` package is installed and allow the `wheel` group `sudo` access.
+|core
+|sudo
+
+|extra
+|zsh
+|===
+
+We are going to create a new user and set the password, groups and shell for this user
 
 [source, console]
 ----
-[root@archiso /]# pacman -S zsh
 [root@archiso /]# useradd -m -p "" -G "adm,audio,disk,floppy,kvm,log,lp,network,rfkill,scanner,storage,users,optical,power,wheel" -s /usr/bin/zsh dustvoice
 [root@archiso /]# passwd dustvoice
-[root@archiso /]# pacman -S sudo
 ----
 
 We now have to allow the `wheel` group `sudo` access.
@@ -560,13 +551,21 @@ with your new username
 dustvoice ALL=(ALL) ALL
 ----
 
-to solely grant yourself `sudo` privileges.
+to solely grant the new user `sudo` privileges.
 
 <<<
 
-=== Preparing to boot
+// TODO: Add section for EFISTUB
 
-// TODO: Software Packages table
+=== `grub`
+
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|core
+|efibootmgr grub
+|===
 
 Now onto installing the boot manager.
 We will use `grub` in this guide.
@@ -577,8 +576,6 @@ First make sure, all the required packages are installed
 ----
 [root@archiso /]# pacman -S grub dosfstools os-prober mtools
 ----
-
-// TODO: Software Packages table
 
 and if you want to use `UEFI`, also
 
@@ -732,37 +729,29 @@ As I want all possible options to possibly troubleshoot my PC right there in my 
 
 ====== `BIOS`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-For a `BIOS` setup, you'll need `memtest86+`
+|extra
+|memtest86+
+|===
 
-[source, console]
-----
-[root@archiso /]# pacman -S memtest86+
-----
+For a `BIOS` setup, you'll simply need to install the `memtest86+` package, with no further configuration.
 
 <<<
 
 ====== `UEFI`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-For a `UEFI` setup, you'll need ``memtest86-efi``^`AUR`^.
+|AUR
+|memtest86-efi
+|===
 
-[source, console]
-----
-[root@archiso /]# pacman -S base-devel
-[root@archiso /]# sudo -iu dustvoice
-[dustvoice@archiso ~]$ cd AUR
-[dustvoice@archiso ~/AUR]$ git clone https://aur.archlinux.org/memtest86-efi
-[dustvoice@archiso ~/AUR]$ cd memtest86-efi
-[dustvoice@archiso ~/AUR/memtest86-efi]$ makepkg -si
-[dustvoice@archiso ~/AUR/memtest86-efi]$ git reset HEAD --hard
-[dustvoice@archiso ~/AUR/memtest86-efi]$ git clean -fdx
-[dustvoice@archiso ~/AUR/memtest86-efi]$ exit
-----
-
-Now we still need to tell ``memtest86-efi``^`AUR`^ how to install itself
+For a `UEFI` setup, you'll first need to install the package and then tell ``memtest86-efi``^`AUR`^ how to install itself
 
 [source, console]
 ----
@@ -822,26 +811,35 @@ Now you're good to boot into your new system.
 
 === Secure Boot
 
-// TODO: Software Packages table
+<<<
+
+==== `shim`
+
+[WARNING]
+====
+This is a way of handling secure boot that aims at just making everything work!
+
+It is not the way Secure Boot was intended to be used and you might as well disable it.
+
+If you need Secure Boot to be enabled, e.g. for Windows, but you couldn't care less for the security it could bring to your device, use this method.
+
+If you want to actually make use of the Secure Boot feature, read <<manual-secure-boot-setup>>.
+====
+
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|AUR
+|shim-signed
+|===
 
 I know I told you that you're now good to boot into your new system.
 That is only correct, if you're *not* using Secure Boot.
 
 You can either proceed by disabling Secure Boot in your firmware settings, or by using `shim` as kind of a pre-bootloader, as well as signing your bootloader (`grub`) and your kernel.
 
-If you decided on using Secure Boot, you will first have to install ``shim-signed``^`AUR`^.
-
-[source, console]
-----
-[root@archiso /]# sudo -iu dustvoice
-[dustvoice@archiso ~]$ cd AUR
-[dustvoice@archiso ~/AUR]$ git clone https://aur.archlinux.org/shim-signed
-[dustvoice@archiso ~/AUR]$ cd shim-signed
-[dustvoice@archiso ~/AUR/shim-signed]$ makepkg -si
-[dustvoice@archiso ~/AUR/shim-signed]$ git reset HEAD --hard
-[dustvoice@archiso ~/AUR/shim-signed]$ git clean -fdx
-[dustvoice@archiso ~/AUR/shim-signed]$ exit
-----
+If you decided on using Secure Boot, you will first have to install the package.
 
 Now we just need to copy `shimx64.efi`, as well as `mmx64.efi` to our `EFI System Partition`
 
@@ -866,6 +864,13 @@ Now you will be greeted by `MokManager` everytime you update your bootloader or 
 Just choose `Enroll hash from disk` and enroll your bootloader (`grubx64.efi`) and kernel (`vmlinuz-linux`).
 
 Reboot and your system should fire up just fine.
+
+<<<
+
+[#manual-secure-boot-setup]
+==== The manual way
+
+// TODO: Describe manual secure boot setup, mention that grub is trash for this as it ignores if the kernel is signed or not, use EFISTUB, mention memtest setup with this way and sbupdate
 
 <<<
 
@@ -971,8 +976,6 @@ Now try ``ping``ing again.
 
 === Update and upgrade
 
-// TODO: Software Packages table
-
 After making sure that you have a working Internet connection, you can then proceed to update and upgrade all installed packages by issuing
 
 [source, text]
@@ -983,8 +986,6 @@ DustArch% sudo pacman -Syu
 <<<
 
 === Enabling the `multilib` repository
-
-// TODO: Software Packages table
 
 In order to make 32-bit packages available to `pacman`, we'll need to enable the `multilib` repository in `/etc/pacman.conf` first.
 Simply uncomment
@@ -1000,7 +1001,7 @@ and update ``pacman``'s package repositories afterwards
 
 [source, text]
 ----
-DustArch% sudo pacman -Sy
+DustArch% sudo pacman -Syu
 ----
 
 <<<
@@ -1028,50 +1029,51 @@ Don't worry about the looks by the way, we're gonna change all that in just a se
 
 === `git`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-Next you'll probably want to install `git`.
-Just do
+|extra
+|git
+|===
 
-[source, text]
-----
-DustArch% sudo pacman -S git
-----
-
-and you're good to go.
-We'll care about the `.gitconfig` in just a second.
+Install the package and you're good to go for now, as we'll care about the `.gitconfig` in just a second.
 
 <<<
 
 === Security is important
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|core
+|gnupg
+|===
 
 If you've followed the tutorial using a recent version of the archiso, you'll probably already have the most recent version of `gnupg` installed by default.
-Just to make sure, issue
-
-[source, text]
-----
-DustArch% sudo pacman -S gnupg
-----
 
 <<<
 
 ==== Smartcard shenanigans
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|libusb-compat
+
+|community
+|ccid opensc pcsclite
+|===
+
+DustArch% sudo pacman -S pcsclite libusb-compat ccid opensc
 
 After that you'll still have to setup `gnupg` correctly.
 In my case I have my private keys stored on a smartcard.
 
-To use it, I'll have to install some packages first
-
-[source, text]
-----
-DustArch% sudo pacman -S pcsclite libusb-compat ccid opensc
-----
-
-and then enable and start the `pcscd` service
+To use it, I'll have to install the listed packages and then enable and start the `pcscd` service
 
 [source, text]
 ----
@@ -1096,14 +1098,21 @@ If your smartcard still isn't detected, try logging off completely or even resta
 [#additional-tools-setup-home]
 === Additional required tools
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|core
+|make openssh
+
+|extra
+|clang cmake jdk-openjdk python
+
+|community
+|pass
+|===
 
 To minimize the effort required by the following steps, we'll install most of the required packages beforehand
-
-[source, text]
-----
-DustArch% sudo pacman -S make cmake clang jdk-openjdk python python-pip pass openssh
-----
 
 This will ensure, we proceed through the following section without the need for interruption, because a package needs to be installed, so the following content can be condensed to the relevant informations.
 
@@ -1359,20 +1368,18 @@ Well, why wouldn't you want audio...
 
 ==== `alsa`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|alsa-utils
+|===
 
 [NOTE]
 ====
 You're probably better off using `pulseaudio` and/or `jack`.
 ====
-
-To quickly setup audio this way, install `alsa` and `alsa-utils`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S alsa alsa-utils
-----
 
 Now choose the sound card you want to use
 
@@ -1400,15 +1407,18 @@ It should be apparent, that you would have to switch out `2` with the number cor
 
 ==== `pulseaudio`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|pavucontrol pulseaudio
+
+|community
+|pulsemixer
+|===
 
 Some applications require `pulseaudio`, or work better with it, for example `discord`, so it might make sense to use `pulseaudio`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S pulseaudio pulsemixer pavucontrol
-----
 
 For enabling real-time priority for `pulseaudio` on Arch Linux, please make sure your user is part of the `audio` group and edit the file `/etc/pulse/daemon.conf`, so that you uncomment the lines
 
@@ -1444,41 +1454,35 @@ $ pulseaudio --start
 
 ==== `jack`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-If you either want to manually control audio routing, or if you use some kind of audio application like `ardour`, you'll probably want to use `jack`.
+|extra
+|pulseaudio-jack
 
-To install `jack` and a GUI to configure it, just do
+|community
+|cadence jack2
+|===
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S jack2 cadence
-----
-
-If you also want to use `pulseaudio` applications, that don't have native support for `jack`, you'll need to install `pulseaudio-jack`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S pulseaudio-jack
-----
+If you either want to manually control audio routing, or if you use some kind of audio application like `ardour`, you'll probably want to use `jack` and `cadence` as a GUI to control it, as it has native support for bridging `pulseaudio` to `jack`.
 
 <<<
 
 ==== Audio handling
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-To also play audio, we need to install some other packages too
+|extra
+|libao libid3tag libmad libpulse opus wavpack
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S sox libao libmad libid3tag wavpack libpulse opus file twolame
-----
+|community
+|sox twolame
+|===
 
-Now you can simply do
+To also play audio, we need to install the mentioned packages and then simply do
 
 [source, console]
 ----
@@ -1488,21 +1492,24 @@ dustvoice@DustArch ~
 $ play audio.mp3
 ----
 
-etc. to play audio.
+to play audio.
 
 <<<
 
 === Bluetooth
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|bluez bluez-util pulseaudio-bluetooth
+
+|community
+|blueman
+|===
 
 To set up Bluetooth, we need to install the `bluez` and `bluez-utils` packages in order to have at least a command line utility `bluetoothctl` to configure connections
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S bluez bluez-utils
-----
 
 Now we need to check if the `btusb` kernel module was already loaded
 
@@ -1607,17 +1614,7 @@ Finally connect to your device
 
 [NOTE]
 ====
-// TODO: Software Packages table
-
 If your device is an audio device, of some kind you might have to install `pulseaudio-bluetooth` and append 2 lines to `/etc/pulse/system.pa` as well.
-
-So first install `pulseaudio-bluetooth`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S pulseaudio-bluetooth
-----
 
 append the following 2 lines
 
@@ -1637,24 +1634,24 @@ $ pulseaudo --kill
 dustvoice@DustArch ~
 $ pulseaudo --start
 ----
-
 ====
 
-// TODO: Software Packages table
-
 If you want a GUI to do all of this, just install `blueman` and launch `blueman-manager`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S blueman
-----
 
 <<<
 
 === Graphical desktop environment
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|ttf-hack xorg xorg-drivers xorg-xinit
+
+|community
+|arandr alacritty i3 i3status rofi
+|===
 
 If you decide, that you want to use a graphical desktop environment, you have to install additional packages in order for that to work.
 
@@ -1668,15 +1665,15 @@ $ sudo pacman -S xorg xorg-xinit xorg-drivers i3 i3status rofi ttf-hack xfce4-te
 
 ==== NVIDIA
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-If you also want to use NVIDIA functionality, for example for `davinci-resolve`, you'll most likely need to install their proprietary driver
+|extra
+|nvidia nvidia-utils nvidia-settings opencl-nvidia
+|===
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S nvidia nvidia-utils nvidia-settings opencl-nvidia
-----
+If you also want to utilize special NVIDIA functionality, for example for `davinci-resolve`, you'll most likely need to install their proprietary driver
 
 [NOTE]
 ====
@@ -1697,7 +1694,16 @@ If anything goes wrong in the process, remember that you can press *Ctrl+Alt+<Nu
 
 ===== The NVIDIA way
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|bbswitch
+
+|AUR
+|nvidia-xrun
+|===
 
 If you're using an NVIDIA graphics card, you might want to use ``nvidia-xrun``^`AUR`^ instead of `startx`.
 This has the advantage, of the `nvidia` kernel modules, as well as the `nouveau` ones not loaded at boot time, thus saving power.
@@ -1708,49 +1714,17 @@ This has the advantage, of the `nvidia` kernel modules, as well as the `nouveau`
 At the time of writing, ``nvidia-xrun``^`AUR`^ needs `sudo` permissions before executing its task.
 ====
 
-Simply install ``nvidia-xrun``^`AUR`^
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S nvidia bbswitch
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/nvidia-xrun.git
-dustvoice@DustArch ~/AUR
-$ cd nvidia-xrun
-dustvoice@DustArch ~/AUR/nvidia-xrun
-$ makepkg -si
-dustvoice@DustArch ~/AUR/nvidia-xrun
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/nvidia-xrun
-$ git clean -fdx
-----
-
 [NOTE]
 ====
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-If your hardware doesn't support `bbswitch`, you would need to use ``nvidia-xrun-pm``^`AUR`^ instead
+|AUR
+|nvidia-xrun-pm
+|===
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S nvidia
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/nvidia-xrun-pm.git
-dustvoice@DustArch ~/AUR
-$ cd nvidia-xrun-pm
-dustvoice@DustArch ~/AUR/nvidia-xrun-pm
-$ makepkg -si
-dustvoice@DustArch ~/AUR/nvidia-xrun-pm
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/nvidia-xrun-pm
-$ git clean -fdx
-----
+If your hardware doesn't support `bbswitch`, you would need to use ``nvidia-xrun-pm``^`AUR`^ instead.
 ====
 
 Now we need to blacklist *both `nouveau` and `nvidia`* kernel modules.
@@ -1823,16 +1797,16 @@ Software that is useful in combination with a `console`.
 
 ==== `tmux`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|tmux
+|===
 
 I would reccommend to install `tmux` which enables you to have multiple terminal instances (called `windows` in `tmux`) open at the same time.
 This makes working with the linux terminal much easier.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S tmux
-----
 
 [NOTE]
 ====
@@ -1850,19 +1824,17 @@ Here are some pieces of software to do exactly that.
 
 ===== `weechat`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|weechat
+|===
 
 `weechat` is an `IRC` client for the terminal, with the best features and even a `vim` mode, by using a plugin
 
-First off, install `weechat`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S weechat
-----
-
-Now open `weechat`
+To configure everything, open `weechat`
 
 [source, console]
 ----
@@ -1940,20 +1912,22 @@ select the entry you want to modify (for example for `plugins.var.python.vimode`
 
 ==== PDF viewer
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|ghostscript
+
+|community
+|fbida
+|===
 
 To use `asciidoctor-pdf`, you might be wondering how you are supposed to open the generated PDFs from the native linux console.
 
 This `fbida` package provides the `fbgs` software, which renders a PDF document using the native framebuffer.
-To install it simply do
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ pacman -S fbida ghostscript
-----
-
-and to view this PDF document (`Documentation.pdf`) for example, you would run
+To view this PDF document (`Documentation.pdf`) for example, you would run
 
 [source, console]
 ----
@@ -1983,44 +1957,30 @@ As we already installed it in the <<additional-tools-setup-home>> step and updat
 
 ==== `python`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|python
+|===
 
 Python has become really important for a magnitude of use cases.
-We need `python3` in particular as well as `pip` for it.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S python python-pip
-----
-
-[NOTE]
-====
-For `asciidoctor`, which will be installed in just a second, we also need to install the `pygments` module
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pip3 install pygments
-----
-====
 
 <<<
 
 ==== `ruby` & `asciidoctor`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|ruby rubygems
+|===
 
 In order to use `asciidoctor`, we have to install `ruby` and `rubygems`.
 After that we can install `asciidoctor` and all its required gems.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S ruby rubygems
-dustvoice@DustArch ~
-$ gem install asciidoctor asciidoctor-pdf asciidoctor-epub3 asciidoctor-latex --pre
-----
 
 [NOTE]
 ====
@@ -2057,10 +2017,11 @@ For `zsh` you'll want to add a new entry inside the `.zshpath` file
 .++~++/.zshpath
 [source, text]
 ----
-path=("$HOME/.gem/ruby/2.7.0/bin")
+path+=("$HOME/.gem/ruby/2.7.0/bin")
 ----
 
 which then gets sourced by the provided `.zshenv` file.
+An example is provided with the `.zshpath.example` file
 
 [NOTE]
 ====
@@ -2078,7 +2039,6 @@ $ source .zshenv
 If you want to add a new entry to the `path` variable, you have to append it to the array
 
 .++~++/.zshpath
-
 [source, text]
 ----
 path=("$HOME/.gem/ruby/2.7.0/bin" "$HOME/.gem/ruby/2.6.0/bin")
@@ -2116,23 +2076,24 @@ $ git clone https://github.com/McMartin/FRUT.git
 
 ===== Using `JUCE`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-In order to use `JUCE`, you'll need to have some dependency packages installed
+|core
+|gcc gnutls
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S clang gcc freeglut alsa-lib gnutls libcurl-gnutls freetype2 jack2 libx11 libxcomposite libxinerama libxrandr mesa webkit2gtk
-----
+|extra
+|alsa-lib clang freeglut freetype2 ladspa libx11 libxcomposite libxinerama libxrandr mesa webkit2gtk
 
-If you want to use every feature of `JUCE` you'll need to install 2 more packages
+|community
+|jack2 libcurl-gnutls
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S ladspa lib32-freeglut
-----
+|multilib
+|lib32-freeglut
+|===
+
+In order to use `JUCE`, you'll need to have some dependency packages installed, where `ladspa` and `lib32-freeglut` are not neccessarily needed.
 
 <<<
 
@@ -2144,58 +2105,56 @@ Here are just some examples of development tools one could install in addition t
 
 ===== Code formatting
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|astyle
+|===
 
 We already have `clang-format` as a code formatter, but this only works for ``C``-family languages.
 For `java` stuff, we can use `astyle`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S astyle
-----
 
 <<<
 
 ===== Documentation
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|doxygen
+|===
 
 To generate a documentation from source code, I mostly use `doxygen`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S doxygen
-----
 
 <<<
 
 ===== Build tools
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|ninja
+|===
 
 In addition to `make`, I'll often times use `ninja` for my builds
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S ninja
-----
 
 <<<
 
 ==== Android file transfer
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-To furthermore enable the transfer of files between your PC and your android phone, you'll have to install `mtp` and `gvfs-mtp`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S libmtp gvfs-mtp
-----
+|extra
+|gvfs-mtp libmtp
+|===
 
 Now you should be able to see your phone inside either your preferred filemanager, in my case `thunar`, or ``gigolo``^`AUR`^.
 
@@ -2205,27 +2164,15 @@ If you want to access the android's file system from the command line, you will 
 
 ===== ``simple-mtpfs``^`AUR`^
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-Install `simple-mtpfs`
+|AUR
+|simple-mtpfs
+|===
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/simple-mtpfs.git
-dustvoice@DustArch ~/AUR
-$ cd simple-mtpfs
-dustvoice@DustArch ~/AUR/simple-mtpfs
-$ makepkg -si
-dustvoice@DustArch ~/AUR/simple-mtpfs
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/simple-mtpfs
-$ git clean -fdx
-----
-
-edit `/etc/fuse.conf` to uncomment
+Edit `/etc/fuse.conf` to uncomment
 
 ./etc/fuse.conf
 [source, text]
@@ -2259,17 +2206,15 @@ $ rmdir mnt
 
 ===== `adb`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-Install `adb`
+|community
+|android-tools
+|===
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S adb
-----
-
-kill the `adb` server, if it is running
+Kill the `adb` server, if it is running
 
 [source, console]
 ----
@@ -2320,72 +2265,54 @@ Of course you would need to have the _developer options_ unlocked, as well as th
 
 ==== Partition management
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|gparted parted
+|===
 
 You may also choose to use a graphical partitioning software instead of `fdisk` or `cfdisk`.
-For that you can install `gparted`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S gparted
-----
-
-Of course there is also an `console` equivalent
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S parted
-----
+For that you can use `gparted`.
+Of course there is also the `console` equivalent `parted.
 
 <<<
 
 ==== PDF viewer
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|evince
+
+|community
+|mupdf
+|===
 
 To use `asciidoctor-pdf`, you might be wondering how you are supposed to open the generated PDFs using the GUI.
 
-Installing `mupdf` is as simple as issuing
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S mupdf
-----
-
-If you want to have changes made to the PDF reflected immediately in the viewer, you would need `evince` instead
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S evince
-----
+If you want to have changes made to the PDF reflected immediately in the viewer, you would need `evince` instead of `mupdf`, but `mupdf` has a more minimalistic interface, which comes in handy when using a tiling window manager.
 
 <<<
 
 ==== Process management
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|htop xfce4-taskmanager
+|===
 
 The native tool is `top`.
 
 The next evolutionary step would be `htop`, which is an improved version of `top` (like `vi` and `vim` for example)
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S htop
-----
-
-If you prefer a GUI for that kind of task, install `xfce4-taskmanager`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S xfce4-taskmanager
-----
+If you prefer a GUI for that kind of task, use `xfce4-taskmanager`.
 
 <<<
 
@@ -2397,24 +2324,15 @@ Just some additional software related to videos.
 
 ===== Live streaming a terminal session
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|tmate
+|===
 
 For this task, you'll need a program called `tmate`.
-Just install
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S tmate
-----
-
-and run it
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ tmate
-----
 
 <<<
 
@@ -2426,22 +2344,22 @@ As you now have a working graphical desktop environment, you might want to insta
 
 ==== Session Lock
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|i3lock xss-lock
+|===
 
 Probably the first thing you'll want to set up is a session locker, which locks your ``X``-session after resuming from sleep, hibernation, etc.
 It then requires you to input your password again, so no unauthorized user can access you machine.
 
 I'll use `xss-lock` to hook into the necessary `systemd` events and `i3lock` as my locker.
 
-For that I have to install both
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S xss-lock i3lock
-----
-
-And we're done actually, as I have placed the required command to start `xss-lock` with the right parameters inside my `i3` configuration file.
+[NOTE]
+====
+I have placed the required command to start `xss-lock` with the right parameters inside my `i3` configuration file.
 
 If you use something other than `i3`, you need to make sure this command gets executed upon start of the ``X``-session
 
@@ -2449,32 +2367,23 @@ If you use something other than `i3`, you need to make sure this command gets ex
 ----
 xss-lock -- i3lock -n -e -c 333333
 ----
+====
 
 <<<
 
 ==== ``xfce-polkit``^`AUR`^
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|AUR
+|xfce-polkit
+|===
 
 In order for GUI applications to acquire `sudo` permissions, we need to install a `PolicyKit` authentication agent.
 
 We could use `gnome-polkit` for that purpose, which resides inside the official repositories, but I decided on using ``xfce-polkit``^`AUR`^.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/xfce-polkit.git
-dustvoice@DustArch ~/AUR
-$ cd xfce-polkit
-dustvoice@DustArch ~/AUR/xfce-polkit
-$ makepkg -si
-dustvoice@DustArch ~/AUR/xfce-polkit
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/xfce-polkit
-$ git clean -fdx
-----
 
 Now you just need to startup ``xfce-polkit``^`AUR`^ before trying to execute something like `gparted` and you'll be prompted for your password.
 
@@ -2484,31 +2393,29 @@ As I already launch it as a part of my `i3` configuration, I won't have to worry
 
 ==== Desktop background
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|nitrogen
+|===
 
 You might want to consider installing `nitrogen`, in order to be able to set a background image
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S nitrogen
-----
 
 <<<
 
 ==== Compositing software
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|picom
+|===
 
 To get buttery smooth animation as well as e.g. smooth video playback in `brave` without screen tearing, you might want to consider using a compositor, in my case one named `picom`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S picom
-----
-
-Now edit the file `~/.config/i3/config` and uncomment the `picom` line in order to start `picom` with `i3`.
 
 [WARNING]
 ====
@@ -2517,7 +2424,7 @@ In order for ``obs``' screen capture to work correctly, you need to kill `picom`
 [source, console]
 ----
 dustvoice@DustArch ~
-$ pkill picom
+$ killall picom
 ----
 
 or
@@ -2535,15 +2442,15 @@ $ kill -9 <pid>
 
 ==== `networkmanager` applet
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|network-manager-applet
+|===
 
 To install the `NetworkManager` applet, which lives in your tray and provides you with a quick method to connect to different networks, you have to install the `network-manager-applet` package
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S network-manager-applet
-----
 
 Now you can start the applet with
 
@@ -2565,57 +2472,44 @@ You would have to set up a Wi-Fi connection completely by hand, which could be d
 
 ==== Show keyboard layout
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|AUR
+|xkblayout-state
+|===
 
 To show, which keyboard layout and variant is currently in use, you can use ``xkblayout-state``^`AUR`^
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/xkblayout-state.git
-dustvoice@DustArch ~/AUR
-$ cd xkblayout-state
-dustvoice@DustArch ~/AUR/xkblayout-state
-$ makepkg -si
-dustvoice@DustArch ~/AUR/xkblayout-state
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/xkblayout-state
-$ git clean -fdx
-----
-
-Now simply issue the `layout` alias, provided by our custom `zsh` configuration.
+Now simply issue the `layout` alias, provided by my custom `zsh` configuration.
 
 <<<
 
 ==== X clipboard
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|xclip
+|===
 
 To copy something from the terminal to the `xorg` clipboard, use `xclip`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S xclip
-dustvoice@DustArch ~
-$ xclip some_random_text
-----
 
 <<<
 
 ==== Taking screen shots
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|scrot
+|===
 
 For this functionality, especially in combination with `rofi`, use `scrot`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S scrot
-----
 
 `scrot ~/Pictures/filename.png` then saves the screen shot under `~/Pictures/filename.png`.
 
@@ -2623,14 +2517,18 @@ $ sudo pacman -S scrot
 
 ==== Image viewer
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|ristretto
+|===
 
 Now that we can create screen shots, we might also want to view those
 
 [source, console]
 ----
-dustvoice@DustArch ~
-$ sudo pacman -S ristretto
 dustvoice@DustArch ~
 $ ristretto filename.png
 ----
@@ -2639,90 +2537,59 @@ $ ristretto filename.png
 
 ==== File manager
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|gvfs thunar
+
+|AUR
+|gigolo
+|===
 
 You probably also want to use a file manager.
 In my case, `thunar`, the `xfce` file manager, worked best.
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S thunar
-----
-
-To also be able to `mount` removable drives, without being `root` or using `sudo`, and in order to have a GUI for mounting stuff, you would need to install ``gigolo``^`AUR`^ and `gvfs`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S gvfs
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/gigolo.git
-dustvoice@DustArch ~/AUR
-$ cd gigolo
-dustvoice@DustArch ~/AUR/gigolo
-$ makepkg -si
-dustvoice@DustArch ~/AUR/gigolo
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/gigolo
-$ git clean -fdx
-----
+To also be able to `mount` removable drives, without being `root` or using `sudo`, and in order to have a GUI for mounting stuff, you would need to use ``gigolo``^`AUR`^ and `gvfs`.
 
 <<<
 
 ==== Archive manager
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|cpio unrar unzip zip
+
+|community
+|xarchiver
+|===
 
 As we now have a file manager, it might be annoying, to open up a terminal every time you simply want to extract an archive of some sort.
-That's why we'll install `xarchiver`.
-
-In order for `xarchiver` to work at its full potential, we're first gonna install some additional archive types
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S p7zip zip unrar cpio
-----
-
-Now we can proceed to install `xarchiver`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S xarchiver
-----
+That's why we'll use `xarchiver`.
 
 <<<
 
 ==== Web browser
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|AUR
+|brave-bin
+
+|community
+|browserpass
+|===
 
 As you're already using a GUI, you also might be interested in a web browser.
 In my case, I'll install ``brave-bin``^`AUR`^, as well as `browserpass` from the official repositories, in order to use my passwords in `brave`.
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/brave-bin.git
-dustvoice@DustArch ~/AUR
-$ cd brave-bin
-dustvoice@DustArch ~/AUR/brave-bin
-$ makepkg -si
-dustvoice@DustArch ~/AUR/brave-bin
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/brave-bin
-$ git clean -fdx
-dustvoice@DustArch ~
-$ sudo pacman -S browserpass
-----
-
-Now we still have to setup `browserpass`
+We still have to setup `browserpass`
 
 [source, console]
 ----
@@ -2742,26 +2609,16 @@ Now the only thing left is, to fire up `brave` and install the `browserpass` ext
 
 ===== Entering the dark side
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|AUR
+|tor-browser
+|===
 
 You might want to be completely anonymous whilst browsing the web at some point.
 Although this shouldn't be your only precaution, using ``tor-browser``^`AUR`^ would be the first thing to do
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/tor-browser.git
-dustvoice@DustArch ~/AUR
-$ cd tor-browser
-dustvoice@DustArch ~/AUR/tor-browser
-$ makepkg -si
-dustvoice@DustArch ~/AUR/tor-browser
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/tor-browser
-$ git clean -fdx
-----
 
 [NOTE]
 ====
@@ -2772,31 +2629,32 @@ You might have to check out how to import the `gpg` keys on the `AUR` page of `t
 
 ==== Office utilities
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-For now we'll install `libreoffice-fresh`
+|extra
+|libreoffice-fresh
+|===
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S libreoffice-fresh
-----
+I'll use `libreoffice-fresh` for anything that I'm not able to do with `neovim`.
 
 <<<
 
 ===== Printing
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
 
-In order for printing to work with my printer, I had to install `avahi`, `cups`, `cups-pdf`, `nss-mdns` and the correspoding driver for my printer.
-In order to be able to print from the `gtk` print dialog, we'll also need to install `system-config-printer` and `print-manager`.
+|extra
+|avahi cups cups-pdf nss-mdns print-manager system-config-printer
+|===
+
+In order to be able to print from the `gtk` print dialog, we'll also need `system-config-printer` and `print-manager`.
 
 [source, console]
 ----
-dustvoice@DustArch ~
-$ sudo pacman -S avahi
-dustvoice@DustArch ~
-$ sudo pacman -S cups cups-pdf nss-mdns
 dustvoice@DustArch ~
 $ sudo systemctl enable avahi-daemon.service
 dustvoice@DustArch ~
@@ -2831,8 +2689,6 @@ dustvoice@DustArch ~
 $ sudo systemctl enable org.cups.cupsd.service
 dustvoice@DustArch ~
 $ sudo systemctl start org.cups.cupsd.service
-dustvoice@DustArch ~
-$ sudo pacman -S system-config-printer print-manager
 ----
 
 Just open up `system-config-printer` now and configure your printer.
@@ -2850,59 +2706,57 @@ Here are some pieces of software to do exactly that.
 
 ===== Email
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|thunderbird
+|===
 
 There is nothing better than some classical email.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S thunderbird
-----
 
 <<<
 
 ===== Telegram
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|telegram-desktop
+|===
 
 You want to have your `telegram` messages on your desktop PC?
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S telegram-desktop
-----
 
 <<<
 
 ===== TeamSpeak 3
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|teamspeak3
+|===
 
 Wanna chat with your gaming friends and they have a `teamspeak3` server?
-Go for it
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S teamspeak3
-----
 
 <<<
 
 ===== Discord
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|discord
+|===
 
 You'd rather use `discord`?
-No problem
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S discord
-----
 
 <<<
 
@@ -2914,65 +2768,43 @@ Just some additional software related to videos.
 
 ===== Viewing video
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|vlc
+|===
 
 You might consider using `vlc`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S vlc
-----
 
 <<<
 
 ===== Creating video
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|AUR
+|obs-studio-git
+|===
 
 ``obs-studio-git``^`AUR`^ should be the right choice
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/obs-studio-git
-dustvoice@DustArch ~/AUR
-$ cd obs-studio-git
-dustvoice@DustArch ~/AUR/obs-studio-git
-$ makepkg -si
-dustvoice@DustArch ~/AUR/obs-studio-git
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/obs-studio-git
-$ git clean -fdx
-----
 
 <<<
 
 ====== Showing keystrokes
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|AUR
+|screenkey
+|===
 
 In order to show the viewers what keystrokes you're pressing, you can use something like ``screenkey``^`AUR`^
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/screenkey.git
-dustvoice@DustArch ~/AUR
-$ cd screenkey
-dustvoice@DustArch ~/AUR/screenkey
-$ makepkg -si
-dustvoice@DustArch ~/AUR/screenkey
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/screenkey
-$ git clean -fdx
-dustvoice@DustArch ~
-$ screenkey
-----
 
 [NOTE]
 ====
@@ -2983,67 +2815,35 @@ For ideal use with `obs`, my `dotfiles` repository already provides you with the
 
 ===== Editing video
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|AUR
+|davinci-resolve
+|===
 
 In my case, I'm using ``davinci-resolve``^`AUR`^.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/davinci-resolve.git
-dustvoice@DustArch ~/AUR
-$ cd davinci-resolve
-dustvoice@DustArch ~/AUR/davinci-resolve
-$ makepkg -si
-dustvoice@DustArch ~/AUR/davinci-resolve
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/davinci-resolve
-$ git clean -fdx
-----
 
 <<<
 
 ===== Utilizing video
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|AUR
+|teamviewer
+|===
 
 Wanna remote control your own or another PC?
 ``teamviewer``^`AUR`^ might just be the right choice for you
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/teamviewer.git
-dustvoice@DustArch ~/AUR
-$ cd teamviewer
-dustvoice@DustArch ~/AUR/teamviewer
-$ makepkg -si
-dustvoice@DustArch ~/AUR/teamviewer
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/teamviewer
-$ git clean -fdx
-----
-
 <<<
 
-==== Ardour
+==== Audio Production
 
-// TODO: Software Packages table
-
-To e.g. edit and produce audio, I would recommend `ardour`, because it's easy to use, stable and cross platform.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S ardour
-----
-
-[NOTE]
-====
 You might have to edit `/etc/security/limits.conf`, to increase the allowed locked memory amount.
 
 In my case I have 32GB of RAM and I want the `audio` group to be allocate most of the RAM, which is why I added the following line to the file
@@ -3053,20 +2853,31 @@ In my case I have 32GB of RAM and I want the `audio` group to be allocate most o
 ----
 @audio - memlock 29360128
 ----
-====
+
+===== Ardour
+
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|ardour
+|===
+
+To e.g. edit and produce audio, you could use `ardour`, because it's easy to use, stable and cross platform.
 
 [INFO]
 ====
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|ffmpeg
+|===
+
 Ardour won't natively save in the `mp3` format, due to licensing stuff.
 In order to create `mp3` files, for sharing with other devices, because they have problems with `wav` files, for example, you can just use `ffmpeg`.
-
-First make sure it's installed
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S ffmpeg
-----
 
 and after that we're going to convert `in.wav` to `out.mp3`
 
@@ -3077,20 +2888,32 @@ $ ffmpeg -i in.wav -acodec mp3 out.mp3
 ----
 ====
 
+===== Reaper
+
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|AUR
+|reaper-bin
+|===
+
+Instead of `ardour`, I'm using `reaper`, which is available for linux as a beta version, in my case more stable than `ardour` and more easy to use for me.
+
 <<<
 
 ==== Virtualization
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|community
+|virtualbox virtualbox-host-modules-arch
+|===
 
 You might need to run another OS, for example Mac OS, from within Linux, e.g. for development/testing purposes.
-For that you can use `virtualbox`
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S virtualbox virtualbox-host-modules-arch
-----
+For that you can use `virtualbox`.
 
 Now when you want to use `virtualbox` just load the kernel module
 
@@ -3132,108 +2955,59 @@ Now just re-login and you're good to go.
 
 ==== Gaming
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|pulseaudio pulseaudio-alsa
+
+|community
+|lutris
+
+|multilib
+|lib32-libpulse lib32-nvidia-utils steam
+|===
 
 The first option for native/emulated gaming on Linux is obviously `steam`.
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S steam lib32-nvidia-utils pulseaudio pulseaudio-alsa lib32-libpulse
-----
-
 The second option would be `lutris`, a program, that configures a wine instance correctly, etc.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S lutris
-----
 
 <<<
 
 ==== Wacom
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|libwacom xf86-input-wacom
+|===
 
 In order to use a Wacom graphics tablet, you'll have to install some packages
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S libwacom xf86-input-wacom
-----
-
-You could now configure your tablet using the `xsetwacom` command.
-But on the other hand there is also ``wacom-utility``^`AUR`^, a GUI software for all of that, so you could try if that works first.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/wacom-utility.git
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/gksu.git
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/libgks.git
-dustvoice@DustArch ~/AUR
-$ cd libgks
-dustvoice@DustArch ~/AUR/libgks
-$ makepkg -si
-dustvoice@DustArch ~/AUR/libgks
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/libgks
-$ git clean -fdx
-dustvoice@DustArch ~/AUR/libgks
-$ cd ..
-dustvoice@DustArch ~/AUR
-$ cd gksu
-dustvoice@DustArch ~/AUR/gksu
-$ makepkg -si
-dustvoice@DustArch ~/AUR/gksu
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/gksu
-$ git clean -fdx
-dustvoice@DustArch ~/AUR/gksu
-$ cd ..
-dustvoice@DustArch ~/AUR
-$ cd wacom-utility
-dustvoice@DustArch ~/AUR/wacom-utility
-$ makepkg -si
-dustvoice@DustArch ~/AUR/wacom-utility
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/wacom-utility
-$ git clean -fdx
-----
+You can now configure your tablet using the `xsetwacom` command.
 
 <<<
 
 ==== `VNC` & `RDP`
 
-// TODO: Software Packages table
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|extra
+|libvncserver
+
+|community
+|remmina
+
+|AUR
+|freerdp
+|===
 
 In order to connect to a machine over `VNC` or to connect to a machine using the `Remote Desktop Protocol`, for example to connect to a Windows machine, I'll need to install ``freerdp``^`AUR`^, as well as `libvncserver`, for `RDP` and `VNC` functionality respectively, as well as `remmina`, to have a GUI client for those two protocols.
-
-[source, console]
-----
-dustvoice@DustArch ~
-$ cd AUR
-dustvoice@DustArch ~/AUR
-$ git clone https://aur.archlinux.org/freerdp.git
-dustvoice@DustArch ~/AUR
-$ cd freerdp
-dustvoice@DustArch ~/AUR/freerdp
-$ makepkg -si
-dustvoice@DustArch ~/AUR/freerdp
-$ git reset HEAD --hard
-dustvoice@DustArch ~/AUR/freerdp
-$ git clean -fdx
-dustvoice@DustArch ~/AUR/freerdp
-$ cd ~
-dustvoice@DustArch ~
-$ sudo pacman -S libvncserver remmina
-----
 
 Now you can set up all your connections inside `remmina`.
 
