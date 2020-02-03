@@ -1,6 +1,6 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v8.3, 2020-02-03
+v8.4, 2020-02-03
 :doctype: book
 :docinfo: shared
 :title-logo-image: image:arch.png[]
@@ -360,9 +360,9 @@ Make sure to enable the `NetworkManager.service` service, in order for the Inter
 [root@archiso /]# systemctl enable NetworkManager.service
 ----
 
-With `polkit` installed, create a file `/etc/polkit-1/rules.de/50-org.freedesktop.NetworkManager.rules` to enable users of the `network` group to add new networks without the need of `sudo`.
+With `polkit` installed, create a file `/etc/polkit-1/rules.d/50-org.freedesktop.NetworkManager.rules` to enable users of the `network` group to add new networks without the need of `sudo`.
 
-./etc/polkit-1/rules.de/50-org.freedesktop.NetworkManager.rules
+./etc/polkit-1/rules.d/50-org.freedesktop.NetworkManager.rules
 [source, text]
 ----
 polkit.addRule(function(action, subject) {
@@ -372,7 +372,7 @@ polkit.addRule(function(action, subject) {
 });
 ----
 
-If you use `UEFI`, you'll also need the `efibootmgr` in order to modify the `UEFI` entries.
+If you use `UEFI`, you'll also need the `efibootmgr`, in order to modify the `UEFI` entries.
 
 <<<
 
@@ -397,7 +397,6 @@ Now you can also enable time synchronization over network
 ----
 [root@archiso /]# timedatectl set-timezone Europe/Berlin
 [root@archiso /]# timedatectl set-ntp true
-[root@archiso /]# timedatectl status
 ----
 
 and check that everything is alright
@@ -1109,7 +1108,7 @@ If your smartcard still isn't detected, try logging off completely or even resta
 |clang cmake jdk-openjdk python
 
 |community
-|pass
+|pass python-pynvim
 |===
 
 To minimize the effort required by the following steps, we'll install most of the required packages beforehand
@@ -1235,7 +1234,7 @@ Now log back in and continue
 [source, console]
 ----
 dustvoice@DustArch ~
-$ git submodule update --init --recursive
+$ git submodule update --recursive --init
 dustvoice@DustArch ~
 $ source .zshrc
 dustvoice@DustArch ~
@@ -1248,8 +1247,6 @@ dustvoice@DustArch ~/.config/nvim
 $ echo 'let g:use_clang_format = 1' >> custom.vim
 dustvoice@DustArch ~/.config/nvim
 $ echo 'let g:use_font = 0' >> custom.vim
-dustvoice@DustArch ~/.config/nvim
-$ sudo pip3 install neovim
 dustvoice@DustArch ~/.config/nvim
 $ nvim --headless +PlugInstall +qa
 dustvoice@DustArch ~/.config/nvim
@@ -1289,7 +1286,22 @@ To get the paths needed as parameters for `RemoteForward`, issue
 [source, console]
 ----
 dustvoice@DustArch ~
-$ !gpgconf --list-dirs
+$ gpgconf --list-dirs
+----
+====
+
+====
+An example for a valid `~/.ssh/config` would be
+
+.++~++/.ssh/config
+[source, text]
+----
+Host archserver
+    HostName pc.dustvoice.de
+    ForwardAgent yes
+    ForwardX11 yes
+    RemoteForward /run/user/1000/gnupg/S.gpg-agent /run/user/1000/gnupg/S.gpg-agent.extra
+    RemoteForward /run/user/1000/gnupg/S.gpg-agent.ssh /run/user/1000/gnupg/S.gpg-agent.ssh
 ----
 ====
 
@@ -1323,40 +1335,6 @@ Now go back to <<setup-home>> to repeat all commands for the `root` user.
 ====
 A native login would be better compared to `sudo -iu root`, as there could be some complications, like already running `gpg-agent` instances, etc., which you would need to manually resolve, when using `sudo -iu root`.
 ====
-
-<<<
-
-[#setting-up-fstab]
-=== `fstab`
-
-In my case, I'm sharing an `exFat` partition between my `DustArch` and my Windows.
-This was a result of some major inconvenience because of some weird `NTFS` permission stuff, which apparently Windows didn't like.
-Since I've avoided directly writing to Windows partitions since then, I'll quickly demonstrate what `fstab` entries I have and why
-
-./etc/fstab
-[source, text, linenums]
-----
-UUID=e26de048-6147-42e5-a34b-59f1a50621bb       /               ext4            rw,relatime             0 1
-
-UUID="C8E3-A0FD"                                /boot           vfat            defaults                0 1
-
-UUID="DC88-5A4E"                                /mnt/projects   exfat           rw,relatime             0 0
-
-UUID=7A16569B51903310                           /mnt/data       ntfs            ro,nosuid,nodev,noauto  0 0
-----
-
-The
-
-. entry should be pretty straight forward.
-It's my root partition of my `DustArch` install.
-
-. entry is quite important too.
-It's my `EFI System Partition`, which gets mounted at boot time, in order to prevent kernel orphaning, which means, that the kernel version installed on the system doesn't match the one on the `boot` partition.
-
-. entry is my shared `exFat` partition, which we are allowed to write to.
-
-. entry is important, because of the options.
-These options prevent me from modifying files on that `NTFS` partition.
 
 <<<
 
@@ -1673,13 +1651,45 @@ $ sudo pacman -S xorg xorg-xinit xorg-drivers i3 i3status rofi ttf-hack xfce4-te
 |nvidia nvidia-utils nvidia-settings opencl-nvidia
 |===
 
-If you also want to utilize special NVIDIA functionality, for example for `davinci-resolve`, you'll most likely need to install their proprietary driver
+If you also want to utilize special NVIDIA functionality, for example for `davinci-resolve`, you'll most likely need to install their proprietary driver.
+
+To configure the `X` server correctly, one can use `nvidia-xconfig`
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo nvidia-xconfig
+----
+
+If you want to further tweak all settings available, you can use `nvidia-settings`.
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ sudo nvidia-settings
+----
+
+will enable you to _"Save to X Configuration File"_, witch merges your changes with `/etc/X11/xorg.conf`.
+
+With
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ nvidia-settings
+----
+
+you'll only be able to save the current configuration to `~/.nvidia-settings-rc`, witch you have to source after `X` startup with
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ nvidia-settings --load-config-only
+----
 
 [NOTE]
 ====
-You would have to reboot sooner or later after installing the NVIDIA drivers.
-
-Also to get the best performance, at least for something like screen capturing in `obs`, go to *X Server Display Configuration* inside `nvidia-settings`, switch to *Advanced* and enable *Force Composition Pipeline*, as well as *Force Full Composition Pipeline*.
+You will have to reboot sooner or later after installing the NVIDIA drivers, so you might as well do it now, before any complications come up.
 ====
 
 <<<
@@ -1855,7 +1865,7 @@ Now add `mode_indicator+` in front of and `,[vi_buffer]` to the end of `weechat.
 
 [source, text]
 ----
-/set weechat.bar.input.items "mode_indicator+[input_prompt]+(away),[input_search],[input_paste],input_text,[vi_buffer]
+/set weechat.bar.input.items "mode_indicator+[input_prompt]+(away),[input_search],[input_paste],input_text,[vi_buffer]"
 ----
 
 Now add `,cmd_completion` to the end of `weechat.bar.status.items`, in my case
@@ -2041,7 +2051,7 @@ If you want to add a new entry to the `path` variable, you have to append it to 
 .++~++/.zshpath
 [source, text]
 ----
-path=("$HOME/.gem/ruby/2.7.0/bin" "$HOME/.gem/ruby/2.6.0/bin")
+path+=("$HOME/.gem/ruby/2.7.0/bin" "$HOME/.gem/ruby/2.6.0/bin")
 ----
 ====
 
@@ -2661,17 +2671,7 @@ dustvoice@DustArch ~
 $ sudo systemctl start avahi-daemon.service
 ----
 
-Now you have to edit `/etc/nsswitch.conf`
-
-so this line
-
-./etc/nsswitch.conf
-[source, text]
-----
-hosts: files mymachines myhostname resolve [!UNAVAIL=return] dns
-----
-
-becomes this line
+Now you have to edit `/etc/nsswitch.conf` and add `mdns4_minimal [NOTFOUND=return]`
 
 ./etc/nsswitch.conf
 [source, text]
@@ -2787,10 +2787,12 @@ You might consider using `vlc`
 2+|Software Packages
 
 |AUR
-|obs-studio-git
+|obs-linuxbrowser-bin obs-glcapture-git obs-studio-git
 |===
 
-``obs-studio-git``^`AUR`^ should be the right choice
+``obs-studio-git``^`AUR`^ should be the right choice.
+
+You can also make use of the plugins provided in the package list above.
 
 <<<
 
@@ -2846,7 +2848,7 @@ Wanna remote control your own or another PC?
 
 You might have to edit `/etc/security/limits.conf`, to increase the allowed locked memory amount.
 
-In my case I have 32GB of RAM and I want the `audio` group to be allocate most of the RAM, which is why I added the following line to the file
+In my case I have 32GB of RAM and I want the `audio` group to be able to allocate most of the RAM, which is why I added the following line to the file
 
 ./etc/security/limits.conf
 [source, text]
