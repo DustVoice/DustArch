@@ -1156,7 +1156,7 @@ To achieve this very specific setup, I have to turn my home directory into said 
 [source, text]
 ----
 DustArch% git init
-DustArch% git remote add origin https://github.com/DustVoice/dotfiles.git
+DustArch% git remote add origin https://git.dustvoice.de/DustVoice/dotfiles.git
 DustArch% git fetch
 DustArch% git reset origin/master --hard
 DustArch% git branch --set-upstream-to=origin/master master
@@ -1206,7 +1206,7 @@ Now, as mentioned before, I'll switch to using `ssh` for authentication, rather 
 [source, console]
 ----
 dustvoice@DustArch ~
-$ git remote set-url origin git@github.com:DustVoice/dotfiles.git
+$ git remote set-url origin git@git.dustvoice.de:DustVoice/dotfiles.git
 ----
 
 As the best method to both make `zsh` recognize all the configuration changes, as well as the `gpg-agent` behave properly, is to re-login, we'll do just that
