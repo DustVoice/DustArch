@@ -1,6 +1,6 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v8.5, 2020-02-18
+v8.6, 2020-02-18
 :doctype: book
 :docinfo: shared
 :title-logo-image: image:arch.png[]
@@ -15,6 +15,7 @@ v8.5, 2020-02-18
 :icons: font
 :last-update-label: Last modified:
 :table-caption!:
+:table-stripes: none
 
 == Inside the `archiso`
 
@@ -1073,8 +1074,6 @@ If you've followed the tutorial using a recent version of the archiso, you'll pr
 |community
 |ccid opensc pcsclite
 |===
-
-DustArch% sudo pacman -S pcsclite libusb-compat ccid opensc
 
 After that you'll still have to setup `gnupg` correctly.
 In my case I have my private keys stored on a smartcard.
