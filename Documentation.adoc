@@ -1,6 +1,6 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v8.6, 2020-02-18
+v8.7, 2020-02-18
 :doctype: book
 :docinfo: shared
 :title-logo-image: image:arch.png[]
@@ -3130,13 +3130,6 @@ $ sudo pacman -Syu
 ----
 
 and you should be fine now.
-
-[NOTE]
-====
-Consider setting up an `fstab` entry for the `boot` partition, in order to avoid such dilemma in the future.
-
-See <<setting-up-fstab>> for more.
-====
 
 == Additional notes
 
