@@ -1,6 +1,6 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v8.4, 2020-02-03
+v8.5, 2020-02-18
 :doctype: book
 :docinfo: shared
 :title-logo-image: image:arch.png[]
@@ -135,6 +135,13 @@ You might have to resolve any `AUR` dependencies, which can't be resolved with `
 [WARNING]
 ====
 In order to install that `AUR` package, you *must* switch to your normal user, because `makepkg` doesn't run as root.
+====
+
+[NOTE]
+====
+There is an `update.sh` `bash` script available in the `AUR` directory, when using the `dotfiles` repository, which enables you to quickly check all installed `AUR` packages for updates and even install them in the same step.
+
+Issue `./update.sh --help` for command line options.
 ====
 
 <<<
@@ -1316,6 +1323,19 @@ X11Forwarding yes
 ----
 
 Now just restart your remote machine(s) and you're ready to go.
+
+[NOTE]
+====
+If you use `alacritty`, to connect to your remote machine over `ssh`, you will need to install the `alacritty` on the remote machine too, as `alacritty` uses its own `$TERM`.
+
+Another option would be changing that variable for the `ssh` command
+
+[source, console]
+----
+dustvoice@DustArch ~
+$ TERM=xterm-256colors ssh remote-machine
+----
+====
 
 <<<
 
@@ -2589,31 +2609,27 @@ That's why we'll use `xarchiver`.
 |===
 2+|Software Packages
 
-|AUR
-|brave-bin
+|extra
+|firefox firefox-i18n-en-us
 
 |community
 |browserpass
 |===
 
 As you're already using a GUI, you also might be interested in a web browser.
-In my case, I'll install ``brave-bin``^`AUR`^, as well as `browserpass` from the official repositories, in order to use my passwords in `brave`.
+In my case, I'm using `firefox`, as well as `browserpass` from the official repositories, together with the https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/[uBlock Origin], https://addons.mozilla.org/en-US/firefox/addon/darkreader/[Dark Reader], https://addons.mozilla.org/en-US/firefox/addon/duckduckgo-for-firefox/[DuckDuckGo Pricacy Essentials], https://addons.mozilla.org/en-US/firefox/addon/vimium-ff/[Vimium] and finally https://addons.mozilla.org/en-US/firefox/addon/browserpass-ce/[Browserpass] add-ons, in order to use my passwords in `brave` and have best protection in regard to privacy, while browsing the web.
 
-We still have to setup `browserpass`
+We still have to setup `browserpass`, after installing all of this
 
 [source, console]
 ----
 dustvoice@DustArch ~
 $ cd /usr/lib/browserpass
 dustvoice@DustArch /usr/lib/browserpass
-$ make hosts-brave-user
-dustvoice@DustArch /usr/lib/browserpass
-$ make policies-brave-user
+$ make hosts-firefox-user
 dustvoice@DustArch /usr/lib/browserpass
 $ cd ~
 ----
-
-Now the only thing left is, to fire up `brave` and install the `browserpass` extension from the chrome store.
 
 <<<
 
