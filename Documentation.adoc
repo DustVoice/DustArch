@@ -149,9 +149,7 @@ Issue `./update.sh --help` for command line options.
 
 ==== Software categories
 
-In this guide, I'll be marking some headings according to which kind of software it uses.
-
-There are three categories of software:
+There are three categories of software in this guide:
 
 * `Console` software is intended to be used with either the native linux console, or with a terminal emulator
 * `GUI` software is intended to be used in a graphical desktop environment
