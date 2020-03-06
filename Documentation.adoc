@@ -1,14 +1,14 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v8.7, 2020-02-18
+v9.0, 2020-03-06
 :doctype: book
 :docinfo: shared
 :title-logo-image: image:arch.png[]
 :toc: left
 :toc-title: Table Of Contents
-:toclevels: 5
+:toclevels: 6
 :sectnums:
-:sectnumlevels: 5
+:sectnumlevels: 6
 :chapter-label:
 :pagenums!:
 :source-highlighter: rouge
@@ -231,6 +231,10 @@ root@archiso ~ # fdisk -l
 The output of `fdisk -l` is dependent on your system configuration.
 ====
 
+<<<
+
+==== The standard way
+
 In my case, the partition I want to install the root file system on is `/dev/sdb2`.
 `/dev/sdb3` will be my `swap` partition.
 
@@ -277,6 +281,163 @@ root@archiso ~ # mkdir /mnt/boot
 root@archiso ~ # mount /dev/sda2 /mnt/boot
 ----
 ====
+
+<<<
+
+[#full-system-encryption]
+==== Full system encryption
+
+[NOTE]
+====
+This is only one way to do it and it is the way I have done it.
+I'm using a `LVM` on `LUKS` setup, with `lvm2` and `luks2`.
+For more information look into the https://wiki.archlinux.org/[ArchWiki].
+====
+
+[NOTE]
+====
+This setup has different partitions used for the `EFI System Partition`, the `root` partition, etc. than used in the rest of the guide.
+If you want to use `grub` in conjunction with some full system encryption, you would have to adapt the disk and partition names accordingly.
+The only part of the guide, which currently uses the drive/partition naming scheme used in this section is <<manual-secure-boot-setup>>.
+====
+
+<<<
+
+So first we have to decide, which disk, or partition is going to hold the `luks2` encrypted `lvm2` stuff.
+
+In my case I'm now using my NVMe SSD, with a `GPT` partition scheme, for both the `EFI System Partition`, in my case `/dev/nvme0n1p1`, defined as a `EFI System` partition type in `fdisk`, as well as the main `LUKS` volume, in my case `/dev/nvme0n1p2`, defined as a `Linux filesystem` partition type in `fdisk`.
+
+After partitioning our disk, we now have to set everything up.
+
+<<<
+
+===== `EFI System Partition`
+
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|core
+|dosfstools
+|===
+
+I won't setup my `EFI System Partition` with `cryptsetup`, as it makes no sense in my case.
+
+Every `EFI` binary (or `STUB`) has to be signed with my own `Secure Boot` keys, as described in <<manual-secure-boot-setup>>, so tempering with the `EFI System Partition` poses no risk to my system.
+
+Instead I will simply format it with a `FAT32` filesystem
+
+[source, console]
+----
+root@archiso ~ # mkfs.fat -F 32 -L /efi /dev/nvme0n1p1
+----
+
+We will bother with mounting it later on.
+
+<<<
+
+===== `LUKS`
+
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|core
+|cryptsetup
+|===
+
+First off we have to create the `LUKS` volume
+
+[source, console]
+----
+root@archiso ~ # cryptsetup luksFormat --type luks2 /dev/nvme0n1p2
+----
+
+After that we have to open the volume
+
+[source, console]
+----
+root@archiso ~ # cryptsetup open /dev/nvme0n1p2 cryptroot
+----
+
+The volume is now accessible under `/dev/mapper/cryptroot`.
+
+<<<
+
+===== `LVM`
+
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|core
+|lvm2
+|===
+
+I'm going to create one `PV` (Physical Volume) with the just created and opened `cryptroot` `LUKS` volume, one `VG` (Volume Group), named `DustArch1`, which will contain two ``LV``s (Logical Volumes) named `root` and `swap` containing the `root` filesystem and the `swap` respectively.
+
+[source, console]
+----
+root@archiso ~ # pvcreate /dev/mapper/cryptroot
+root@archiso ~ # vgcreate DustArch1 /dev/mapper/cryptroot
+root@archiso ~ # lvcreate -L 100%FREE -n root DustArch1
+root@archiso ~ # lvreduce -l -32G /dev/DustArch1/root
+root@archiso ~ # lvcreate -L 100%FREE -n swap DustArch1
+----
+
+<<<
+
+===== Format & mount
+
+Now the only things left to do are formatting our freshly created logical volumes
+
+[source, console]
+----
+root@archiso ~ # mkfs.ext4 -L / /dev/DustArch1/root
+root@archiso ~ # mkswap /dev/DustArch1/swap
+----
+
+as well as mounting them and enabling the `swap`, in order to proceed with the next steps.
+
+[source, console]
+----
+root@archiso ~ # mount /dev/DustArch1/root /mnt
+root@archiso ~ # mkdir /mnt/efi
+root@archiso ~ # mount /dev/nvme0n1p1 /mnt/efi
+root@archiso ~ # swapon /dev/DustArch1/swap
+----
+
+<<<
+
+===== Unmount & Close
+
+[WARNING]
+====
+Only do this, after you're finished with your setup within the `archiso` and are about to boot into your system, or else the next steps won't work for you.
+====
+
+To close everything back up again,
+
+. unmount the volumes
++
+[source, console]
+----
+root@archiso ~ # umount /mnt/efi /mnt
+----
+
+. deactivate the `VG`
++
+[source, console]
+----
+root@archiso ~ # vgchange -a n DustArch1
+----
+
+. close the `LUKS` volume
++
+[source, console]
+----
+root@archiso ~ # cryptsetup close cryptroot
+----
 
 <<<
 
@@ -558,11 +719,32 @@ dustvoice ALL=(ALL) ALL
 
 to solely grant the new user `sudo` privileges.
 
+=== Boot manager
+
+In this section different boot managers are explained.
+
 <<<
 
-// TODO: Add section for EFISTUB
+==== `EFISTUB`
 
-=== `grub`
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|core
+|efibootmgr
+|===
+
+You can directly load the kernel and the `initramfs` by using `efibootmgr`
+
+[source, console]
+----
+[root@archiso /]# efibootmgr --disk /dev/sda --part 2 --create --label "Arch Linux" --loader /vmlinuz-linux --unicode 'root=6ff60fab-c046-47f2-848c-791fbc52df09 rw initrd=\initramfs-linux.img resume=UUID=097c6f11-f246-40eb-a702-ba83c92654f2' --verbose
+----
+
+<<<
+
+==== `grub`
 
 [cols="^.^m,^.^m", options="header"]
 |===
@@ -591,7 +773,7 @@ and if you want to use `UEFI`, also
 
 <<<
 
-==== `BIOS`
+===== `BIOS`
 
 If you chose the `BIOS - MBR` variation, you'll have to *do nothing special*
 
@@ -612,7 +794,7 @@ Note however that you have to specify a *disk* and *not a partition*, so *no num
 
 <<<
 
-==== `UEFI`
+===== `UEFI`
 
 If you chose the `UEFI - GPT` variation, you'll have to *have the `EFI System Partition` mounted* at `/boot` (where `/dev/sda2` is the partition holding said `EFI System Partition` in my particular setup)
 
@@ -646,7 +828,7 @@ under Linux to make sure, that the `grubx64.efi` file is really there.
 
 <<<
 
-==== `grub` config
+===== `grub` config
 
 In all cases, you now have to create the main `grub.cfg` configuration file.
 
@@ -654,7 +836,7 @@ But before we actually generate it, we'll make some changes to the default `grub
 
 <<<
 
-===== Adjust the timeout
+====== Adjust the timeout
 
 First of all, I want my `grub` menu to wait indefinitely for my command to boot an OS.
 
@@ -683,7 +865,7 @@ GRUB_SAVEDEFAULT="true"
 
 <<<
 
-===== Enable the recovery
+====== Enable the recovery
 
 After that I also want the recovery option showing up, which means that besides the standard and fallback images, also the recovery one would show up.
 
@@ -695,7 +877,7 @@ GRUB_DISABLE_RECOVERY=false
 
 <<<
 
-===== NVIDIA fix
+====== NVIDIA fix
 
 Now, as I'm using the binary NVIDIA driver for my graphics card, I also want to make sure, to revert `grub` back to text mode, after I select a boot entry, in order for the NVIDIA driver to work properly.
 You might not need this
@@ -708,7 +890,7 @@ GRUB_GFXPAYLOAD_LINUX=text
 
 <<<
 
-===== Add power options
+====== Add power options
 
 I also want to add two new menu entries, to enable me to shut down the PC, or reboot it, right from the `grub` menu.
 
@@ -726,13 +908,13 @@ menuentry '=> Reboot' {
 
 <<<
 
-===== Installing `memtest`
+====== Installing `memtest`
 
 As I want all possible options to possibly troubleshoot my PC right there in my `grub` menu,  without the need to boot into a live OS, I also want to have a memory tester there.
 
 <<<
 
-====== `BIOS`
+======= `BIOS`
 
 [cols="^.^m,^.^m", options="header"]
 |===
@@ -746,7 +928,7 @@ For a `BIOS` setup, you'll simply need to install the `memtest86+` package, with
 
 <<<
 
-====== `UEFI`
+======= `UEFI`
 
 [cols="^.^m,^.^m", options="header"]
 |===
@@ -767,32 +949,14 @@ Now select option 3, to install it as a `grub2` menu item.
 
 <<<
 
-===== Enabling hibernation
+====== Enabling hibernation
 
-In order to use the hibernation feature, you'll have to make sure that your `swap` partition/file is at least the size of your RAM.
+We need to add the `resume` kernel parameter to `/etc/default/grub`, containing my `swap` partition `UUID`, in my case
 
-After that we need to perform two tasks
-
-. Add the `resume` hook to `/etc/mkinitcpio.conf`, before `fsck` and definetely after `block`
-+
-./etc/mkinitcpio.conf
-[source, text]
-----
-HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)
-----
-. Add the `resume` kernel parameter to `/etc/default/grub`, containing my `swap` partition `UUID`, in my case
-+
 ./etc/default/grub
 [source, console]
 ----
 GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet resume=UUID=097c6f11-f246-40eb-a702-ba83c92654f2"
-----
-
-After that we have to run
-
-[source, console]
-----
-[root@archiso /]# mkinitcpio -p linux
 ----
 
 [NOTE]
@@ -801,7 +965,7 @@ If you have to change anything, like the `swap` partition `UUID`, inside the `gr
 ====
 
 [#generating-the-grub-config]
-===== Generating the `grub` config
+====== Generating the `grub` config
 
 Now we can finally generate our `grub.cfg`
 
@@ -811,6 +975,86 @@ Now we can finally generate our `grub.cfg`
 ----
 
 Now you're good to boot into your new system.
+
+<<<
+
+=== Switch to a `systemd` based `ramdisk`
+
+[NOTE]
+====
+There is nothing particularily better about using a `systemd` based `ramdisk` instead of a `busybox` one, it's just that I prefer it.
+
+Some advantages, at least in my opinion, that the `systemd` based `ramidsk` has, are the included `resume` hook, as well as password caching, when decrypting encrypted volumes, which means that because I use the same `LUKS` password for both my data storage `HDD`, as well as my `cryptroot`, I only have to input the password once for my `cryptroot` and my data storage `HDD` will get decrypted too, without the need to create `/etc/crypttab` entries, etc.
+====
+
+To switch to a `systemd` based `ramdisk`, you will normally need to substitute the `busybox` specific hooks for `systemd` ones.
+You will also need to use `systemd` hooks from now on, for example `sd-encrypt` instead of `encrypt`.
+
+* `base`
++
+--
+In my case, I left the `base` hook untouched, to get a `busybox` recovery shell, if something goes wrong, although you wouldn't technically need it, when using `systemd`.
+
+[WARNING]
+====
+Don't remove this, when using `busybox`, unless you're absolutely knowing what you're doing.
+====
+--
+
+* `udev`
++
+Replace this with `systemd` to switch from `busybox` to `systemd`.
+
+* `keymap` and/or `consolefont`
++
+These two, or one, if you didn't use one of them, need to be replaced with `sd-vconsole`.
+Everything else stays the same with these.
+
+* `encrypt`
++
+Isn't used in the default `/etc/mkinitcpio.conf`, but could be important later on, for example when using <<full-system-encryption>>.
+You need to substitute this with `sd-encrypt`.
+
+* `lvm2`
++
+Same thing as with `encrypt` and needs to be substituted with `sd-lvm2`.
+
+[NOTE]
+====
+You can find all purposes of the hooks, as well as the `busybox`/`systemd` equivalent of each one in the https://wiki.archlinux.org/index.php/Mkinitcpio#Common_hooks[ArchWiki].
+====
+
+<<<
+
+=== Hibernation
+
+In order to use the hibernation feature, you should make sure that your `swap` partition/file is at least the size of your RAM.
+
+[NOTE]
+====
+If you use a `busybox` based `ramdisk`, you need to
+
+. add the `resume` hook to `/etc/mkinitcpio.conf`, before `fsck` and definetely after `block`
++
+./etc/mkinitcpio.conf
+[source, text]
+----
+HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)
+----
+
+. run
++
+[source, console]
+----
+[root@archiso /]# mkinitcpio -p linux
+----
+====
+
+[NOTE]
+====
+When using `EFISTUB` without `sbupdate`, your motherboard has to support kernel parameters for boot entries.
+If your motherboard doesn't support this, you would need to use https://wiki.archlinux.org/index.php/Systemd-boot[`systemd-boot`].
+====
 
 <<<
 
@@ -875,7 +1119,10 @@ Reboot and your system should fire up just fine.
 [#manual-secure-boot-setup]
 ==== The manual way
 
-// TODO: Describe manual secure boot setup, mention that grub is trash for this as it ignores if the kernel is signed or not, use EFISTUB, mention memtest setup with this way and sbupdate
+[WARNING]
+====
+As this is a very tedious and time consuming process, it only makes sense when also utilizing some sort of disk encryption, which is, why I would advise you to read <<full-system-encryption>> first.
+====
 
 <<<
 
@@ -1642,19 +1889,23 @@ If you want a GUI to do all of this, just install `blueman` and launch `blueman-
 2+|Software Packages
 
 |extra
-|ttf-hack xorg xorg-drivers xorg-xinit
+|ttf-hack xclip xorg xorg-drivers xorg-xinit
 
 |community
-|arandr alacritty i3 i3status rofi
+|arandr alacritty bspwm dmenu sxhkd
+
+|AUR
+|polybar
 |===
 
 If you decide, that you want to use a graphical desktop environment, you have to install additional packages in order for that to work.
 
-[source, console]
-----
-dustvoice@DustArch ~
-$ sudo pacman -S xorg xorg-xinit xorg-drivers i3 i3status rofi ttf-hack xfce4-terminal arandr
-----
+[NOTE]
+====
+`xclip` is useful, when you want to send something to the `X` clipboard.
+It is also required, in order for ``neovim``'s clipboard to work correctly.
+It is not required though.
+====
 
 <<<
 
@@ -1962,7 +2213,7 @@ dustvoice@DustArch ~
 $ fbgs Documentation.pdf
 ----
 
-[INFO]
+[NOTE]
 ====
 You can view all the controls by pressing `h`.
 ====
@@ -2316,12 +2567,12 @@ Of course there is also the `console` equivalent `parted.
 |evince
 
 |community
-|mupdf
+|zathura zathura-pdf-mupdf
 |===
 
 To use `asciidoctor-pdf`, you might be wondering how you are supposed to open the generated PDFs using the GUI.
 
-If you want to have changes made to the PDF reflected immediately in the viewer, you would need `evince` instead of `mupdf`, but `mupdf` has a more minimalistic interface, which comes in handy when using a tiling window manager.
+`zathura` has a minimalistic design and UI with a focus on vim keybinding, whereas `evince` is a more desktop like experience, with things like a print dialogue, etc.
 
 <<<
 
@@ -2519,6 +2770,7 @@ Now simply issue the `layout` alias, provided by my custom `zsh` configuration.
 |===
 2+|Software Packages
 
+|extra
 |xclip
 |===
 
@@ -2881,7 +3133,7 @@ In my case I have 32GB of RAM and I want the `audio` group to be able to allocat
 
 To e.g. edit and produce audio, you could use `ardour`, because it's easy to use, stable and cross platform.
 
-[INFO]
+[NOTE]
 ====
 [cols="^.^m,^.^m", options="header"]
 |===
