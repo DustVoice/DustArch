@@ -1,3 +1,7 @@
-*.pdf
-*.html
-*.xml
+/*
+/*/
+!/.gitignore
+
+!/arch.png
+!/Documentation.adoc
+!/generate-pdfs.sh

@@ -1,6 +1,6 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v9.0, 2020-03-06
+v10.1, 2020-03-10
 :doctype: book
 :docinfo: shared
 :title-logo-image: image:arch.png[]
@@ -912,10 +912,8 @@ menuentry '=> Reboot' {
 
 As I want all possible options to possibly troubleshoot my PC right there in my `grub` menu,  without the need to boot into a live OS, I also want to have a memory tester there.
 
-<<<
-
-======= `BIOS`
-
+.`BIOS`
+--
 [cols="^.^m,^.^m", options="header"]
 |===
 2+|Software Packages
@@ -925,11 +923,10 @@ As I want all possible options to possibly troubleshoot my PC right there in my 
 |===
 
 For a `BIOS` setup, you'll simply need to install the `memtest86+` package, with no further configuration.
+--
 
-<<<
-
-======= `UEFI`
-
+.`UEFI`
+--
 [cols="^.^m,^.^m", options="header"]
 |===
 2+|Software Packages
@@ -937,6 +934,7 @@ For a `BIOS` setup, you'll simply need to install the `memtest86+` package, with
 |AUR
 |memtest86-efi
 |===
+--
 
 For a `UEFI` setup, you'll first need to install the package and then tell ``memtest86-efi``^`AUR`^ how to install itself
 
@@ -1058,7 +1056,7 @@ If your motherboard doesn't support this, you would need to use https://wiki.arc
 
 <<<
 
-=== Secure Boot
+=== `Secure Boot`
 
 <<<
 
@@ -1068,11 +1066,11 @@ If your motherboard doesn't support this, you would need to use https://wiki.arc
 ====
 This is a way of handling secure boot that aims at just making everything work!
 
-It is not the way Secure Boot was intended to be used and you might as well disable it.
+It is not the way `Secure Boot` was intended to be used and you might as well disable it.
 
-If you need Secure Boot to be enabled, e.g. for Windows, but you couldn't care less for the security it could bring to your device, use this method.
+If you need `Secure Boot` to be enabled, e.g. for Windows, but you couldn't care less for the security it could bring to your device, use this method.
 
-If you want to actually make use of the Secure Boot feature, read <<manual-secure-boot-setup>>.
+If you want to actually make use of the `Secure Boot` feature, read <<manual-secure-boot-setup>>.
 ====
 
 [cols="^.^m,^.^m", options="header"]
@@ -1084,11 +1082,11 @@ If you want to actually make use of the Secure Boot feature, read <<manual-secur
 |===
 
 I know I told you that you're now good to boot into your new system.
-That is only correct, if you're *not* using Secure Boot.
+That is only correct, if you're *not* using `Secure Boot`.
 
-You can either proceed by disabling Secure Boot in your firmware settings, or by using `shim` as kind of a pre-bootloader, as well as signing your bootloader (`grub`) and your kernel.
+You can either proceed by disabling `Secure Boot` in your firmware settings, or by using `shim` as kind of a pre-bootloader, as well as signing your bootloader (`grub`) and your kernel.
 
-If you decided on using Secure Boot, you will first have to install the package.
+If you decided on using `Secure Boot`, you will first have to install the package.
 
 Now we just need to copy `shimx64.efi`, as well as `mmx64.efi` to our `EFI System Partition`
 
@@ -1123,6 +1121,105 @@ Reboot and your system should fire up just fine.
 ====
 As this is a very tedious and time consuming process, it only makes sense when also utilizing some sort of disk encryption, which is, why I would advise you to read <<full-system-encryption>> first.
 ====
+
+<<<
+
+===== File formats
+
+In the following subsections, we will be dealing with some different file formats.
+
+.`.key`
+****
+`PEM` format private keys for `EFI` binary and `EFI` signature list signing.
+****
+
+.`.crt`
+****
+`PEM` format certificates for `sbsign`.
+****
+
+.`.cer`
+****
+`DER` format certigficates for firmware.
+****
+
+.`.esl`
+****
+Certificates in `EFI` Signature List for `KeyTool` and/or firmware.
+****
+
+.`.auth`
+****
+Certificates in `EFI` Signature List with authentication header (i.e. a signed certificate update file) for `KeyTool` and/or firmware.
+****
+
+<<<
+
+===== Create the keys
+
+First off, we have to generate our `Secure Boot` keys.
+
+These will be used to sign any binary which will be executed by the firwmare.
+
+<<<
+
+====== `GUID`
+
+Let's create a `GUID` first to use with the next commands.
+
+[source, console]
+----
+[root@archiso ~/sb]# uuidgen --random > GUID.txt
+----
+
+<<<
+
+====== `PK`
+
+We can now generate our `PK` (Platform Key)
+
+[source, console]
+----
+[root@archiso ~/sb]# openssl req -newkey rsa:4096 -nodes -keyout PK.key -new -x509 -sha256 -subj "/CN=Platform Key for DustArch/" -out PK.crt
+[root@archiso ~/sb]# openssl x509 -outform DER -in PK.crt -out PK.cer
+[root@archiso ~/sb]# cert-to-efi-sig-list -g "$(< GUID.txt)" PK.crt PK.esl
+[root@archiso ~/sb]# sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt PK PK.esl PK.auth
+----
+
+In order to allow deletion of the `PK`, for firmwares which do not provide this functionality out of the box, we have to sign an empty file.
+
+[source, console]
+----
+[root@archiso ~/sb]# sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt PK /dev/null rm_PK.auth
+----
+
+<<<
+
+====== `KEK`
+
+We proced in a similar fashion with the `KEK` (Key Exchange Key)
+
+[source, console]
+----
+[root@archiso ~/sb]# openssl req -newkey rsa:4096 -nodes -keyout KEK.key -new -x509 -sha256 -subj "/CN=Key Exchange Key for DustArch/" -out KEK.crt
+[root@archiso ~/sb]# openssl x509 -outform DER -in KEK.crt -out KEK.cer
+[root@archiso ~/sb]# cert-to-efi-sig-list -g "$(< GUID.txt)" KEK.crt KEK.esl
+[root@archiso ~/sb]# sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt KEK KEK.esl KEK.auth
+----
+
+<<<
+
+====== `DB`
+
+And finally the `DB` (Signature Database) key.
+
+[source, console]
+----
+[root@archiso ~/sb]# openssl req -newkey rsa:4096 -nodes -keyout db.key -new -x509 -sha256 -subj "/CN=Signature Database key for DustArch" -out db.crt
+[root@archiso ~/sb]# openssl x509 -outform DER -in db.crt -out db.cer
+[root@archiso ~/sb]# cert-to-efi-sig-list -g "$(< GUID.txt)" db.crt db.esl
+[root@archiso ~/sb]# sign-efi-sig-list -g "$(< GUID.txt)" -k KEK.key -c KEK.crt db db.esl db.auth
+----
 
 <<<
 
