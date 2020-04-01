@@ -1,9 +1,9 @@
 = DustArch: DustVoice's Arch Linux from scratch
 David Holland <info@dustvoice.de>
-v10.1, 2020-03-10
+v10.2, 2020-04-01
 :doctype: book
 :docinfo: shared
-:title-logo-image: image:arch.png[]
+:title-logo-image: image:arch_dracula.png[]
 :toc: left
 :toc-title: Table Of Contents
 :toclevels: 6
@@ -201,7 +201,7 @@ Of course, you can adapt everything to your needs, especially in the <<additiona
 |git
 
 |community
-|ardour cadence jsampler linuxsampler qsampler sample-package 
+|ardour cadence jsampler linuxsampler qsampler sample-package
 
 |AUR
 |sbupdate
@@ -1220,6 +1220,160 @@ And finally the `DB` (Signature Database) key.
 [root@archiso ~/sb]# cert-to-efi-sig-list -g "$(< GUID.txt)" db.crt db.esl
 [root@archiso ~/sb]# sign-efi-sig-list -g "$(< GUID.txt)" -k KEK.key -c KEK.crt db db.esl db.auth
 ----
+
+<<<
+
+===== Windows stuff
+
+As your plan is to be able to control, which things do boot on your system and which don't, you're going through all this hassle to create and enroll custom keys, so only `EFI` binaries signed with said keys can be executed.
+
+But what if you have a Windows dual boot setup?
+
+Well the procedure is actually pretty straight forward.
+You just grab Microsoft's certificates, convert them into a usable format, sign them and enroll them.
+No need to sign the Windows boot loader.
+
+[source, console]
+----
+[root@archiso ~/sb]# curl -fLo WinCert.crt https://www.microsoft.com/pkiops/certs/MicWinProPCA2011_2011-10-19.crt
+[root@archiso ~/sb]# openssl x509 -inform DER -outform PEM -in MicWinCert.crt -out MicWinCert.pem
+[root@archiso ~/sb]# cert-to-efi-sig-list -g 77fa9abd-0359-4d32-bd60-28f4e78f784b MicWinCert.pem MS_db.esl
+[root@archiso ~/sb]# sign-efi-sig-list -a -g 77fa9abd-0359-4d32-bd60-28f4e78f784b -k KEK.key -c KEK.crt db MS_db.esl add_MS_db.auth
+----
+
+<<<
+
+===== Move the kernel & keys
+
+In order to ensure a smooth operation, with actual security, we need to move some stuff around.
+
+<<<
+
+====== Kernel, `initramfs`, microcode
+
+`pacman` will put its unsigned and unencrypted kernel, `initramfs` and microcode images into `/boot`, which is, why it will be no longer a good idea, to leave your `EFI System Partition` mounted there.
+Instead we will create a new mount point under `/efi` and modify our `fstab` accordingly.
+
+<<<
+
+====== Keys
+
+As you probably want to automate signing sooner or later and only use the ultimately necessary keys for this process, as well as store the other more important keys somewhere more safe and secure than your `root` home directory, we will move the necessary keys.
+
+I personally like to create a `/etc/efi-keys` directory, ``chmod``ded to `700` and place my `db.crt` and `db.key` there.
+All the keys will get packed into a `tar` archive and encrypted with a strong symmetric pass phrase and stored somewhere secure and safe.
+
+<<<
+
+===== Signing
+
+Signing is the process of, well, signing your `EFI` binaries, in order for them to be allowed to be executed, by the motherboard firmware.
+At the end of the day, that's why you're doing all this, to prevent an attack by launching unknown code.
+
+<<<
+
+====== Manual signing
+
+Of course, you can sign images yourself manually.
+In my case, I used this, to sign the boot loader, kernel and `initramfs` of my USB installation of Arch Linux.
+
+[NOTE]
+====
+As always, manual signing also comes with its caveats!
+
+If I update my kernel, boot loader, or create an updated `initramfs` on my Arch Linux USB installation, I have to sign those files again, in order to be able to boot it on my PC.
+
+Of course you can always script and automate stuff, but if you want something more easy for day to day use, I really recommend that you try out `sbupdate`,  which I will explain in the next section <<sbupdate>>.
+====
+
+For example, if I want to sign the kernel image of my USB installation, where I mounted the boot partition to `/mnt/dustarchusb/boot`, I would have to do the following
+
+[source, console]
+----
+[root@archiso ~/sb]# sbsign --key /etc/efi-keys/db.key --cert /etc/efi-keys/db.crt --output /boot/vmlinuz-linux /boot/vmlinuz-linux
+----
+
+<<<
+
+[#sbupdate]
+====== `sbupdate`
+
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|AUR
+|sbupdate-git
+|===
+
+Of course, if you're using `Secure Boot` productively, you would want something more practical than manual signing, especially since you need to sign
+
+* the boot loader
+
+* the kernel image
+
+* the `initramfs`
+
+Fortunately there is an easy and uncomplicated tool out there, that does all that for you, called `sbupdate`.
+
+It not only signs everything and also foreign `EFI` binaries, if specified, but also combines your kernel and `initramfs` into a single executable `EFI` binary, so you don't even need a boot loader, if your motherboard implementation supports booting those.
+
+After installing `sbupdate`, we can edit the `/etc/sbupdate.conf` file, to set everything up.
+
+Everything in this config should be self-explanatory.
+
+You will probably need to
+
+* set `ESP_DIR` to `/efi`
+
+* add any other `EFI` binary you want to have signed to `EXTRA_SIGN`
+
+* add your kernel parameters, for example `rd.luks.name`, `root`, `rw`, `resume`, etc. to `CMDLINE_DEFAULT`
+
+After you've successfully configured `sbupdate`, you can run it as root, to create all the signed files.
+
+[NOTE]
+====
+`sbupdate` will be executed upon kernel updates by `pacman`, but not if you change your `initramfs` with something like `mkinitcpio`.
+In that case you will have to run `sbupdate` manually.
+====
+
+<<<
+
+===== Add `EFI` entries
+
+[cols="^.^m,^.^m", options="header"]
+|===
+2+|Software Packages
+
+|core
+|efibootmgr
+|===
+
+Now the only thing left to do, if you want to stay boot loader free anyways, is to add the signed images to the boot list of your `NVRAM`.
+You can do this with `efibootmgr`.
+
+[source, console]
+----
+[root@archiso ~/sb]# efibootmgr -c -d /dev/nvme0n1 -p 1 -L "Arch Linux fallback" -l "EFI\Arch\linux-fallback-signed.efi
+[root@archiso ~/sb]# efibootmgr -c -d /dev/nvme0n1 -p 1 -L "Arch Linux" -l "EFI\Arch\linux-signed.efi
+----
+
+Of course you can extend this list, with whichever entries you need.
+
+<<<
+
+===== Enrolling everything
+
+First off, copy all `.cer`, `.esl` and `.auth` files to a `FAT` formatted filesystem.
+I'm using my `EFI System Partition` for this.
+
+After that reboot into the firmware setup of your motherboard, clear the existing Platform Key, to set the firmware into "Setup Mode" and enroll the `db`, `KEK` and `PK` certificates in sequence.
+
+[NOTE]
+====
+Enroll the Platform Key last, as it sets most firmware's `Secure Boot` sections back into "User mode", exiting "Setup Mode".
+====
 
 <<<
 
@@ -2724,23 +2878,23 @@ As you now have a working graphical desktop environment, you might want to insta
 2+|Software Packages
 
 |community
-|i3lock xss-lock
+|xsecurelock xss-lock
 |===
 
 Probably the first thing you'll want to set up is a session locker, which locks your ``X``-session after resuming from sleep, hibernation, etc.
 It then requires you to input your password again, so no unauthorized user can access you machine.
 
-I'll use `xss-lock` to hook into the necessary `systemd` events and `i3lock` as my locker.
+I'll use `xss-lock` to hook into the necessary `systemd` events and `xsecurelock` as my locker.
 
 [NOTE]
 ====
-I have placed the required command to start `xss-lock` with the right parameters inside my `i3` configuration file.
+I have placed the required command to start `xss-lock` with the right parameters inside my `bspwm` configuration file.
 
-If you use something other than `i3`, you need to make sure this command gets executed upon start of the ``X``-session
+If you use something other than `bspwm`, you need to make sure this command gets executed upon start of the ``X``-session
 
 [source, text]
 ----
-xss-lock -- i3lock -n -e -c 333333
+xss-lock -l -- xsecurelock &
 ----
 ====
 
@@ -2762,7 +2916,7 @@ We could use `gnome-polkit` for that purpose, which resides inside the official 
 
 Now you just need to startup ``xfce-polkit``^`AUR`^ before trying to execute something like `gparted` and you'll be prompted for your password.
 
-As I already launch it as a part of my `i3` configuration, I won't have to worry about that.
+As I already launch it as a part of my `bspwm` configuration, I won't have to worry about that.
 
 <<<
 
