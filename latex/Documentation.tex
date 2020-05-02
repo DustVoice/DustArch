@@ -1,0 +1,3825 @@
+%% Preamble %%
+%% A minimal LaTeX preamble
+%% Some packates are needed to implement
+%% Asciidoc features
+
+
+\documentclass[9pt]{report}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{a5paper,margin=15mm}                   % ... or a4paper or a5paper or ...
+%\geometry{landscape}                % Activate for for rotated page geometry
+
+% \documentclass[11pt]{amsart}
+% \usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+% \geometry{letterpaper}               % ... or a4paper or a5paper or ...
+% %\geometry{landscape}                % Activate for for rotated page geometry
+% %\usepackage[parfill]{parskip}       % Activate to begin paragraphs with an empty line rather than an indent
+
+\usepackage{tcolorbox}
+\usepackage{lipsum}
+
+\usepackage{epstopdf}
+\usepackage{color}
+% \usepackage[usenames, dvipsnames]{color}
+% \usepackage{alltt}
+
+
+\usepackage{amssymb}
+% \usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[version=3]{mhchem}
+
+
+% Needed to properly typeset
+% standard unicode characters:
+%
+\RequirePackage{fix-cm}
+\usepackage{fontspec}
+\usepackage[Latin,Greek]{ucharclasses}
+%
+% NOTE: you must also use xelatex
+% as the typesetting engine
+
+
+% \usepackage{fontspec}
+% \usepackage{polyglossia}
+% \setmainlanguage{en}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+}
+
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\graphicspath{ {images/} }
+\DeclareGraphicsExtensions{.png, .jpg, jpeg, .pdf}
+
+\usepackage[]{minted}
+
+%% \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+%% Asciidoc TeX Macros %%
+
+
+% \pagecolor{black}
+%%%%%%%%%%%%
+
+
+% Needed for Asciidoc
+
+\newcommand{\admonition}[2]{\textbf{#1}: {#2}}
+\newcommand{\rolered}[1]{ \textcolor{red}{#1} }
+\newcommand{\roleblue}[1]{ \textcolor{blue}{#1} }
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{problem}{Problem}
+\newtheorem{exercise}{Exercise}
+\newtheorem{example}{Example}
+\newtheorem{note}{Note}
+\newtheorem{joke}{Joke}
+\newtheorem{objection}{Objection}
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%  Extended quote environment with author
+
+\renewenvironment{quotation}
+{   \leftskip 4em \begin{em} }
+{\end{em}\par }
+
+\def\signed#1{{\leavevmode\unskip\nobreak\hfil\penalty50\hskip2em
+  \hbox{}\nobreak\hfil\raise-3pt\hbox{(#1)}%
+  \parfillskip=0pt \finalhyphendemerits=0 \endgraf}}
+
+
+\newsavebox\mybox
+
+\newenvironment{aquote}[1]
+  {\savebox\mybox{#1}\begin{quotation}}
+  {\signed{\usebox\mybox}\end{quotation}}
+
+\newenvironment{tquote}[1]
+  {  {\bf #1} \begin{quotation} \\ }
+  { \end{quotation} }
+
+%% BOXES: http://tex.stackexchange.com/questions/83930/what-are-the-different-kinds-of-boxes-in-latex
+%% ENVIRONMENTS: https://www.sharelatex.com/learn/Environments
+
+\newenvironment{asciidocbox}
+  {\leftskip6em\rightskip6em\par}
+  {\par}
+
+\newenvironment{titledasciidocbox}[1]
+  {\leftskip6em\rightskip6em\par{\bf #1}\vskip-0.6em\par}
+  {\par}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% http://texblog.org/tag/rightskip/
+
+
+\newenvironment{preamble}
+  {}
+  {}
+
+%% http://tex.stackexchange.com/questions/99809/box-or-sidebar-for-additional-text
+%%
+\newenvironment{sidebar}[1][r]
+  {\wrapfigure{#1}{0.5\textwidth}\tcolorbox}
+  {\endtcolorbox\endwrapfigure}
+
+
+%%%%%%%%%%
+
+\newenvironment{comment*}
+  {\leftskip6em\rightskip6em\par}
+  {\par}
+
+  \newenvironment{remark*}
+  {\leftskip6em\rightskip6em\par}
+  {\par}
+
+
+%% Dummy environment for testing:
+
+\newenvironment{foo}
+  {\bf Foo.\ }
+  {}
+
+
+\newenvironment{foo*}
+  {\bf Foo.\ }
+  {}
+
+
+\newenvironment{click}
+  {\bf Click.\ }
+  {}
+
+\newenvironment{click*}
+  {\bf Click.\ }
+  {}
+
+
+\newenvironment{remark}
+  {\bf Remark.\ }
+  {}
+
+\newenvironment{capsule}
+  {\leftskip10em\par}
+  {\par}
+
+\let\Contentsline\contentsline
+\renewcommand\contentsline[3]{\Contentsline{#1}{#2}{}}
+
+\definecolor{draculaBG}{rgb}{0.97,0.97,0.95}
+\setminted{breaklines=true,breakanywhere=true,breakbytoken=true,breakbytokenanywhere=true,tabsize=4,frame=single,framesep=.5em,samepage=false}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Style
+
+\parindent0pt
+\parskip8pt
+\pagenumbering{gobble}
+%% User Macros %%
+%% Front Matter %%
+
+\title{DustArch: DustVoice’s Arch Linux from scratch}
+\author{David Holland}
+\date{2020-05-02}
+
+
+%% Begin Document %%
+
+\begin{document}
+\maketitle
+\tableofcontents
+\hypertarget{x-inside-the-archiso}{\chapter{Inside the \texttt{archiso}}}
+This section is aimed at providing help with the general installation of a customized Arch Linux from within an official Arch Linux image (\texttt{archiso}).
+
+
+\admonition{NOTE}{As Arch Linux is a rolling release Linux distribution, it is advised, to have a working internet connection, in order to get the latest package upgrades and to install additional software, as the \texttt{archiso} only has very few packages available from cache.
+
+
+Furthermore, one should bear in mind that depending on the version, or rather modification date, the guide may already be outdated.
+If you encounter any problems along the way, you will either have to resolve the issue yourself, or utilize the great \href{https://wiki.archlinux.org/}{ArchWiki}, or the \href{https://bbs.archlinux.org/}{Arch Linux forums}.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-syncing-up-pacman}{\section{\texttt{Sy}ncing up \texttt{pacman}}}
+First of all we need to sync up \texttt{pacman}'s package repository, in order to be able to install packages
+
+
+\begin{minted}{console}
+root@archiso ~ # pacman -Sy
+\end{minted}
+
+\admonition{WARNING}{Using \texttt{pacman -Sy} should be sufficient, in order to be able to search for packages from within the \texttt{archiso}, without upgrading the system, but might break your system, if you use this command on an existing installation!
+
+
+To be on the safe side, it is advised to always use \texttt{pacman -Syu} instead!
+
+
+\texttt{pacstrap} uses the latest packages anyways.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-official-repositories}{\subsection{Official repositories}}
+After doing that, we can now install any software from the official repositories by issuing
+
+
+\begin{minted}{console}
+root@archiso ~ # pacman -S <package_name>
+\end{minted}
+
+where you would replace \texttt{<package\_name>} with the actual package name.
+
+
+If you don’t know the exact package name, or if you just want to search for a keyword, for example \texttt{xfce} to list all packages having to do something with \texttt{xfce}, use
+
+
+\begin{minted}{console}
+root@archiso ~ # pacman -Ss <keyword>
+\end{minted}
+
+If you want to remove an installed package, just use
+
+
+\begin{minted}{console}
+root@archiso ~ # pacman -Rsu <package_name>
+\end{minted}
+
+\admonition{CAUTION}{If you have to force remove, which you should use \textbf{with extreme caution}, you can use
+
+
+}
+\begin{minted}{console}
+root@archiso ~ # pacman -Rdd <package_name>
+\end{minted}
+%}
+
+\vfill\eject
+
+\hypertarget{x-aur}{\subsection{\texttt{AUR}}}
+If you want to install a package from the \href{https://aur.archlinux.org/}{\texttt{AUR}}, I would proceed as follows
+
+
+\begin{enumerate}
+
+\item{\texttt{cd} into the dedicated directory, if you’re using the \texttt{dotfiles} repo, which provides an \texttt{update.sh} script within that folder, to check every subfolder for updates}
+
+\begin{minted}{console}
+dustvoice@archiso ~ $ cd AUR
+\end{minted}
+\item{Clone the package with \texttt{git}}
+
+\begin{minted}{console}
+dustvoice@archiso ~/AUR $ git clone https://aur.archlinux.org/pacman-git.git
+\end{minted}
+\item{Switch to the package directory}
+
+\begin{minted}{console}
+dustvoice@archiso ~/AUR $ cd pacman-git
+\end{minted}
+\item{Execute \texttt{makepkg}}
+
+\begin{minted}{console}
+dustvoice@archiso ~/AUR/pacman-git $ makepkg -si
+\end{minted}
+\item{Delete all files created by \texttt{makepkg}, in order to easily see, if a package needs an update by using \texttt{git fetch --all} and \texttt{git status}}
+
+\begin{minted}{console}
+dustvoice@archiso ~/AUR/pacman-git $ git reset HEAD --hard
+dustvoice@archiso ~/AUR/pacman-git $ git clean -fdx
+\end{minted}
+\end{enumerate}
+
+
+\admonition{NOTE}{You might have to resolve any \texttt{AUR} dependencies, which can’t be resolved with \texttt{pacman}.
+
+}
+\admonition{WARNING}{In order to install that \texttt{AUR} package, you \textbf{must} switch to your normal user, because \texttt{makepkg} doesn’t run as root.
+
+}
+\admonition{NOTE}{There is an \texttt{update.sh} \texttt{bash} script available in the \texttt{AUR} directory, when using the \texttt{dotfiles} repository, which enables you to quickly check all installed \texttt{AUR} packages for updates and even install them in the same step.
+
+
+Issue \texttt{./update.sh --help} for command line options.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-software-categories}{\subsection{Software categories}}
+There are three categories of software in this guide:
+
+
+\begin{itemize}
+
+\item \texttt{Console} software is intended to be used with either the native linux console, or with a terminal emulator
+
+\item \texttt{GUI} software is intended to be used in a graphical desktop environment
+
+\item \texttt{Hybrid} software can either be used within both a console and a graphical desktop environment (\texttt{networkmanager}), or there are packages available for both console and a graphical desktop environment (\texttt{pulseaudio} with \texttt{pulsemixer} for ${}^{\texttt{console}}$ and \texttt{pavucontrol} for ${}^{\texttt{GUI}}$
+
+\end{itemize}
+
+
+
+\vfill\eject
+
+\hypertarget{x-software-installation}{\subsection{Software installation}}
+In this guide, I’ll be explicitly mark the packages installed in a specific section.
+
+
+This enables you to
+
+
+\begin{itemize}
+
+\item clearly see what packages get installed / need to be installed in a specific section
+
+\item install packages before you start with the section in order to minimize waiting time
+
+\item not have to read through bloating lines like
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ sudo pacman -S some-package
+\end{minted}
+\item not have to accidentally reinstall already installed packages
+
+\end{itemize}
+
+
+\admonition{NOTE}{The packages are always the recommended packages.
+
+
+For further clarification for specific packages (e.g. \texttt{UEFI} specific packages), continue reading the section, as there is most certainly a explanation there.
+
+
+Of course, you can adapt everything to your needs, especially in the \hyperlink{additional-setup-packages}{} step.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-example-section}{\subsubsection{Example section}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{libutil-linux} \\ 
+\texttt{extra} & \texttt{git} \\ 
+\texttt{community} & \texttt{ardour cadence jsampler linuxsampler qsampler sample-package} \\ 
+\texttt{AUR} & \texttt{sbupdate} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+You have to configure \texttt{sample-package} by editing \texttt{/etc/sample.conf}
+
+
+\begin{minted}{console}
+Sample.text=useful
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-formatting-the-drive}{\section{Formatting the drive}}
+First you have to list all the available drives by issuing
+
+
+\begin{minted}{console}
+root@archiso ~ # fdisk -l
+\end{minted}
+
+\admonition{NOTE}{The output of \texttt{fdisk -l} is dependent on your system configuration.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-the-standard-way}{\subsection{The standard way}}
+In my case, the partition I want to install the root file system on is \texttt{/dev/sdb2}.
+\texttt{/dev/sdb3} will be my \texttt{swap} partition.
+
+
+\admonition{NOTE}{A \texttt{swap} size \textbf{twice the size of your RAM} is recommended by a lot of people.
+
+
+With bigger RAM sizes available today, this isn’t necessary anymore.
+To be exact, every distribution has different recommendations for \texttt{swap} sizes.
+
+
+Also \texttt{swap} size heavily depends on whether you want to be able to hibernate, etc.
+
+
+You should make the \texttt{swap} size \textbf{at least your RAM size} and for RAM sizes over \texttt{4GB} and the wish to hibernate, at least one and a half your RAM size.
+
+}
+\admonition{IMPORTANT}{If you haven’t yet partitioned your disk, please refer to the \href{https://wiki.archlinux.org/index.php/Partitioning}{general partitioning tutorial} in the ArchWiki.
+
+}
+Now we need to format the partitions accordingly
+
+
+\begin{minted}{console}
+root@archiso ~ # mkfs.ext4 /dev/sdb2
+root@archiso ~ # mkswap /dev/sdb3
+\end{minted}
+
+After doing that, we can turn on the \texttt{swap} and \texttt{mount} the root partition.
+
+
+\begin{minted}{console}
+root@archiso ~ # swapon /dev/sdb3
+root@archiso ~ # mount /dev/sdb2 /mnt
+\end{minted}
+
+\admonition{NOTE}{If you have an additional \texttt{EFI system partition}, because of a \emph{UEFI - GPT} setup or e.g. an existing Windows installation, which we will assume to be located under \texttt{/dev/sda2} (\texttt{/dev/sda} is the disk of my Windows install), you’ll have to \texttt{mount} this partition to the new systems \texttt{/boot} folder
+
+
+}
+\begin{minted}{console}
+root@archiso ~ # mkdir /mnt/boot
+root@archiso ~ # mount /dev/sda2 /mnt/boot
+\end{minted}
+%}
+
+\vfill\eject
+
+\hypertarget{x-full-system-encryption}{\subsection{Full system encryption}}
+\admonition{NOTE}{This is only one way to do it and it is the way I have done it.
+I’m using a \texttt{LVM} on \texttt{LUKS} setup, with \texttt{lvm2} and \texttt{luks2}.
+For more information look into the \href{https://wiki.archlinux.org/}{ArchWiki}.
+
+}
+\admonition{NOTE}{This setup has different partitions used for the \texttt{EFI System Partition}, the \texttt{root} partition, etc. than used in the rest of the guide.
+If you want to use \texttt{grub} in conjunction with some full system encryption, you would have to adapt the disk and partition names accordingly.
+The only part of the guide, which currently uses the drive/partition naming scheme used in this section is \hyperlink{manual-secure-boot-setup}{The manual way}.
+
+}
+
+\vfill\eject
+
+So first we have to decide, which disk, or partition is going to hold the \texttt{luks2} encrypted \texttt{lvm2} stuff.
+
+
+In my case I’m now using my NVMe SSD, with a \texttt{GPT} partition scheme, for both the \texttt{EFI System Partition}, in my case \texttt{/dev/nvme0n1p1}, defined as a \texttt{EFI System} partition type in \texttt{fdisk}, as well as the main \texttt{LUKS} volume, in my case \texttt{/dev/nvme0n1p2}, defined as a \texttt{Linux filesystem} partition type in \texttt{fdisk}.
+
+
+After partitioning our disk, we now have to set everything up.
+
+
+
+\vfill\eject
+
+\hypertarget{x-efi-system-partition}{\subsubsection{\texttt{EFI System Partition}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{dosfstools} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+I won’t setup my \texttt{EFI System Partition} with \texttt{cryptsetup}, as it makes no sense in my case.
+
+
+Every \texttt{EFI} binary (or \texttt{STUB}) has to be signed with my own \texttt{Secure Boot} keys, as described in \hyperlink{manual-secure-boot-setup}{The manual way}, so tempering with the \texttt{EFI System Partition} poses no risk to my system.
+
+
+Instead I will simply format it with a \texttt{FAT32} filesystem
+
+
+\begin{minted}{console}
+root@archiso ~ # mkfs.fat -F 32 -L /efi /dev/nvme0n1p1
+\end{minted}
+
+We will bother with mounting it later on.
+
+
+
+\vfill\eject
+
+\hypertarget{x-luks}{\subsubsection{\texttt{LUKS}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{cryptsetup} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+First off we have to create the \texttt{LUKS} volume
+
+
+\begin{minted}{console}
+root@archiso ~ # cryptsetup luksFormat --type luks2 /dev/nvme0n1p2
+\end{minted}
+
+After that we have to open the volume
+
+
+\begin{minted}{console}
+root@archiso ~ # cryptsetup open /dev/nvme0n1p2 cryptroot
+\end{minted}
+
+The volume is now accessible under \texttt{/dev/mapper/cryptroot}.
+
+
+
+\vfill\eject
+
+\hypertarget{x-lvm}{\subsubsection{\texttt{LVM}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{lvm2} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+I’m going to create one \texttt{PV} (Physical Volume) with the just created and opened \texttt{cryptroot} \texttt{LUKS} volume, one \texttt{VG} (Volume Group), named \texttt{DustArch1}, which will contain two \texttt{LV}s (Logical Volumes) named \texttt{root} and \texttt{swap} containing the \texttt{root} filesystem and the \texttt{swap} respectively.
+
+
+\begin{minted}{console}
+root@archiso ~ # pvcreate /dev/mapper/cryptroot
+root@archiso ~ # vgcreate DustArch1 /dev/mapper/cryptroot
+root@archiso ~ # lvcreate -L 100%FREE -n root DustArch1
+root@archiso ~ # lvreduce -l -32G /dev/DustArch1/root
+root@archiso ~ # lvcreate -L 100%FREE -n swap DustArch1
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-format-and-mount}{\subsubsection{Format \& mount}}
+Now the only things left to do are formatting our freshly created logical volumes
+
+
+\begin{minted}{console}
+root@archiso ~ # mkfs.ext4 -L / /dev/DustArch1/root
+root@archiso ~ # mkswap /dev/DustArch1/swap
+\end{minted}
+
+as well as mounting them and enabling the \texttt{swap}, in order to proceed with the next steps.
+
+
+\begin{minted}{console}
+root@archiso ~ # mount /dev/DustArch1/root /mnt
+root@archiso ~ # mkdir /mnt/efi
+root@archiso ~ # mount /dev/nvme0n1p1 /mnt/efi
+root@archiso ~ # swapon /dev/DustArch1/swap
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-unmount-and-close}{\subsubsection{Unmount \& Close}}
+\admonition{WARNING}{Only do this, after you’re finished with your setup within the \texttt{archiso} and are about to boot into your system, or else the next steps won’t work for you.
+
+}
+To close everything back up again,
+
+
+\begin{enumerate}
+
+\item{unmount the volumes}
+
+\begin{minted}{console}
+root@archiso ~ # umount /mnt/efi /mnt
+\end{minted}
+\item{deactivate the \texttt{VG}}
+
+\begin{minted}{console}
+root@archiso ~ # vgchange -a n DustArch1
+\end{minted}
+\item{close the \texttt{LUKS} volume}
+
+\begin{minted}{console}
+root@archiso ~ # cryptsetup close cryptroot
+\end{minted}
+\end{enumerate}
+
+
+
+\vfill\eject
+
+\hypertarget{x-preparing-the-chroot-environment}{\section{Preparing the \texttt{chroot} environment}}
+First it might make sense to edit \texttt{/etc/pacman.d/mirrorlist} to move the mirror(s) geographically closest to you to the top.
+
+
+After that we can \texttt{pacstrap} the \textbf{minimum packages} needed.
+We will install all other packages later on.
+
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{base linux linux-firmware} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+\admonition{NOTE}{This is the actual command used in my case
+
+
+}
+\begin{minted}{console}
+root@archiso ~ # pacstrap /mnt base linux linux-firmware
+\end{minted}
+%}
+After that generate an \texttt{fstab} using \texttt{genfstab}
+
+
+\begin{minted}{console}
+root@archiso ~ # genfstab -U /mnt >> /mnt/etc/fstab
+\end{minted}
+
+and you’re ready to enter the \texttt{chroot} environment.
+
+
+
+\vfill\eject
+
+\hypertarget{x-entering-the-chroot}{\chapter{Entering the \texttt{chroot}}}
+\admonition{NOTE}{As we want to set up our new system, we need to have access to the different partitions, the internet, etc. which we wouldn’t get by solely using \texttt{chroot}.
+
+
+That’s why we are using \texttt{arch-chroot}, provided by the \texttt{arch-install-scripts} package already shipped with the archiso.
+This script takes care of all that stuff, so we can set up our system properly.
+
+}
+\begin{minted}{console}
+root@archiso ~ # arch-chroot /mnt
+\end{minted}
+
+Et Voila! You successfully \texttt{chroot}ed inside your new system and you’ll be greeted by a \texttt{bash} prompt.
+
+
+
+\vfill\eject
+
+\hypertarget{x-installing-additional-packages}{\section{Installing additional packages}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{amd-ucode base-devel diffutils dmraid dnsmasq dosfstools efibootmgr exfat-utils grub iputils lvm2 openssh sudo usbutils} \\ 
+\texttt{extra} & \texttt{efitools git intel-ucode networkmanager networkmanager-openconnect networkmanager-openvpn parted polkit rsync zsh} \\ 
+\texttt{community} & \texttt{neovim os-prober} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+\admonition{NOTE}{There are many command line text editors available, like \texttt{nano}, \texttt{vi}, \texttt{vim}, \texttt{emacs}, etc.
+
+
+I’ll be using \texttt{neovim}, though it shouldn’t matter what editor you choose.
+
+}
+Make sure to enable the \texttt{NetworkManager.service} service, in order for the Internet connection to work upon booting into our fresh system later on.
+
+
+\begin{minted}{console}
+[root@archiso /]# systemctl enable NetworkManager.service
+\end{minted}
+
+With \texttt{polkit} installed, create a file \texttt{/etc/polkit-1/rules.d/50-org.freedesktop.NetworkManager.rules} to enable users of the \texttt{network} group to add new networks without the need of \texttt{sudo}.
+
+
+\begin{minted}{console}
+polkit.addRule(function(action, subject) {
+    if (action.id.indexOf("org.freedesktop.NetworkManager.") == 0 && subject.isInGroup("network")) {
+        return polkit.Result.YES;
+    }
+});
+\end{minted}
+
+If you use \texttt{UEFI}, you’ll also need the \texttt{efibootmgr}, in order to modify the \texttt{UEFI} entries.
+
+
+
+\vfill\eject
+
+\hypertarget{x-master-of-time}{\section{Master of time}}
+After that you have to set your timezone and update the system clock.
+
+
+Generally speaking, you can find all the different timezones under \texttt{/usr/share/zoneinfo}.
+In my case, my timezone resides under \texttt{/usr/share/zoneinfo/Europe/Berlin}.
+
+
+To achieve the desired result, I want to symlink this to \texttt{/etc/localtime} and set the hardware clock.
+
+
+\begin{minted}{console}
+[root@archiso /]# ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
+[root@archiso /]# hwclock --systohc --utc
+\end{minted}
+
+Now you can also enable time synchronization over network
+
+
+\begin{minted}{console}
+[root@archiso /]# timedatectl set-timezone Europe/Berlin
+[root@archiso /]# timedatectl set-ntp true
+\end{minted}
+
+and check that everything is alright
+
+
+\begin{minted}{console}
+[root@archiso /]# timedatectl status
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-master-of-locales}{\section{Master of locales}}
+Now you have to generate your locale information.
+
+
+For that you have to edit \texttt{/etc/locale.gen} and uncomment the locales you want to enable.
+
+
+\admonition{NOTE}{I recommend to always uncomment \texttt{en\_US.UTF-8 UTF8}, even if you want to use another language primarily.
+
+}
+In my case I only uncommented the \texttt{en\_US.UTF-8 UTF8} line
+
+
+\begin{minted}{console}
+en_US.UTF-8 UTF8
+\end{minted}
+
+After that you still have to actually generate the locales by issuing
+
+
+\begin{minted}{console}
+[root@archiso /]# locale-gen
+\end{minted}
+
+and set the locale
+
+
+\begin{minted}{console}
+[root@archiso /]# localectl set-locale LANG="en_US.UTF-8"
+\end{minted}
+
+After that we’re done with this part.
+
+
+
+\vfill\eject
+
+\hypertarget{x-naming-your-machine}{\section{Naming your machine}}
+Now we can set the \texttt{hostname} and add \texttt{hosts} entries.
+
+
+Apart from being mentioned in your command prompt, the \texttt{hostname} also serves the purpose of identifying, or naming your machine.
+This enables you to see your PC in your router, etc.
+
+
+
+\vfill\eject
+
+\hypertarget{x-hostname}{\subsection{\texttt{hostname}}}
+To change the \texttt{hostname}, simply edit \texttt{/etc/hostname}, enter the desired name, then save and quit.
+
+
+\begin{minted}{console}
+DustArch
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-hosts}{\subsection{\texttt{hosts}}}
+Now we need to specify some \texttt{hosts} entries by editing \texttt{/etc/hosts}
+
+
+\begin{minted}{console}
+# Static table lookup for hostnames.
+# See hosts(5) for details.
+
+127.0.0.1   localhost           .
+::1         localhost           .
+127.0.1.1   DustArch.localhost  DustArch
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-user-setup}{\section{User setup}}
+Now you should probably change the default \texttt{root} password and create a new non-\texttt{root} user for yourself, as using your new system purely through the native \texttt{root} user is not recommended from a security standpoint.
+
+
+
+\vfill\eject
+
+\hypertarget{x-give-root-a-password}{\subsection{Give \texttt{root} a password}}
+To change the password for the current user (the \texttt{root} user) issue
+
+
+\begin{minted}{console}
+[root@archiso /]# passwd
+\end{minted}
+
+and choose a new password.
+
+
+
+\vfill\eject
+
+\hypertarget{x-create-a-personal-user}{\subsection{Create a personal user}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{sudo} \\ 
+\texttt{extra} & \texttt{zsh} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+We are going to create a new user and set the password, groups and shell for this user
+
+
+\begin{minted}{console}
+[root@archiso /]# useradd -m -p "" -G "adm,audio,disk,floppy,kvm,log,lp,network,rfkill,scanner,storage,users,optical,power,wheel" -s /usr/bin/zsh dustvoice
+[root@archiso /]# passwd dustvoice
+\end{minted}
+
+We now have to allow the \texttt{wheel} group \texttt{sudo} access.
+
+
+For that we edit \texttt{/etc/sudoers} and uncomment the \texttt{\%wheel} line
+
+
+\begin{minted}{console}
+%wheel ALL=(ALL) ALL
+\end{minted}
+
+You could also add a new line below the \texttt{root} line
+
+
+\begin{minted}{console}
+root ALL=(ALL) ALL
+\end{minted}
+
+with your new username
+
+
+\begin{minted}{console}
+dustvoice ALL=(ALL) ALL
+\end{minted}
+
+to solely grant the new user \texttt{sudo} privileges.
+
+
+\hypertarget{x-boot-manager}{\section{Boot manager}}
+In this section different boot managers are explained.
+
+
+
+\vfill\eject
+
+\hypertarget{x-efistub}{\subsection{\texttt{EFISTUB}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{efibootmgr} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+You can directly load the kernel and the \texttt{initramfs} by using \texttt{efibootmgr}
+
+
+\begin{minted}{console}
+[root@archiso /]# efibootmgr --disk /dev/sda --part 2 --create --label "Arch Linux" --loader /vmlinuz-linux --unicode 'root=6ff60fab-c046-47f2-848c-791fbc52df09 rw initrd=\initramfs-linux.img resume=UUID=097c6f11-f246-40eb-a702-ba83c92654f2' --verbose
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-grub}{\subsection{\texttt{grub}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{efibootmgr grub} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Now onto installing the boot manager.
+We will use \texttt{grub} in this guide.
+
+
+First make sure, all the required packages are installed
+
+
+\begin{minted}{console}
+[root@archiso /]# pacman -S grub dosfstools os-prober mtools
+\end{minted}
+
+and if you want to use \texttt{UEFI}, also
+
+
+\begin{minted}{console}
+[root@archiso /]# pacman -S efibootmgr
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-bios}{\subsubsection{\texttt{BIOS}}}
+If you chose the \texttt{BIOS - MBR} variation, you’ll have to \textbf{do nothing special}
+
+
+If you chose the \texttt{BIOS - GPT} variation, you’ll have to \textbf{have a \texttt{+1M} boot partition} created with the partition type set to \texttt{BIOS boot}.
+
+
+In both cases you’ll have to \textbf{run the following comman} now
+
+
+\begin{minted}{console}
+[root@archiso /]# grub-install --target=i386-pc /dev/sdb
+\end{minted}
+
+\admonition{NOTE}{It should obvious that you would need to replace \texttt{/dev/sdb} with the disk you actually want to use.
+Note however that you have to specify a \textbf{disk} and \textbf{not a partition}, so \textbf{no number}.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-uefi}{\subsubsection{\texttt{UEFI}}}
+If you chose the \texttt{UEFI - GPT} variation, you’ll have to \textbf{have the \texttt{EFI System Partition} mounted} at \texttt{/boot} (where \texttt{/dev/sda2} is the partition holding said \texttt{EFI System Partition} in my particular setup)
+
+
+Now \textbf{install \texttt{grub} to the \texttt{EFI System Partition}}
+
+
+\begin{minted}{console}
+[root@archiso /]# grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
+\end{minted}
+
+\admonition{IMPORTANT}{If you’ve planned on dual booting arch with Windows and therefore reused the \texttt{EFI System Partition} created by Windows, you might not be able to boot to grub just yet.
+
+
+In this case, boot into Windows, open a \texttt{cmd} window as Administrator and type in
+
+
+}
+\begin{minted}{console}
+bcdedit /set {bootmgr} path \EFI\grub\grubx64.efi
+\end{minted}
+
+To make sure that the path is correct, you can use
+
+
+\begin{minted}{console}
+[root@archiso /]# ls /boot/EFI/grub
+\end{minted}
+
+under Linux to make sure, that the \texttt{grubx64.efi} file is really there.
+
+%}
+
+\vfill\eject
+
+\hypertarget{x-grub-config}{\subsubsection{\texttt{grub} config}}
+In all cases, you now have to create the main \texttt{grub.cfg} configuration file.
+
+
+But before we actually generate it, we’ll make some changes to the default \texttt{grub} settings, which the \texttt{grub.cfg} will be generated from.
+
+
+
+\vfill\eject
+
+\hypertarget{x-adjust-the-timeout}{\paragraph{Adjust the timeout}}
+First of all, I want my \texttt{grub} menu to wait indefinitely for my command to boot an OS.
+
+
+\begin{minted}{console}
+GRUB_TIMEOUT=-1
+\end{minted}
+
+\admonition{NOTE}{I decided on this, because I’m dual booting with Windows and after Windows updates itself, I don’t want to accidentally boot into my Arch Linux, just because I wasn’t quick enough to select the Windows Boot Loader from the \texttt{grub} menu.
+
+
+Of course you can set this parameter to whatever you want.
+
+
+Another way of achieving what I described, would be to make \texttt{grub} remember the last selection.
+
+
+}
+\begin{minted}{console}
+GRUB_TIMEOUT=5
+GRUB_DEFAULT=saved
+GRUB_SAVEDEFAULT="true"
+\end{minted}
+%}
+
+\vfill\eject
+
+\hypertarget{x-enable-the-recovery}{\paragraph{Enable the recovery}}
+After that I also want the recovery option showing up, which means that besides the standard and fallback images, also the recovery one would show up.
+
+
+\begin{minted}{console}
+GRUB_DISABLE_RECOVERY=false
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-nvidia-fix}{\paragraph{NVIDIA fix}}
+Now, as I’m using the binary NVIDIA driver for my graphics card, I also want to make sure, to revert \texttt{grub} back to text mode, after I select a boot entry, in order for the NVIDIA driver to work properly.
+You might not need this
+
+
+\begin{minted}{console}
+GRUB_GFXPAYLOAD_LINUX=text
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-add-power-options}{\paragraph{Add power options}}
+I also want to add two new menu entries, to enable me to shut down the PC, or reboot it, right from the \texttt{grub} menu.
+
+
+\begin{minted}{console}
+menuentry '=> Shutdown' {
+    halt
+}
+
+menuentry '=> Reboot' {
+    reboot
+}
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-installing-memtest}{\paragraph{Installing \texttt{memtest}}}
+As I want all possible options to possibly troubleshoot my PC right there in my \texttt{grub} menu,  without the need to boot into a live OS, I also want to have a memory tester there.
+
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{memtest86+} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+For a \texttt{BIOS} setup, you’ll simply need to install the \texttt{memtest86+} package, with no further configuration.
+
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{memtest86-efi} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+For a \texttt{UEFI} setup, you’ll first need to install the package and then tell \texttt{memtest86-efi}${}^{\texttt{AUR}}$ how to install itself
+
+
+\begin{minted}{console}
+[root@archiso /]# memtest86-efi -i
+\end{minted}
+
+Now select option 3, to install it as a \texttt{grub2} menu item.
+
+
+
+\vfill\eject
+
+\hypertarget{x-enabling-hibernation}{\paragraph{Enabling hibernation}}
+We need to add the \texttt{resume} kernel parameter to \texttt{/etc/default/grub}, containing my \texttt{swap} partition \texttt{UUID}, in my case
+
+
+\begin{minted}{console}
+GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet resume=UUID=097c6f11-f246-40eb-a702-ba83c92654f2"
+\end{minted}
+
+\admonition{NOTE}{If you have to change anything, like the \texttt{swap} partition \texttt{UUID}, inside the \texttt{grub} configuration files, you’ll always have to rerun \texttt{grub-mkconfig} as explained in \hyperlink{generating-the-grub-config}{Generating the \texttt{grub} config}.
+
+}
+\hypertarget{x-generating-the-grub-config}{\paragraph{Generating the \texttt{grub} config}}
+Now we can finally generate our \texttt{grub.cfg}
+
+
+\begin{minted}{console}
+[root@archiso /]# grub-mkconfig -o /boot/grub/grub.cfg
+\end{minted}
+
+Now you’re good to boot into your new system.
+
+
+
+\vfill\eject
+
+\hypertarget{x-switch-to-a-systemd-based-ramdisk}{\section{Switch to a \texttt{systemd} based \texttt{ramdisk}}}
+\admonition{NOTE}{There is nothing particularily better about using a \texttt{systemd} based \texttt{ramdisk} instead of a \texttt{busybox} one, it’s just that I prefer it.
+
+
+Some advantages, at least in my opinion, that the \texttt{systemd} based \texttt{ramidsk} has, are the included \texttt{resume} hook, as well as password caching, when decrypting encrypted volumes, which means that because I use the same \texttt{LUKS} password for both my data storage \texttt{HDD}, as well as my \texttt{cryptroot}, I only have to input the password once for my \texttt{cryptroot} and my data storage \texttt{HDD} will get decrypted too, without the need to create \texttt{/etc/crypttab} entries, etc.
+
+}
+To switch to a \texttt{systemd} based \texttt{ramdisk}, you will normally need to substitute the \texttt{busybox} specific hooks for \texttt{systemd} ones.
+You will also need to use \texttt{systemd} hooks from now on, for example \texttt{sd-encrypt} instead of \texttt{encrypt}.
+
+
+\begin{itemize}
+
+\item \texttt{base}
+
+In my case, I left the \texttt{base} hook untouched, to get a \texttt{busybox} recovery shell, if something goes wrong, although you wouldn’t technically need it, when using \texttt{systemd}.
+
+
+\admonition{WARNING}{Don’t remove this, when using \texttt{busybox}, unless you’re absolutely knowing what you’re doing.
+
+}\item \texttt{udev}
+
+Replace this with \texttt{systemd} to switch from \texttt{busybox} to \texttt{systemd}.
+
+\item \texttt{keymap} and/or \texttt{consolefont}
+
+These two, or one, if you didn’t use one of them, need to be replaced with \texttt{sd-vconsole}.
+Everything else stays the same with these.
+
+\item \texttt{encrypt}
+
+Isn’t used in the default \texttt{/etc/mkinitcpio.conf}, but could be important later on, for example when using \hyperlink{full-system-encryption}{Full system encryption}.
+You need to substitute this with \texttt{sd-encrypt}.
+
+\item \texttt{lvm2}
+
+Same thing as with \texttt{encrypt} and needs to be substituted with \texttt{sd-lvm2}.
+
+\end{itemize}
+
+
+\admonition{NOTE}{You can find all purposes of the hooks, as well as the \texttt{busybox}/\texttt{systemd} equivalent of each one in the
+
+}
+\href{https://wiki.archlinux.org/index.php/Mkinitcpio#Common_hooks}{ArchWiki}.
+
+%}
+
+\vfill\eject
+
+\hypertarget{x-hibernation}{\section{Hibernation}}
+In order to use the hibernation feature, you should make sure that your \texttt{swap} partition/file is at least the size of your RAM.
+
+
+\admonition{NOTE}{If you use a \texttt{busybox} based \texttt{ramdisk}, you need to
+}
+
+
+\begin{enumerate}
+
+\item{add the \texttt{resume} hook to \texttt{/etc/mkinitcpio.conf}, before \texttt{fsck} and definetely after \texttt{block}}
+
+\begin{minted}{console}
+HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)
+\end{minted}
+\item{run}
+
+\begin{minted}{console}
+[root@archiso /]# mkinitcpio -p linux
+\end{minted}
+\end{enumerate}
+
+%}
+\admonition{NOTE}{When using \texttt{EFISTUB} without \texttt{sbupdate}, your motherboard has to support kernel parameters for boot entries.
+If your motherboard doesn’t support this, you would need to use \href{https://wiki.archlinux.org/index.php/Systemd-boot}{\texttt{systemd-boot}}.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-secure-boot}{\section{\texttt{Secure Boot}}}
+
+\vfill\eject
+
+\hypertarget{x-shim}{\subsection{\texttt{shim}}}
+\admonition{WARNING}{This is a way of handling secure boot that aims at just making everything work!
+
+
+It is not the way \texttt{Secure Boot} was intended to be used and you might as well disable it.
+
+
+If you need \texttt{Secure Boot} to be enabled, e.g. for Windows, but you couldn’t care less for the security it could bring to your device, use this method.
+
+
+If you want to actually make use of the \texttt{Secure Boot} feature, read \hyperlink{manual-secure-boot-setup}{The manual way}.
+
+}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{shim-signed} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+I know I told you that you’re now good to boot into your new system.
+That is only correct, if you’re \textbf{not} using \texttt{Secure Boot}.
+
+
+You can either proceed by disabling \texttt{Secure Boot} in your firmware settings, or by using \texttt{shim} as kind of a pre-bootloader, as well as signing your bootloader (\texttt{grub}) and your kernel.
+
+
+If you decided on using \texttt{Secure Boot}, you will first have to install the package.
+
+
+Now we just need to copy \texttt{shimx64.efi}, as well as \texttt{mmx64.efi} to our \texttt{EFI System Partition}
+
+
+\begin{minted}{console}
+[root@archiso /]# cp /usr/share/shim-signed/shimx64.efi /boot/EFI/grub/
+[root@archiso /]# cp /usr/share/shim-signed/mmx64.efi /boot/EFI/grub/
+\end{minted}
+
+\admonition{NOTE}{If you have to use \texttt{bcdedit} from within Windows, as explained previously, you need to adapt the command accordingly
+
+
+}
+\begin{minted}{console}
+bcdedit /set {bootmgr} path \EFI\grub\shimx64.efi
+\end{minted}
+%}
+Now you will be greeted by \texttt{MokManager} everytime you update your bootloader or kernel.
+
+
+Just choose \texttt{Enroll hash from disk} and enroll your bootloader (\texttt{grubx64.efi}) and kernel (\texttt{vmlinuz-linux}).
+
+
+Reboot and your system should fire up just fine.
+
+
+
+\vfill\eject
+
+\hypertarget{x-the-manual-way}{\subsection{The manual way}}
+\admonition{WARNING}{As this is a very tedious and time consuming process, it only makes sense when also utilizing some sort of disk encryption, which is, why I would advise you to read \hyperlink{full-system-encryption}{Full system encryption} first.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-file-formats}{\subsubsection{File formats}}
+In the following subsections, we will be dealing with some different file formats.
+
+
+\begin{sidebar}
+\begin{bf}
+\texttt{.key}
+\end{bf}
+\\\texttt{PEM} format private keys for \texttt{EFI} binary and \texttt{EFI} signature list signing.
+\end{sidebar}
+
+\begin{sidebar}
+\begin{bf}
+\texttt{.crt}
+\end{bf}
+\\\texttt{PEM} format certificates for \texttt{sbsign}.
+\end{sidebar}
+
+\begin{sidebar}
+\begin{bf}
+\texttt{.cer}
+\end{bf}
+\\\texttt{DER} format certigficates for firmware.
+\end{sidebar}
+
+\begin{sidebar}
+\begin{bf}
+\texttt{.esl}
+\end{bf}
+\\Certificates in \texttt{EFI} Signature List for \texttt{KeyTool} and/or firmware.
+\end{sidebar}
+
+\begin{sidebar}
+\begin{bf}
+\texttt{.auth}
+\end{bf}
+\\Certificates in \texttt{EFI} Signature List with authentication header (i.e. a signed certificate update file) for \texttt{KeyTool} and/or firmware.
+\end{sidebar}
+
+
+\vfill\eject
+
+\hypertarget{x-create-the-keys}{\subsubsection{Create the keys}}
+First off, we have to generate our \texttt{Secure Boot} keys.
+
+
+These will be used to sign any binary which will be executed by the firwmare.
+
+
+
+\vfill\eject
+
+\hypertarget{x-guid}{\paragraph{\texttt{GUID}}}
+Let’s create a \texttt{GUID} first to use with the next commands.
+
+
+\begin{minted}{console}
+[root@archiso ~/sb]# uuidgen --random > GUID.txt
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-pk}{\paragraph{\texttt{PK}}}
+We can now generate our \texttt{PK} (Platform Key)
+
+
+\begin{minted}{console}
+[root@archiso ~/sb]# openssl req -newkey rsa:4096 -nodes -keyout PK.key -new -x509 -sha256 -subj "/CN=Platform Key for DustArch/" -out PK.crt
+[root@archiso ~/sb]# openssl x509 -outform DER -in PK.crt -out PK.cer
+[root@archiso ~/sb]# cert-to-efi-sig-list -g "$(< GUID.txt)" PK.crt PK.esl
+[root@archiso ~/sb]# sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt PK PK.esl PK.auth
+\end{minted}
+
+In order to allow deletion of the \texttt{PK}, for firmwares which do not provide this functionality out of the box, we have to sign an empty file.
+
+
+\begin{minted}{console}
+[root@archiso ~/sb]# sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt PK /dev/null rm_PK.auth
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-kek}{\paragraph{\texttt{KEK}}}
+We proced in a similar fashion with the \texttt{KEK} (Key Exchange Key)
+
+
+\begin{minted}{console}
+[root@archiso ~/sb]# openssl req -newkey rsa:4096 -nodes -keyout KEK.key -new -x509 -sha256 -subj "/CN=Key Exchange Key for DustArch/" -out KEK.crt
+[root@archiso ~/sb]# openssl x509 -outform DER -in KEK.crt -out KEK.cer
+[root@archiso ~/sb]# cert-to-efi-sig-list -g "$(< GUID.txt)" KEK.crt KEK.esl
+[root@archiso ~/sb]# sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt KEK KEK.esl KEK.auth
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-db}{\paragraph{\texttt{DB}}}
+And finally the \texttt{DB} (Signature Database) key.
+
+
+\begin{minted}{console}
+[root@archiso ~/sb]# openssl req -newkey rsa:4096 -nodes -keyout db.key -new -x509 -sha256 -subj "/CN=Signature Database key for DustArch" -out db.crt
+[root@archiso ~/sb]# openssl x509 -outform DER -in db.crt -out db.cer
+[root@archiso ~/sb]# cert-to-efi-sig-list -g "$(< GUID.txt)" db.crt db.esl
+[root@archiso ~/sb]# sign-efi-sig-list -g "$(< GUID.txt)" -k KEK.key -c KEK.crt db db.esl db.auth
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-windows-stuff}{\subsubsection{Windows stuff}}
+As your plan is to be able to control, which things do boot on your system and which don’t, you’re going through all this hassle to create and enroll custom keys, so only \texttt{EFI} binaries signed with said keys can be executed.
+
+
+But what if you have a Windows dual boot setup?
+
+
+Well the procedure is actually pretty straight forward.
+You just grab Microsoft’s certificates, convert them into a usable format, sign them and enroll them.
+No need to sign the Windows boot loader.
+
+
+\begin{minted}{console}
+[root@archiso ~/sb]# curl -fLo WinCert.crt https://www.microsoft.com/pkiops/certs/MicWinProPCA2011_2011-10-19.crt
+[root@archiso ~/sb]# openssl x509 -inform DER -outform PEM -in MicWinCert.crt -out MicWinCert.pem
+[root@archiso ~/sb]# cert-to-efi-sig-list -g 77fa9abd-0359-4d32-bd60-28f4e78f784b MicWinCert.pem MS_db.esl
+[root@archiso ~/sb]# sign-efi-sig-list -a -g 77fa9abd-0359-4d32-bd60-28f4e78f784b -k KEK.key -c KEK.crt db MS_db.esl add_MS_db.auth
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-move-the-kernel-and-keys}{\subsubsection{Move the kernel \& keys}}
+In order to ensure a smooth operation, with actual security, we need to move some stuff around.
+
+
+
+\vfill\eject
+
+\hypertarget{x-kernel-initramfs-microcode}{\paragraph{Kernel, \texttt{initramfs}, microcode}}
+\texttt{pacman} will put its unsigned and unencrypted kernel, \texttt{initramfs} and microcode images into \texttt{/boot}, which is, why it will be no longer a good idea, to leave your \texttt{EFI System Partition} mounted there.
+Instead we will create a new mount point under \texttt{/efi} and modify our \texttt{fstab} accordingly.
+
+
+
+\vfill\eject
+
+\hypertarget{x-keys}{\paragraph{Keys}}
+As you probably want to automate signing sooner or later and only use the ultimately necessary keys for this process, as well as store the other more important keys somewhere more safe and secure than your \texttt{root} home directory, we will move the necessary keys.
+
+
+I personally like to create a \texttt{/etc/efi-keys} directory, \texttt{chmod}ded to \texttt{700} and place my \texttt{db.crt} and \texttt{db.key} there.
+All the keys will get packed into a \texttt{tar} archive and encrypted with a strong symmetric pass phrase and stored somewhere secure and safe.
+
+
+
+\vfill\eject
+
+\hypertarget{x-signing}{\subsubsection{Signing}}
+Signing is the process of, well, signing your \texttt{EFI} binaries, in order for them to be allowed to be executed, by the motherboard firmware.
+At the end of the day, that’s why you’re doing all this, to prevent an attack by launching unknown code.
+
+
+
+\vfill\eject
+
+\hypertarget{x-manual-signing}{\paragraph{Manual signing}}
+Of course, you can sign images yourself manually.
+In my case, I used this, to sign the boot loader, kernel and \texttt{initramfs} of my USB installation of Arch Linux.
+
+
+\admonition{NOTE}{As always, manual signing also comes with its caveats!
+
+
+If I update my kernel, boot loader, or create an updated \texttt{initramfs} on my Arch Linux USB installation, I have to sign those files again, in order to be able to boot it on my PC.
+
+
+Of course you can always script and automate stuff, but if you want something more easy for day to day use, I really recommend that you try out \texttt{sbupdate},  which I will explain in the next section \hyperlink{sbupdate}{\texttt{sbupdate}}.
+
+}
+For example, if I want to sign the kernel image of my USB installation, where I mounted the boot partition to \texttt{/mnt/dustarchusb/boot}, I would have to do the following
+
+
+\begin{minted}{console}
+[root@archiso ~/sb]# sbsign --key /etc/efi-keys/db.key --cert /etc/efi-keys/db.crt --output /boot/vmlinuz-linux /boot/vmlinuz-linux
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-sbupdate}{\paragraph{\texttt{sbupdate}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{sbupdate-git} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Of course, if you’re using \texttt{Secure Boot} productively, you would want something more practical than manual signing, especially since you need to sign
+
+
+\begin{itemize}
+
+\item the boot loader
+
+\item the kernel image
+
+\item the \texttt{initramfs}
+
+\end{itemize}
+
+
+Fortunately there is an easy and uncomplicated tool out there, that does all that for you, called \texttt{sbupdate}.
+
+
+It not only signs everything and also foreign \texttt{EFI} binaries, if specified, but also combines your kernel and \texttt{initramfs} into a single executable \texttt{EFI} binary, so you don’t even need a boot loader, if your motherboard implementation supports booting those.
+
+
+After installing \texttt{sbupdate}, we can edit the \texttt{/etc/sbupdate.conf} file, to set everything up.
+
+
+Everything in this config should be self-explanatory.
+
+
+You will probably need to
+
+
+\begin{itemize}
+
+\item set \texttt{ESP\_DIR} to \texttt{/efi}
+
+\item add any other \texttt{EFI} binary you want to have signed to \texttt{EXTRA\_SIGN}
+
+\item add your kernel parameters, for example \texttt{rd.luks.name}, \texttt{root}, \texttt{rw}, \texttt{resume}, etc. to \texttt{CMDLINE\_DEFAULT}
+
+\end{itemize}
+
+
+After you’ve successfully configured \texttt{sbupdate}, you can run it as root, to create all the signed files.
+
+
+\admonition{NOTE}{\texttt{sbupdate} will be executed upon kernel updates by \texttt{pacman}, but not if you change your \texttt{initramfs} with something like \texttt{mkinitcpio}.
+In that case you will have to run \texttt{sbupdate} manually.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-add-efi-entries}{\subsubsection{Add \texttt{EFI} entries}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{efibootmgr} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Now the only thing left to do, if you want to stay boot loader free anyways, is to add the signed images to the boot list of your \texttt{NVRAM}.
+You can do this with \texttt{efibootmgr}.
+
+
+\begin{minted}{console}
+[root@archiso ~/sb]# efibootmgr -c -d /dev/nvme0n1 -p 1 -L "Arch Linux fallback" -l "EFI\Arch\linux-fallback-signed.efi
+[root@archiso ~/sb]# efibootmgr -c -d /dev/nvme0n1 -p 1 -L "Arch Linux" -l "EFI\Arch\linux-signed.efi
+\end{minted}
+
+Of course you can extend this list, with whichever entries you need.
+
+
+
+\vfill\eject
+
+\hypertarget{x-enrolling-everything}{\subsubsection{Enrolling everything}}
+First off, copy all \texttt{.cer}, \texttt{.esl} and \texttt{.auth} files to a \texttt{FAT} formatted filesystem.
+I’m using my \texttt{EFI System Partition} for this.
+
+
+After that reboot into the firmware setup of your motherboard, clear the existing Platform Key, to set the firmware into "Setup Mode" and enroll the \texttt{db}, \texttt{KEK} and \texttt{PK} certificates in sequence.
+
+
+\admonition{NOTE}{Enroll the Platform Key last, as it sets most firmware’s \texttt{Secure Boot} sections back into "User mode", exiting "Setup Mode".
+
+}
+
+\vfill\eject
+
+\hypertarget{x-inside-the-dustarch}{\chapter{Inside the \texttt{DustArch}}}
+This section helps at setting up the customized system from within an installed system.
+
+
+This section mainly provides aid with the basic set up tasks, like networking, dotfiles, etc.
+
+
+\admonition{NOTE}{Not everything in this section is mandatory.
+
+
+This section is rather a guideline, because it is easy to forget some steps needed, for example \texttt{jack} for audio production, that only become apparent, when they’re needed.
+
+
+It is furthermore the responsibility of the reader to decide which steps to skip and which need further research.
+As I mentioned, this is only a guide and not the answer to everything.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-someone-there}{\section{Someone there?}}
+First we have to check if the network interfaces are set up properly.
+
+
+To view the network interfaces with all their properties, we can issue
+
+
+\begin{minted}{console}
+DustArch% ip link
+\end{minted}
+
+To make sure that you have a working \emph{Internet} connection, issue
+
+
+\begin{minted}{console}
+DustArch% ping archlinux.org
+\end{minted}
+
+Everything should run smoothly if you have a wired connection.
+
+
+If there is no connection and you’re indeed using a wired connection, try restarting the \texttt{NetworkManager} service
+
+
+\begin{minted}{console}
+DustArch% sudo systemctl restart NetworkManager.service
+\end{minted}
+
+and then try \texttt{ping}ing again.
+
+
+If you’re trying to utilize a Wi-Fi connection, use \texttt{nmcli}, the \texttt{NetworkManager}'s command line tool, or \texttt{nmtui}, the \texttt{NetworkManager} terminal user interface, to connect to a Wi-Fi network.
+
+
+\admonition{NOTE}{I never got \texttt{nmtui} to behave like I wanted it to, in my particular case at least, which is the reason why I use \texttt{nmcli} or the GUI tools.
+
+}
+First make sure, the scanning of nearby Wi-Fi networks is enabled for your Wi-Fi device
+
+
+\begin{minted}{console}
+DustArch% nmcli radio
+\end{minted}
+
+and if not, enable it
+
+
+\begin{minted}{console}
+DustArch% nmcli radio wifi on
+\end{minted}
+
+Now make sure your Wi-Fi interface appears under
+
+
+\begin{minted}{console}
+DustArch% nmcli device
+\end{minted}
+
+Rescan for available networks
+
+
+\begin{minted}{console}
+DustArch% nmcli device wifi rescan
+\end{minted}
+
+and list all found networks
+
+
+\begin{minted}{console}
+DustArch% nmcli device wifi list
+\end{minted}
+
+After that connect to the network
+
+
+\begin{minted}{console}
+DustArch% nmcli device wifi connect --ask
+\end{minted}
+
+Now try \texttt{ping}ing again.
+
+
+
+\vfill\eject
+
+\hypertarget{x-update-and-upgrade}{\section{Update and upgrade}}
+After making sure that you have a working Internet connection, you can then proceed to update and upgrade all installed packages by issuing
+
+
+\begin{minted}{console}
+DustArch% sudo pacman -Syu
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-enabling-the-multilib-repository}{\section{Enabling the \texttt{multilib} repository}}
+In order to make 32-bit packages available to \texttt{pacman}, we’ll need to enable the \texttt{multilib} repository in \texttt{/etc/pacman.conf} first.
+Simply uncomment
+
+
+\begin{minted}{console}
+[multilib]
+Include = /etc/pacman.d/mirrorlist
+\end{minted}
+
+and update \texttt{pacman}'s package repositories afterwards
+
+
+\begin{minted}{console}
+DustArch% sudo pacman -Syu
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-zsh-for-president}{\section{\texttt{zsh} for president}}
+Of course you can use any shell you want.
+In my case I’ll be using the \texttt{zsh} shell.
+
+
+\admonition{NOTE}{I am using \texttt{zsh} because of its auto completion functionality and extensibility, as well as a brilliant \texttt{vim} like navigation implementation through a plugin, though that might not be what you’re looking for.
+
+}
+We already set the correct shell for the \texttt{dustvoice} user in the \hyperlink{create-a-personal-user}{Create a personal user} step, but I want to use \texttt{zsh} for the \texttt{root} user too, so I’ll have to change \texttt{root}'s default shell to it.
+
+
+\begin{minted}{console}
+DustArch% sudo chsh -s /usr/bin/zsh root
+\end{minted}
+
+Don’t worry about the looks by the way, we’re gonna change all that in just a second.
+
+
+
+\vfill\eject
+
+\hypertarget{x-git}{\section{\texttt{git}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{git} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Install the package and you’re good to go for now, as we’ll care about the \texttt{.gitconfig} in just a second.
+
+
+
+\vfill\eject
+
+\hypertarget{x-security-is-important}{\section{Security is important}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{gnupg} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+If you’ve followed the tutorial using a recent version of the archiso, you’ll probably already have the most recent version of \texttt{gnupg} installed by default.
+
+
+
+\vfill\eject
+
+\hypertarget{x-smartcard-shenanigans}{\subsection{Smartcard shenanigans}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{libusb-compat} \\ 
+\texttt{community} & \texttt{ccid opensc pcsclite} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+After that you’ll still have to setup \texttt{gnupg} correctly.
+In my case I have my private keys stored on a smartcard.
+
+
+To use it, I’ll have to install the listed packages and then enable and start the \texttt{pcscd} service
+
+
+\begin{minted}{console}
+DustArch% sudo systemctl enable pcscd.service
+DustArch% sudo systemctl start pcscd.service
+\end{minted}
+
+After that, you should be able to see your smartcard being detected
+
+
+\begin{minted}{console}
+DustArch% gpg --card-status
+\end{minted}
+
+\admonition{NOTE}{If your smartcard still isn’t detected, try logging off completely or even restarting, as that sometimes is the solution to the problem.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-additional-required-tools}{\section{Additional required tools}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{make openssh} \\ 
+\texttt{extra} & \texttt{clang cmake jdk-openjdk python} \\ 
+\texttt{community} & \texttt{pass python-pynvim} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+To minimize the effort required by the following steps, we’ll install most of the required packages beforehand
+
+
+This will ensure, we proceed through the following section without the need for interruption, because a package needs to be installed, so the following content can be condensed to the relevant informations.
+
+
+
+\vfill\eject
+
+\hypertarget{x-setting-up-a-home-environment}{\section{Setting up a \texttt{home} environment}}
+In this step we’re going to setup a home environment for both the \texttt{root} and my personal \texttt{dustvoice} user.
+
+
+\admonition{NOTE}{In my case these 2 home environments are mostly equivalent, which is why I’ll execute the following commands as the \texttt{dustvoice} user first and then switch to the \texttt{root} user and repeat the same commands.
+
+
+I decided on this, as I want to edit files with elevated permissions and still have the same editor style and functions/plugins.
+
+
+Note that this comes with some drawbacks.
+For example, if I change a configuration for my \texttt{dustvoice} user, I would have to regularly update it for the \texttt{root} user too.
+This bears the problem, that I have to register my smartcard for the root user.
+This in turn is problematic, cause the \texttt{gpg-agent} used for \texttt{ssh} authentication, doesn’t behave well when used within a \texttt{su} or \texttt{sudo -i} session.
+So in order to update \texttt{root}'s config files I would either need to symlink everything, which I won’t do, or I’ll need to login as the \texttt{root} user now and then, to update everything.
+
+}
+\admonition{NOTE}{In my case, I want to access all my \texttt{git} repositories with my \texttt{gpg} key on my smartcard.
+For that I have to configure the \texttt{gpg-agent} with some configuration files that reside in a \texttt{git} repository.
+This means I will have to reside to using the \texttt{https} URL of the repository first and later changing the URL either in the corresponding \texttt{.git/config} file, or by issuing the appropriate command.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-use-dotfiles-for-a-base-config}{\subsection{Use \texttt{dotfiles} for a base config}}
+To provide myself with a base configuration, which I can then extend, I have created a \texttt{dotfiles} repository, which contains all kinds of configurations.
+
+
+The special thing about this \texttt{dotfiles} repository is that it \textbf{is} my home folder.
+By using a curated \texttt{.gitignore} file, I’m able to only include the configuration files I want to keep between installs into the repository and ignore everything else.
+
+
+To achieve this very specific setup, I have to turn my home directory into said \texttt{dotfiles} repository first
+
+
+\begin{minted}{console}
+DustArch% git init
+DustArch% git remote add origin https://git.dustvoice.de/DustVoice/dotfiles.git
+DustArch% git fetch
+DustArch% git reset origin/master --hard
+DustArch% git branch --set-upstream-to=origin/master master
+\end{minted}
+
+Now I can issue any \texttt{git} command in my \texttt{~} directory, because it now is a \texttt{git} repository.
+
+
+
+\vfill\eject
+
+\hypertarget{x-set-up-gpg}{\subsection{Set up \texttt{gpg}}}
+As I wanted to keep my \texttt{dotfiles} repository as modular as possible, I utilize \texttt{git}'s \texttt{submodule} feature.
+Furthermore I want to use my \texttt{nvim} repository, which contains all my configurations and plugins for \texttt{neovim}, on Windows, but without all the Linux specific configuration files.
+I am also using the \texttt{Pass} repository on my Android phone and Windows PC, where I only need this repository without the other Linux configuration files.
+
+
+Before we’ll be able to update the \texttt{submodule}s (\texttt{nvim} config files and \texttt{pass}word-store) though, we will have to setup our \texttt{gpg} key as an \texttt{ssh} key, as I use it to authenticate
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ chmod 700 .gnupg
+dustvoice@DustArch ~
+$ gpg --card-status
+dustvoice@DustArch ~
+$ gpg --card-edit
+\end{minted}
+
+\begin{minted}{console}
+(insert) gpg/card> fetch
+(insert) gpg/card> q
+\end{minted}
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ gpg-connect-agent updatestartuptty /bye
+\end{minted}
+
+\admonition{NOTE}{You would have to adapt the \texttt{keygrip} present in the \texttt{~/.gnupg/sshcontrol} file to your specific \texttt{keygrip}, retrieved with \texttt{gpg -K --with-keygrip}.
+
+}
+Now, as mentioned before, I’ll switch to using \texttt{ssh} for authentication, rather than \texttt{https}
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ git remote set-url origin git@git.dustvoice.de:DustVoice/dotfiles.git
+\end{minted}
+
+As the best method to both make \texttt{zsh} recognize all the configuration changes, as well as the \texttt{gpg-agent} behave properly, is to re-login, we’ll do just that
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ exit
+\end{minted}
+
+\admonition{WARNING}{It is very important to note, that I mean \textbf{a real re-login}.
+
+
+That means that if you’ve used \texttt{ssh} to log into your machine, it probably won’t be sufficient to login into a new \texttt{ssh} session.
+You’ll probably need to restart the machine completely.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-finalize-the-dotfiles}{\subsection{Finalize the \texttt{dotfiles}}}
+Now log back in and continue
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ git submodule update --recursive --init
+dustvoice@DustArch ~
+$ source .zshrc
+dustvoice@DustArch ~
+$ cd .config/nvim
+dustvoice@DustArch ~/.config/nvim
+$ echo 'let g:platform = "linux"' >> platform.vim
+dustvoice@DustArch ~/.config/nvim
+$ echo 'let g:use_autocomplete = 3' >> custom.vim
+dustvoice@DustArch ~/.config/nvim
+$ echo 'let g:use_clang_format = 1' >> custom.vim
+dustvoice@DustArch ~/.config/nvim
+$ echo 'let g:use_font = 0' >> custom.vim
+dustvoice@DustArch ~/.config/nvim
+$ nvim --headless +PlugInstall +qa
+dustvoice@DustArch ~/.config/nvim
+$ cd plugged/YouCompleteMe
+dustvoice@DustArch ~/.config/nvim/plugged/YouCompleteMe
+$ python3 install.py --clang-completer --java-completer
+dustvoice@DustArch ~/.config/nvim/plugged/YouCompleteMe
+$ cd ~
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-gpg-agent-forwarding}{\subsection{\texttt{gpg-agent} forwarding}}
+Now there is only one thing left to do, in order to make the \texttt{gpg} setup complete: \texttt{gpg-agent} forwarding over \texttt{ssh}.
+This is very important for me, as I want to use my smartcard on my development server too, which requires me, to forward/tunnel my \texttt{gpg-agent} to my remote machine.
+
+
+First of all, I want to setup a config file for \texttt{ssh}, as I don’t want to pass all parameters manually to ssh every time.
+
+
+\begin{minted}{console}
+Host <connection name>
+    HostName <remote address>
+    ForwardAgent yes
+    ForwardX11 yes
+    RemoteForward <remote agent-socket> <local agent-extra-socket>
+    RemoteForward <remote agent-ssh-socket> <local agent-ssh-socket>
+\end{minted}
+
+\admonition{NOTE}{You would of course, need to adapt the content in between the \texttt{<} and \texttt{>} brackets.
+
+
+To get the paths needed as parameters for \texttt{RemoteForward}, issue
+
+
+}
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ gpgconf --list-dirs
+\end{minted}
+%}
+\begin{example}
+An example for a valid \texttt{~/.ssh/config} would be
+
+
+\begin{minted}{console}
+Host archserver
+    HostName pc.dustvoice.de
+    ForwardAgent yes
+    ForwardX11 yes
+    RemoteForward /run/user/1000/gnupg/S.gpg-agent /run/user/1000/gnupg/S.gpg-agent.extra
+    RemoteForward /run/user/1000/gnupg/S.gpg-agent.ssh /run/user/1000/gnupg/S.gpg-agent.ssh
+\end{minted}
+\end{example}
+
+Now you’ll still need to enable some settings on the remote machine(s).
+
+
+\begin{minted}{console}
+StreamLocalBindUnlink yes
+AllowAgentForwarding yes
+X11Forwarding yes
+\end{minted}
+
+Now just restart your remote machine(s) and you’re ready to go.
+
+
+\admonition{NOTE}{If you use \texttt{alacritty}, to connect to your remote machine over \texttt{ssh}, you will need to install the \texttt{alacritty} on the remote machine too, as \texttt{alacritty} uses its own \texttt{\$TERM}.
+
+
+Another option would be changing that variable for the \texttt{ssh} command
+
+
+}
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ TERM=xterm-256colors ssh remote-machine
+\end{minted}
+%}
+
+\vfill\eject
+
+\hypertarget{x-back-to-your-roots}{\subsection{Back to your \texttt{root}s}}
+As mentioned before, you would now switch to the \texttt{root} user, either by logging in as \texttt{root}, or by using
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ sudo -iu root
+\end{minted}
+
+Now go back to \hyperlink{setup-home}{Setting up a \texttt{home} environment} to repeat all commands for the \texttt{root} user.
+
+
+\admonition{WARNING}{A native login would be better compared to \texttt{sudo -iu root}, as there could be some complications, like already running \texttt{gpg-agent} instances, etc., which you would need to manually resolve, when using \texttt{sudo -iu root}.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-audio}{\section{Audio}}
+Well, why wouldn’t you want audio…​
+
+
+
+\vfill\eject
+
+\hypertarget{x-alsa}{\subsection{\texttt{alsa}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{alsa-utils} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+\admonition{NOTE}{You’re probably better off using \texttt{pulseaudio} and/or \texttt{jack}.
+
+}
+Now choose the sound card you want to use
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ cat /proc/asound/cards
+\end{minted}
+
+and then create \texttt{/etc/asound.conf}
+
+
+\begin{minted}{console}
+defaults.pcm.card 2
+defaults.ctl.card 2
+\end{minted}
+
+\admonition{NOTE}{It should be apparent, that you would have to switch out \texttt{2} with the number corresponding to the sound card you want to use.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-pulseaudio}{\subsection{\texttt{pulseaudio}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{pavucontrol pulseaudio} \\ 
+\texttt{community} & \texttt{pulsemixer} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Some applications require \texttt{pulseaudio}, or work better with it, for example \texttt{discord}, so it might make sense to use \texttt{pulseaudio}
+
+
+For enabling real-time priority for \texttt{pulseaudio} on Arch Linux, please make sure your user is part of the \texttt{audio} group and edit the file \texttt{/etc/pulse/daemon.conf}, so that you uncomment the lines
+
+
+\begin{minted}{console}
+high-priority = yes
+nice-level = -11
+
+realtime-scheduling = yes
+realtime-priority = 5
+\end{minted}
+
+If your system can handle the load, you can also increase the remixing quality, by changing the \texttt{resample-method}
+
+
+\begin{minted}{console}
+resample-method = speex-float-10
+\end{minted}
+
+Of course a restart of the \texttt{pulseaudio} daemon is necessary to reflect the changes you just made
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ pulseaudio --kill
+dustvoice@DustArch ~
+$ pulseaudio --start
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-jack}{\subsection{\texttt{jack}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{pulseaudio-jack} \\ 
+\texttt{community} & \texttt{cadence jack2} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+If you either want to manually control audio routing, or if you use some kind of audio application like \texttt{ardour}, you’ll probably want to use \texttt{jack} and \texttt{cadence} as a GUI to control it, as it has native support for bridging \texttt{pulseaudio} to \texttt{jack}.
+
+
+
+\vfill\eject
+
+\hypertarget{x-audio-handling}{\subsection{Audio handling}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{libao libid3tag libmad libpulse opus wavpack} \\ 
+\texttt{community} & \texttt{sox twolame} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+To also play audio, we need to install the mentioned packages and then simply do
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ play audio.wav
+dustvoice@DustArch ~
+$ play audio.mp3
+\end{minted}
+
+to play audio.
+
+
+
+\vfill\eject
+
+\hypertarget{x-bluetooth}{\section{Bluetooth}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{bluez bluez-util pulseaudio-bluetooth} \\ 
+\texttt{community} & \texttt{blueman} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+To set up Bluetooth, we need to install the \texttt{bluez} and \texttt{bluez-utils} packages in order to have at least a command line utility \texttt{bluetoothctl} to configure connections
+
+
+Now we need to check if the \texttt{btusb} kernel module was already loaded
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ sudo lsmod | grep btusb
+\end{minted}
+
+After that we can enable and start the \texttt{bluetooth.service} service
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ sudo systemctl enable bluetooth.service
+dustvoice@DustArch ~
+$ sudo systemctl start bluetooth.service
+\end{minted}
+
+\admonition{NOTE}{To use \texttt{bluetoothctl} and get access to the Bluetooth device of your PC, your user needs to be a member of the \texttt{lp} group.
+
+}
+Now simply enter \texttt{bluetoothctl}
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ bluetoothctl
+\end{minted}
+
+In most cases your Bluetooth interface will be preselected and defaulted, but in some cases, you might need to first select the Bluetooth controller
+
+
+\begin{minted}{console}
+(insert) [DustVoice]# list
+(insert) [DustVoice]# select <MAC_address>
+\end{minted}
+
+After that, power on the controller
+
+
+\begin{minted}{console}
+(insert) [DustVoice]# power on
+\end{minted}
+
+Now enter device discovery mode
+
+
+\begin{minted}{console}
+(insert) [DustVoice]# scan on
+\end{minted}
+
+and list found devices
+
+
+\begin{minted}{console}
+(insert) [DustVoice]# devices
+\end{minted}
+
+\admonition{NOTE}{You can turn device discovery mode off again, after your desired device has been found
+
+
+}
+\begin{minted}{console}
+(insert) [DustVoice]# scan off
+\end{minted}
+%}
+Now turn on the agent
+
+
+\begin{minted}{console}
+(insert) [DustVoice]# agent on
+\end{minted}
+
+and pair with your device
+
+
+\begin{minted}{console}
+(insert) [DustVoice]# pair <MAC_address>
+\end{minted}
+
+\admonition{NOTE}{If your device doesn’t support PIN verification you might need to manually trust the device
+
+
+}
+\begin{minted}{console}
+(insert) [DustVoice]# trust <MAC_address>
+\end{minted}
+%}
+Finally connect to your device
+
+
+\begin{minted}{console}
+(insert) [DustVoice]# connect <MAC_address>
+\end{minted}
+
+\admonition{NOTE}{If your device is an audio device, of some kind you might have to install \texttt{pulseaudio-bluetooth} and append 2 lines to \texttt{/etc/pulse/system.pa} as well.
+
+
+append the following 2 lines
+
+
+}
+\begin{minted}{console}
+load-module module-bluetooth-policy
+load-module module-bluetooth-discover
+\end{minted}
+
+and restart \texttt{pulseaudio}
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ pulseaudo --kill
+dustvoice@DustArch ~
+$ pulseaudo --start
+\end{minted}
+%}
+If you want a GUI to do all of this, just install \texttt{blueman} and launch \texttt{blueman-manager}
+
+
+
+\vfill\eject
+
+\hypertarget{x-graphical-desktop-environment}{\section{Graphical desktop environment}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{ttf-hack xclip xorg xorg-drivers xorg-xinit} \\ 
+\texttt{community} & \texttt{arandr alacritty bspwm dmenu sxhkd} \\ 
+\texttt{AUR} & \texttt{polybar} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+If you decide, that you want to use a graphical desktop environment, you have to install additional packages in order for that to work.
+
+
+\admonition{NOTE}{\texttt{xclip} is useful, when you want to send something to the \texttt{X} clipboard.
+It is also required, in order for \texttt{neovim}'s clipboard to work correctly.
+It is not required though.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-nvidia}{\subsection{NVIDIA}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{nvidia nvidia-utils nvidia-settings opencl-nvidia} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+If you also want to utilize special NVIDIA functionality, for example for \texttt{davinci-resolve}, you’ll most likely need to install their proprietary driver.
+
+
+To configure the \texttt{X} server correctly, one can use \texttt{nvidia-xconfig}
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ sudo nvidia-xconfig
+\end{minted}
+
+If you want to further tweak all settings available, you can use \texttt{nvidia-settings}.
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ sudo nvidia-settings
+\end{minted}
+
+will enable you to \emph{"Save to X Configuration File"}, witch merges your changes with \texttt{/etc/X11/xorg.conf}.
+
+
+With
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ nvidia-settings
+\end{minted}
+
+you’ll only be able to save the current configuration to \texttt{~/.nvidia-settings-rc}, witch you have to source after \texttt{X} startup with
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ nvidia-settings --load-config-only
+\end{minted}
+
+\admonition{NOTE}{You will have to reboot sooner or later after installing the NVIDIA drivers, so you might as well do it now, before any complications come up.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-launching-the-graphical-environment}{\subsection{Launching the graphical environment}}
+After that you can now do \texttt{startx} in order to launch the graphical environment.
+
+
+If anything goes wrong in the process, remember that you can press \textbf{Ctrl+Alt+<Number>} to switch \texttt{tty}s.
+
+
+
+\vfill\eject
+
+\hypertarget{x-the-nvidia-way}{\subsubsection{The NVIDIA way}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{bbswitch} \\ 
+\texttt{AUR} & \texttt{nvidia-xrun} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+If you’re using an NVIDIA graphics card, you might want to use \texttt{nvidia-xrun}${}^{\texttt{AUR}}$ instead of \texttt{startx}.
+This has the advantage, of the \texttt{nvidia} kernel modules, as well as the \texttt{nouveau} ones not loaded at boot time, thus saving power.
+\texttt{nvidia-xrun}${}^{\texttt{AUR}}$ will then load the correct kernel modules and run the \texttt{.nvidia-xinitrc} script in your home directory (for more file locations look into the documentation for \texttt{nvidia-xrun}${}^{\texttt{AUR}}$).
+
+
+\admonition{IMPORTANT}{At the time of writing, \texttt{nvidia-xrun}${}^{\texttt{AUR}}$ needs \texttt{sudo} permissions before executing its task.
+
+}
+\admonition{NOTE}{\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{nvidia-xrun-pm} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+If your hardware doesn’t support \texttt{bbswitch}, you would need to use \texttt{nvidia-xrun-pm}${}^{\texttt{AUR}}$ instead.
+
+}
+Now we need to blacklist \textbf{both \texttt{nouveau} and \texttt{nvidia}} kernel modules.
+
+
+To do that, we first have to find out, where our active \texttt{modprobe.d} directory is located.
+There are 2 possible locations, generally speaking: \texttt{/etc/modprobe.d} and \texttt{/usr/lib/modprobe.d}.
+In my case it was the latter, which I could tell, because this directory already had files in it.
+
+
+Now I’ll create a new file named \texttt{nvidia-xrun.conf} and write the following into it
+
+
+\begin{minted}{console}
+blacklist nvidia
+blacklist nvidia-drm
+blacklist nvidia-modeset
+blacklist nvidia-uvm
+blacklist nouveau
+\end{minted}
+
+With this config in place,
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ lsmod | grep nvidia
+\end{minted}
+
+and
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ lsmod | grep nouveau
+\end{minted}
+
+should return no output.
+Else you might have to place some additional entries into the file.
+
+
+\admonition{NOTE}{Of course, you’ll need to reboot, after blacklisting the modules and before issuing the 2 commands mentioned.
+
+}
+\admonition{NOTE}{If you installed \texttt{nvidia-xrun-pm} instead of \texttt{nvidia-xrun} and \texttt{bbswitch}, you might want to also enable the \texttt{nvidia-xrun-pm} service
+
+
+}
+\begin{minted}{console}
+dustvoice@dustArch ~
+$ sudo systemctl enable nvidia-xrun-pm.service
+\end{minted}
+%}
+\admonition{NOTE}{The required \texttt{.nvidia-xinitrc} file, mentioned previously, should already be provided in the \texttt{dotfiles} repository.
+
+}
+Now instead of \texttt{startx}, just run \texttt{nvidia-xrun}, enter your \texttt{sudo} password and you’re good to go.
+
+
+
+\vfill\eject
+
+\hypertarget{x-additional-console-software}{\section{Additional \texttt{console} software}}
+Software that is useful in combination with a \texttt{console}.
+
+
+
+\vfill\eject
+
+\hypertarget{x-tmux}{\subsection{\texttt{tmux}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{tmux} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+I would reccommend to install \texttt{tmux} which enables you to have multiple terminal instances (called \texttt{windows} in \texttt{tmux}) open at the same time.
+This makes working with the linux terminal much easier.
+
+
+\admonition{NOTE}{To view a list of keybinds, you just need to press \texttt{CTRL+b} followed by \texttt{?}.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-communication}{\subsection{Communication}}
+Life is all about communicating.
+Here are some pieces of software to do exactly that.
+
+
+
+\vfill\eject
+
+\hypertarget{x-weechat}{\subsubsection{\texttt{weechat}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{weechat} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+\texttt{weechat} is an \texttt{IRC} client for the terminal, with the best features and even a \texttt{vim} mode, by using a plugin
+
+
+To configure everything, open \texttt{weechat}
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ weechat
+\end{minted}
+
+and install \texttt{vimode}, as well as configure it
+
+
+\begin{minted}{console}
+/script install vimode.py
+/vimode bind_keys
+/set plugins.var.python.vimode.mode_indicator_normal_color_bg "blue"
+\end{minted}
+
+Now add \texttt{mode\_indicator+} in front of and \texttt{,[vi\_buffer]} to the end of \texttt{weechat.bar.input.items}, in my case
+
+
+\begin{minted}{console}
+/set weechat.bar.input.items "mode_indicator+[input_prompt]+(away),[input_search],[input_paste],input_text,[vi_buffer]"
+\end{minted}
+
+Now add \texttt{,cmd\_completion} to the end of \texttt{weechat.bar.status.items}, in my case
+
+
+\begin{minted}{console}
+/set weechat.bar.status.items "[time],[buffer_last_number],[buffer_plugin],buffer_number+:+buffer_name+(buffer_modes)+{buffer_nicklist_count}+buffer_zoom+buffer_filter,scroll,[lag],[hotlist],completion,cmd_completion"
+\end{minted}
+
+Now enable \texttt{vimode} searching
+
+
+\begin{minted}{console}
+/set plugins.var.python.vimode.search_vim on
+\end{minted}
+
+Now you just need to add a new connection, for example \texttt{irc.freenode.net}
+
+
+\begin{minted}{console}
+/server add freenode irc.freenode.net
+\end{minted}
+
+and connect to it
+
+
+\begin{minted}{console}
+/connect freenode
+\end{minted}
+
+\admonition{NOTE}{You might need to authenticate with \texttt{NickServ}, before being able to write in a channel
+
+
+}
+\begin{minted}{console}
+/msg NickServ identify <password>
+\end{minted}
+%}
+\admonition{NOTE}{Instead of directly \texttt{/set}ting the values specified above, you can also do
+
+
+}
+\begin{minted}{console}
+/fset weechat.var.name
+\end{minted}
+
+select the entry you want to modify (for example for \texttt{plugins.var.python.vimode}) and then press \texttt{s} (make sure you’re in \texttt{insert} mode) and \texttt{Return}, in order to modify the existing value.
+
+%}
+
+\vfill\eject
+
+\hypertarget{x-pdf-viewer}{\subsection{PDF viewer}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{ghostscript} \\ 
+\texttt{community} & \texttt{fbida} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+To use \texttt{asciidoctor-pdf}, you might be wondering how you are supposed to open the generated PDFs from the native linux console.
+
+
+This \texttt{fbida} package provides the \texttt{fbgs} software, which renders a PDF document using the native framebuffer.
+
+
+To view this PDF document (\texttt{Documentation.pdf}) for example, you would run
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ fbgs Documentation.pdf
+\end{minted}
+
+\admonition{NOTE}{You can view all the controls by pressing \texttt{h}.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-additional-hybrid-software}{\section{Additional \texttt{hybrid} software}}
+Some additional software providing some kind of \texttt{GUI} to work with, but that can be useful in a \texttt{console} only environment nevertheless.
+
+
+
+\vfill\eject
+
+\hypertarget{x-password-management}{\subsection{\texttt{Pass}word management}}
+I’m using \texttt{pass} as my password manager.
+As we already installed it in the \hyperlink{additional-tools-setup-home}{Additional required tools} step and updated the \texttt{submodule} that holds our \texttt{.password-store}, there is nothing left to do in this step
+
+
+
+\vfill\eject
+
+\hypertarget{x-python}{\subsection{\texttt{python}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{python} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Python has become really important for a magnitude of use cases.
+
+
+
+\vfill\eject
+
+\hypertarget{x-ruby-and-asciidoctor}{\subsection{\texttt{ruby} \& \texttt{asciidoctor}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{ruby rubygems} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+In order to use \texttt{asciidoctor}, we have to install \texttt{ruby} and \texttt{rubygems}.
+After that we can install \texttt{asciidoctor} and all its required gems.
+
+
+\admonition{NOTE}{If you want to have pretty and highlighted source code, you’ll need to install a code formatter too.
+
+
+For me there are mainly two options
+
+
+}
+\begin{itemize}
+
+\item \texttt{pygments.rb}, which requires python to be installed
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ gem install pygments.rb
+\end{minted}
+\item \texttt{rouge} which is a native \texttt{ruby} gem
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ gem install rouge
+\end{minted}
+\end{itemize}
+
+%}
+Now the only thing left, in my case at least, is adding \texttt{~/.gem/ruby/2.7.0/bin} to your path.
+
+
+\admonition{NOTE}{Please note that if you run a ruby version different from \texttt{2.7.0}, or if you upgrade your ruby version, you have to use the \texttt{bin} path for that version.
+
+}
+For \texttt{zsh} you’ll want to add a new entry inside the \texttt{.zshpath} file
+
+
+\begin{minted}{console}
+path+=("$HOME/.gem/ruby/2.7.0/bin")
+\end{minted}
+
+which then gets sourced by the provided \texttt{.zshenv} file.
+An example is provided with the \texttt{.zshpath.example} file
+
+
+\admonition{NOTE}{You might have to re-\texttt{source} the \texttt{.zshenv} file to make the changes take effect immediately
+
+
+}
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ source .zshenv
+\end{minted}
+%}
+\admonition{NOTE}{If you want to add a new entry to the \texttt{path} variable, you have to append it to the array
+
+
+}
+\begin{minted}{console}
+path+=("pass:[$HOME/.gem/ruby/2.7.0/bin" "$]HOME/.gem/ruby/2.6.0/bin")
+\end{minted}
+%}
+\admonition{NOTE}{If you use another shell than \texttt{zsh}, you might have to do something different, to add a directory to your \texttt{PATH}.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-juce-and-frut}{\subsection{\texttt{JUCE} and \texttt{FRUT}}}
+\texttt{JUCE} is a header only library for \texttt{C++} that enables you to develop cross-platform applications with a single codebase.
+
+
+\texttt{FRUT} makes it possible to manage \texttt{JUCE} projects purely from \texttt{cmake}.
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ git clone https://github.com/WeAreROLI/JUCE.git
+dustvoice@DustArch ~
+$ cd JUCE
+dustvoice@DustArch ~/JUCE
+$ git checkout develop
+dustvoice@DustArch ~/JUCE
+$ cd ..
+dustvoice@DustArch ~
+$ git clone https://github.com/McMartin/FRUT.git
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-using-juce}{\subsubsection{Using \texttt{JUCE}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{core} & \texttt{gcc gnutls} \\ 
+\texttt{extra} & \texttt{alsa-lib clang freeglut freetype2 ladspa libx11 libxcomposite libxinerama libxrandr mesa webkit2gtk} \\ 
+\texttt{community} & \texttt{jack2 libcurl-gnutls} \\ 
+\texttt{multilib} & \texttt{lib32-freeglut} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+In order to use \texttt{JUCE}, you’ll need to have some dependency packages installed, where \texttt{ladspa} and \texttt{lib32-freeglut} are not neccessarily needed.
+
+
+
+\vfill\eject
+
+\hypertarget{x-additional-development-tools}{\subsection{Additional development tools}}
+Here are just some examples of development tools one could install in addition to what we already have.
+
+
+
+\vfill\eject
+
+\hypertarget{x-code-formatting}{\subsubsection{Code formatting}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{astyle} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+We already have \texttt{clang-format} as a code formatter, but this only works for \texttt{C}-family languages.
+For \texttt{java} stuff, we can use \texttt{astyle}
+
+
+
+\vfill\eject
+
+\hypertarget{x-documentation}{\subsubsection{Documentation}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{doxygen} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+To generate a documentation from source code, I mostly use \texttt{doxygen}
+
+
+
+\vfill\eject
+
+\hypertarget{x-build-tools}{\subsubsection{Build tools}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{ninja} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+In addition to \texttt{make}, I’ll often times use \texttt{ninja} for my builds
+
+
+
+\vfill\eject
+
+\hypertarget{x-android-file-transfer}{\subsection{Android file transfer}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{gvfs-mtp libmtp} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Now you should be able to see your phone inside either your preferred filemanager, in my case \texttt{thunar}, or \texttt{gigolo}${}^{\texttt{AUR}}$.
+
+
+If you want to access the android’s file system from the command line, you will need to either install and use \texttt{simple-mtpfs}${}^{\texttt{AUR}}$, or \texttt{adb}
+
+
+
+\vfill\eject
+
+\hypertarget{x-simple-mtpfs-aur}{\subsubsection{\texttt{simple-mtpfs}${}^{\texttt{AUR}}$}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{simple-mtpfs} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Edit \texttt{/etc/fuse.conf} to uncomment
+
+
+\begin{minted}{console}
+user_allow_other
+\end{minted}
+
+and mount the android device
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ simple-mtpfs -l
+dustvoice@DustArch ~
+$ mkdir ~/mnt
+dustvoice@DustArch ~
+$ simple-mtpfs --device <number> ~/mnt -allow_other
+\end{minted}
+
+and respectively unmount it
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ fusermount -u mnt
+dustvoice@DustArch ~
+$ rmdir mnt
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-adb}{\subsubsection{\texttt{adb}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{android-tools} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Kill the \texttt{adb} server, if it is running
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ adb kill-server
+\end{minted}
+
+\admonition{NOTE}{If the server is currently not running, \texttt{adb} will output an error with a \texttt{Connection refused} message.
+
+}
+Now connect your phone, unlock it and start the \texttt{adb} server
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ adb start-server
+\end{minted}
+
+If the PC is unknown to the android device, it will display a confirmation dialog.
+Accept it and ensure that the device was recognized
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ adb devices
+\end{minted}
+
+Now you can \texttt{push}/\texttt{pull} files.
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ adb pull /storage/emulated/0/DCIM/Camera/IMG.jpg .
+dustvoice@DustArch ~
+$ adb push IMG.jpg /storage/emulated/0/DCIM/Camera/IMG2.jpg
+dustvoice@DustArch ~
+$ adb kill-server
+\end{minted}
+
+\admonition{NOTE}{Of course you would need to have the \emph{developer options} unlocked, as well as the \emph{USB debugging} option enabled within them, for \texttt{adb} to even work.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-partition-management}{\subsection{Partition management}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{gparted parted} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+You may also choose to use a graphical partitioning software instead of \texttt{fdisk} or \texttt{cfdisk}.
+For that you can use \texttt{gparted}.
+Of course there is also the \texttt{console} equivalent `parted.
+
+
+
+\vfill\eject
+
+\hypertarget{x-pdf-viewer}{\subsection{PDF viewer}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{evince} \\ 
+\texttt{community} & \texttt{zathura zathura-pdf-mupdf} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+To use \texttt{asciidoctor-pdf}, you might be wondering how you are supposed to open the generated PDFs using the GUI.
+
+
+\texttt{zathura} has a minimalistic design and UI with a focus on vim keybinding, whereas \texttt{evince} is a more desktop like experience, with things like a print dialogue, etc.
+
+
+
+\vfill\eject
+
+\hypertarget{x-process-management}{\subsection{Process management}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{htop xfce4-taskmanager} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+The native tool is \texttt{top}.
+
+
+The next evolutionary step would be \texttt{htop}, which is an improved version of \texttt{top} (like \texttt{vi} and \texttt{vim} for example)
+
+
+If you prefer a GUI for that kind of task, use \texttt{xfce4-taskmanager}.
+
+
+
+\vfill\eject
+
+\hypertarget{x-video-software}{\subsection{Video software}}
+Just some additional software related to videos.
+
+
+
+\vfill\eject
+
+\hypertarget{x-live-streaming-a-terminal-session}{\subsubsection{Live streaming a terminal session}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{tmate} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+For this task, you’ll need a program called \texttt{tmate}.
+
+
+
+\vfill\eject
+
+\hypertarget{x-additional-gui-software}{\section{Additional \texttt{GUI} software}}
+As you now have a working graphical desktop environment, you might want to install some software to utilize your newly gained power.
+
+
+
+\vfill\eject
+
+\hypertarget{x-session-lock}{\subsection{Session Lock}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{xsecurelock xss-lock} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Probably the first thing you’ll want to set up is a session locker, which locks your \texttt{X}-session after resuming from sleep, hibernation, etc.
+It then requires you to input your password again, so no unauthorized user can access you machine.
+
+
+I’ll use \texttt{xss-lock} to hook into the necessary \texttt{systemd} events and \texttt{xsecurelock} as my locker.
+
+
+\admonition{NOTE}{I have placed the required command to start \texttt{xss-lock} with the right parameters inside my \texttt{bspwm} configuration file.
+
+
+If you use something other than \texttt{bspwm}, you need to make sure this command gets executed upon start of the \texttt{X}-session
+
+
+}
+\begin{minted}{console}
+xss-lock -l -- xsecurelock &
+\end{minted}
+%}
+
+\vfill\eject
+
+\hypertarget{x-xfce-polkit-aur}{\subsection{\texttt{xfce-polkit}${}^{\texttt{AUR}}$}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{xfce-polkit} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+In order for GUI applications to acquire \texttt{sudo} permissions, we need to install a \texttt{PolicyKit} authentication agent.
+
+
+We could use \texttt{gnome-polkit} for that purpose, which resides inside the official repositories, but I decided on using \texttt{xfce-polkit}${}^{\texttt{AUR}}$.
+
+
+Now you just need to startup \texttt{xfce-polkit}${}^{\texttt{AUR}}$ before trying to execute something like \texttt{gparted} and you’ll be prompted for your password.
+
+
+As I already launch it as a part of my \texttt{bspwm} configuration, I won’t have to worry about that.
+
+
+
+\vfill\eject
+
+\hypertarget{x-desktop-background}{\subsection{Desktop background}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{nitrogen} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+You might want to consider installing \texttt{nitrogen}, in order to be able to set a background image
+
+
+
+\vfill\eject
+
+\hypertarget{x-compositing-software}{\subsection{Compositing software}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{picom} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+To get buttery smooth animation as well as e.g. smooth video playback in \texttt{brave} without screen tearing, you might want to consider using a compositor, in my case one named \texttt{picom}
+
+
+\admonition{WARNING}{In order for \texttt{obs}' screen capture to work correctly, you need to kill \texttt{picom} completely before using \texttt{obs}.
+
+
+}
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ killall picom
+\end{minted}
+
+or
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ ps aux | grep picom
+dustvoice@DustArch ~
+$ kill -9 <pid>
+\end{minted}
+%}
+
+\vfill\eject
+
+\hypertarget{x-networkmanager-applet}{\subsection{\texttt{networkmanager} applet}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{network-manager-applet} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+To install the \texttt{NetworkManager} applet, which lives in your tray and provides you with a quick method to connect to different networks, you have to install the \texttt{network-manager-applet} package
+
+
+Now you can start the applet with
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ nm-applet &
+\end{minted}
+
+If you want to edit the network connections with a more full screen approach, you can also launch \texttt{nm-connection-editor}.
+
+
+\admonition{NOTE}{The \texttt{nm-connection-editor} doesn’t search for available Wi-Fis.
+You would have to set up a Wi-Fi connection completely by hand, which could be desirable depending on how difficult to set up your Wi-Fi is.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-show-keyboard-layout}{\subsection{Show keyboard layout}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{xkblayout-state} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+To show, which keyboard layout and variant is currently in use, you can use \texttt{xkblayout-state}${}^{\texttt{AUR}}$
+
+
+Now simply issue the \texttt{layout} alias, provided by my custom \texttt{zsh} configuration.
+
+
+
+\vfill\eject
+
+\hypertarget{x-x-clipboard}{\subsection{X clipboard}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{xclip} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+To copy something from the terminal to the \texttt{xorg} clipboard, use \texttt{xclip}
+
+
+
+\vfill\eject
+
+\hypertarget{x-taking-screen-shots}{\subsection{Taking screen shots}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{scrot} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+For this functionality, especially in combination with \texttt{rofi}, use \texttt{scrot}
+
+
+\texttt{scrot ~/Pictures/filename.png} then saves the screen shot under \texttt{~/Pictures/filename.png}.
+
+
+
+\vfill\eject
+
+\hypertarget{x-image-viewer}{\subsection{Image viewer}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{ristretto} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Now that we can create screen shots, we might also want to view those
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ ristretto filename.png
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-file-manager}{\subsection{File manager}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{gvfs thunar} \\ 
+\texttt{AUR} & \texttt{gigolo} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+You probably also want to use a file manager.
+In my case, \texttt{thunar}, the \texttt{xfce} file manager, worked best.
+
+
+To also be able to \texttt{mount} removable drives, without being \texttt{root} or using \texttt{sudo}, and in order to have a GUI for mounting stuff, you would need to use \texttt{gigolo}${}^{\texttt{AUR}}$ and \texttt{gvfs}.
+
+
+
+\vfill\eject
+
+\hypertarget{x-archive-manager}{\subsection{Archive manager}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{cpio unrar unzip zip} \\ 
+\texttt{community} & \texttt{xarchiver} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+As we now have a file manager, it might be annoying, to open up a terminal every time you simply want to extract an archive of some sort.
+That’s why we’ll use \texttt{xarchiver}.
+
+
+
+\vfill\eject
+
+\hypertarget{x-web-browser}{\subsection{Web browser}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{firefox firefox-i18n-en-us} \\ 
+\texttt{community} & \texttt{browserpass} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+As you’re already using a GUI, you also might be interested in a web browser.
+In my case, I’m using \texttt{firefox}, as well as \texttt{browserpass} from the official repositories, together with the \href{https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/}{uBlock Origin}, \href{https://addons.mozilla.org/en-US/firefox/addon/darkreader/}{Dark Reader}, \href{https://addons.mozilla.org/en-US/firefox/addon/duckduckgo-for-firefox/}{DuckDuckGo Pricacy Essentials}, \href{https://addons.mozilla.org/en-US/firefox/addon/vimium-ff/}{Vimium} and finally \href{https://addons.mozilla.org/en-US/firefox/addon/browserpass-ce/}{Browserpass} add-ons, in order to use my passwords in \texttt{brave} and have best protection in regard to privacy, while browsing the web.
+
+
+We still have to setup \texttt{browserpass}, after installing all of this
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ cd /usr/lib/browserpass
+dustvoice@DustArch /usr/lib/browserpass
+$ make hosts-firefox-user
+dustvoice@DustArch /usr/lib/browserpass
+$ cd ~
+\end{minted}
+
+
+\vfill\eject
+
+\hypertarget{x-entering-the-dark-side}{\subsubsection{Entering the dark side}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{tor-browser} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+You might want to be completely anonymous whilst browsing the web at some point.
+Although this shouldn’t be your only precaution, using \texttt{tor-browser}${}^{\texttt{AUR}}$ would be the first thing to do
+
+
+\admonition{NOTE}{You might have to check out how to import the \texttt{gpg} keys on the \texttt{AUR} page of \texttt{tor-browser}.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-office-utilities}{\subsection{Office utilities}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{libreoffice-fresh} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+I’ll use \texttt{libreoffice-fresh} for anything that I’m not able to do with \texttt{neovim}.
+
+
+
+\vfill\eject
+
+\hypertarget{x-printing}{\subsubsection{Printing}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{avahi cups cups-pdf nss-mdns print-manager system-config-printer} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+In order to be able to print from the \texttt{gtk} print dialog, we’ll also need \texttt{system-config-printer} and \texttt{print-manager}.
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ sudo systemctl enable avahi-daemon.service
+dustvoice@DustArch ~
+$ sudo systemctl start avahi-daemon.service
+\end{minted}
+
+Now you have to edit \texttt{/etc/nsswitch.conf} and add \texttt{mdns4\_minimal [NOTFOUND=return]}
+
+
+\begin{minted}{console}
+hosts: files mymachines myhostname mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns
+\end{minted}
+
+Now continue with this
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ avahi-browse --all --ignore-local --resolve --terminate
+dustvoice@DustArch ~
+$ sudo systemctl enable org.cups.cupsd.service
+dustvoice@DustArch ~
+$ sudo systemctl start org.cups.cupsd.service
+\end{minted}
+
+Just open up \texttt{system-config-printer} now and configure your printer.
+
+
+To test if everything is working, you could open up \texttt{brave}, then go to \textbf{Print} and then try printing.
+
+
+
+\vfill\eject
+
+\hypertarget{x-communication}{\subsection{Communication}}
+Life is all about communicating.
+Here are some pieces of software to do exactly that.
+
+
+
+\vfill\eject
+
+\hypertarget{x-email}{\subsubsection{Email}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{thunderbird} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+There is nothing better than some classical email.
+
+
+
+\vfill\eject
+
+\hypertarget{x-telegram}{\subsubsection{Telegram}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{telegram-desktop} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+You want to have your \texttt{telegram} messages on your desktop PC?
+
+
+
+\vfill\eject
+
+\hypertarget{x-teamspeak-3}{\subsubsection{TeamSpeak 3}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{teamspeak3} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Wanna chat with your gaming friends and they have a \texttt{teamspeak3} server?
+
+
+
+\vfill\eject
+
+\hypertarget{x-discord}{\subsubsection{Discord}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{discord} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+You’d rather use \texttt{discord}?
+
+
+
+\vfill\eject
+
+\hypertarget{x-video-software}{\subsection{Video software}}
+Just some additional software related to videos.
+
+
+
+\vfill\eject
+
+\hypertarget{x-viewing-video}{\subsubsection{Viewing video}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{vlc} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+You might consider using \texttt{vlc}
+
+
+
+\vfill\eject
+
+\hypertarget{x-creating-video}{\subsubsection{Creating video}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{obs-linuxbrowser-bin obs-glcapture-git obs-studio-git} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+\texttt{obs-studio-git}${}^{\texttt{AUR}}$ should be the right choice.
+
+
+You can also make use of the plugins provided in the package list above.
+
+
+
+\vfill\eject
+
+\hypertarget{x-showing-keystrokes}{\paragraph{Showing keystrokes}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{screenkey} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+In order to show the viewers what keystrokes you’re pressing, you can use something like \texttt{screenkey}${}^{\texttt{AUR}}$
+
+
+\admonition{NOTE}{For ideal use with \texttt{obs}, my \texttt{dotfiles} repository already provides you with the \texttt{screenkey-obs} alias for you to run with \texttt{zsh}.
+
+}
+
+\vfill\eject
+
+\hypertarget{x-editing-video}{\subsubsection{Editing video}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{davinci-resolve} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+In my case, I’m using \texttt{davinci-resolve}${}^{\texttt{AUR}}$.
+
+
+
+\vfill\eject
+
+\hypertarget{x-utilizing-video}{\subsubsection{Utilizing video}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{teamviewer} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Wanna remote control your own or another PC?
+\texttt{teamviewer}${}^{\texttt{AUR}}$ might just be the right choice for you
+
+
+
+\vfill\eject
+
+\hypertarget{x-audio-production}{\subsection{Audio Production}}
+You might have to edit \texttt{/etc/security/limits.conf}, to increase the allowed locked memory amount.
+
+
+In my case I have 32GB of RAM and I want the \texttt{audio} group to be able to allocate most of the RAM, which is why I added the following line to the file
+
+
+\begin{minted}{console}
+@audio - memlock 29360128
+\end{minted}
+
+\hypertarget{x-ardour}{\subsubsection{Ardour}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{ardour} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+To e.g. edit and produce audio, you could use \texttt{ardour}, because it’s easy to use, stable and cross platform.
+
+
+\admonition{NOTE}{\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{ffmpeg} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Ardour won’t natively save in the \texttt{mp3} format, due to licensing stuff.
+In order to create \texttt{mp3} files, for sharing with other devices, because they have problems with \texttt{wav} files, for example, you can just use \texttt{ffmpeg}.
+
+
+and after that we’re going to convert \texttt{in.wav} to \texttt{out.mp3}
+
+
+}
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ ffmpeg -i in.wav -acodec mp3 out.mp3
+\end{minted}
+%}
+\hypertarget{x-reaper}{\subsubsection{Reaper}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{AUR} & \texttt{reaper-bin} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+Instead of \texttt{ardour}, I’m using \texttt{reaper}, which is available for linux as a beta version, in my case more stable than \texttt{ardour} and more easy to use for me.
+
+
+
+\vfill\eject
+
+\hypertarget{x-virtualization}{\subsection{Virtualization}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{community} & \texttt{virtualbox virtualbox-host-modules-arch} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+You might need to run another OS, for example Mac OS, from within Linux, e.g. for development/testing purposes.
+For that you can use \texttt{virtualbox}.
+
+
+Now when you want to use \texttt{virtualbox} just load the kernel module
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ sudo modprobe vboxdrv
+\end{minted}
+
+and add the user which is supposed to run \texttt{virtualbox} to the \texttt{vboxusers} group
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+pass:[$ sudo usermod -a G vboxusers $]USER
+\end{minted}
+
+and if you want to use \texttt{rawdisk} functionality, also to the \texttt{disk} group
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+pass:[$ sudo usermod -a G disk $]USER
+\end{minted}
+
+Now just re-login and you’re good to go.
+
+
+
+\vfill\eject
+
+\hypertarget{x-gaming}{\subsection{Gaming}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{pulseaudio pulseaudio-alsa} \\ 
+\texttt{community} & \texttt{lutris} \\ 
+\texttt{multilib} & \texttt{lib32-libpulse lib32-nvidia-utils steam} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+The first option for native/emulated gaming on Linux is obviously \texttt{steam}.
+
+
+The second option would be \texttt{lutris}, a program, that configures a wine instance correctly, etc.
+
+
+
+\vfill\eject
+
+\hypertarget{x-wacom}{\subsection{Wacom}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{libwacom xf86-input-wacom} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+In order to use a Wacom graphics tablet, you’ll have to install some packages
+
+
+You can now configure your tablet using the \texttt{xsetwacom} command.
+
+
+
+\vfill\eject
+
+\hypertarget{x-vnc-and-rdp}{\subsection{\texttt{VNC} \& \texttt{RDP}}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\texttt{extra} & \texttt{libvncserver} \\ 
+\texttt{community} & \texttt{remmina} \\ 
+\texttt{AUR} & \texttt{freerdp} \\ 
+\hline
+\end{tabular}
+\end{center}
+
+In order to connect to a machine over \texttt{VNC} or to connect to a machine using the \texttt{Remote Desktop Protocol}, for example to connect to a Windows machine, I’ll need to install \texttt{freerdp}${}^{\texttt{AUR}}$, as well as \texttt{libvncserver}, for \texttt{RDP} and \texttt{VNC} functionality respectively, as well as \texttt{remmina}, to have a GUI client for those two protocols.
+
+
+Now you can set up all your connections inside \texttt{remmina}.
+
+
+
+\vfill\eject
+
+\hypertarget{x-upgrading-the-system}{\chapter{Upgrading the system}}
+You’re probably wondering why this gets a dedicated section.
+
+
+You’ll probably think that it would be just a matter of issuing
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ sudo pacman -Syu
+\end{minted}
+
+That’s both true and false.
+
+
+You have to make sure, \textbf{that your boot partition is mounted at \texttt{/boot}} in order for everything to upgrade correctly.
+That’s because the moment you upgrade the \texttt{linux} package without having the correct partition mounted at \texttt{/boot}, your system won’t boot.
+You also might have to do \texttt{grub-mkconfig -o /boot/grub/grub.cfg} after you install a different kernel image.
+
+
+If your system \textbf{indeed doesn’t boot} and \textbf{boots to a recovery console}, then double check that the issue really is the not perfectly executed kernel update by issuing
+
+
+\begin{minted}{console}
+root@DustArch ~
+$ uname -a
+\end{minted}
+
+and
+
+
+\begin{minted}{console}
+root@DustArch ~
+$ pacman -Q linux
+\end{minted}
+
+\textbf{The version of these two packages should be exactly the same!}
+
+
+If it isn’t there is an easy fix for it.
+
+
+
+\vfill\eject
+
+\hypertarget{x-fixing-a-faulty-kernel-upgrade}{\section{Fixing a faulty kernel upgrade}}
+First off we need to restore the old \texttt{linux} package.
+
+
+For that note the version number of
+
+
+\begin{minted}{console}
+root@DustArch ~
+$ uname -a
+\end{minted}
+
+Now we’ll make sure first that nothing is mounted at \texttt{/boot}, because the process will likely create some unwanted files.
+The process will also create a new \texttt{/boot} folder, which we’re going to delete afterwards.
+
+
+\begin{minted}{console}
+root@DustArch ~
+$ umount /boot
+\end{minted}
+
+Now \texttt{cd} into \texttt{pacman}'s package cache
+
+
+\begin{minted}{console}
+root@DustArch ~
+$ cd /var/cache/pacman/pkg
+\end{minted}
+
+There should be a file located named something like \texttt{linux-<version>.pkg.tar.xz}, where \texttt{<version>} would be somewhat equivalent to the previously noted version number
+
+
+Now downgrade the \texttt{linux} package
+
+
+\begin{minted}{console}
+root@DustArch ~
+$ pacman -U linux-<version>.pkg.tar.xz
+\end{minted}
+
+After that remove the possibly created \texttt{/boot} directory
+
+
+\begin{minted}{console}
+root@DustArch ~
+$ rm -rf /boot
+root@DustArch ~
+$ mkdir /boot
+\end{minted}
+
+Now reboot and \texttt{mount} the \texttt{boot} partition, in my case an \texttt{EFI System Partition}.
+
+
+Now simply rerun
+
+
+\begin{minted}{console}
+dustvoice@DustArch ~
+$ sudo pacman -Syu
+\end{minted}
+
+and you should be fine now.
+
+
+\hypertarget{x-additional-notes}{\chapter{Additional notes}}
+If you’ve printed this guide, you might want to add some additional blank pages for notes.
+
+
+\end{document}
+
