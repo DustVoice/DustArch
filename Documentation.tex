@@ -39,7 +39,7 @@
 %
 \RequirePackage{fix-cm}
 \usepackage{fontspec}
-\usepackage[Latin,Greek]{ucharclasses}
+% \usepackage[Latin,Greek]{ucharclasses}
 %
 % NOTE: you must also use xelatex
 % as the typesetting engine
@@ -187,6 +187,7 @@
 
 \newenvironment{mintedlisting}{\captionsetup{format=plain,width=.75\textwidth,type=listing}}{}
 
+\setcounter{secnumdepth}{5}
 %%%%%%%%%%
 
 \newenvironment{comment*}
@@ -232,6 +233,8 @@
 
 \setminted{breaklines=true,breakanywhere=true,breakbytoken=false,breakbytokenanywhere=false,tabsize=4,frame=single,framesep=.5em,samepage=false}
 \setmintedinline{breaklines=true,breakanywhere=true,breakbytoken=false,breakbytokenanywhere=false}
+
+\let\ab\allowbreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Style
@@ -416,7 +419,7 @@ $ sudo pacman -S some-package
 
     For further clarification for specific packages (e.g. \texttt{UEFI} specific packages), continue reading the section, as there is most certainly a explanation there.
 
-    Of course, you can adapt everything to your needs, especially in the \hyperlink{additional-setup-packages}{} step.
+    Of course, you can adapt everything to your needs, especially in the \hyperlink{x-additional-setup-packages}{} step.
 \end{NOTE}
 
 \newpage
@@ -433,7 +436,7 @@ You have to configure \texttt{sample-package} by editing \texttt{/etc/sample.con
 
 
 \begin{mintedlisting}
-\caption*{\texttt{./etc/sample.conf}}
+\caption*{\textit{./etc/sample.conf}}
 \begin{minted}{text}
 Sample.text=useful
 \end{minted}
@@ -457,8 +460,8 @@ root@archiso ~ # fdisk -l
 \newpage
 
 \hypertarget{x-the-standard-way}{\subsection{The standard way}}
-In my case, the partition I want to install the root file system on is \texttt{/dev/sdb2}.
-\texttt{/dev/sdb3} will be my \texttt{swap} partition.
+In my case, the partition I want to install the root file system on is \textit{/dev/sdb2}.
+\textit{/dev/sdb3} will be my \texttt{swap} partition.
 
 
 \begin{NOTE}
@@ -496,7 +499,7 @@ root@archiso ~ # mount /dev/sdb2 /mnt
 \end{minted}
 
 \begin{NOTE}
-    If you have an additional \texttt{EFI system partition}, because of a \emph{UEFI - GPT} setup or e.g. an existing Windows installation, which we will assume to be located under \texttt{/dev/sda2} (\texttt{/dev/sda} is the disk of my Windows install), you’ll have to \texttt{mount} this partition to the new systems \texttt{/boot} folder
+    If you have an additional \texttt{EFI system partition}, because of a \emph{UEFI - GPT} setup or e.g. an existing Windows installation, which we will assume to be located under \textit{/dev/sda2} (\textit{/dev/sda} is the disk of my Windows install), you’ll have to \texttt{mount} this partition to the new systems \textit{/boot} folder
 
 
     \begin{minted}{console}
@@ -517,7 +520,7 @@ root@archiso ~ # mount /dev/sda2 /mnt/boot
 \begin{NOTE}
     This setup has different partitions used for the \texttt{EFI System Partition}, the \texttt{root} partition, etc. than used in the rest of the guide.
     If you want to use \texttt{grub} in conjunction with some full system encryption, you would have to adapt the disk and partition names accordingly.
-    The only part of the guide, which currently uses the drive/partition naming scheme used in this section is \hyperlink{manual-secure-boot-setup}{The manual way}.
+    The only part of the guide, which currently uses the drive/partition naming scheme used in this section is \hyperlink{x-manual-secure-boot-setup}{The manual way}.
 
 \end{NOTE}
 
@@ -526,7 +529,7 @@ root@archiso ~ # mount /dev/sda2 /mnt/boot
 So first we have to decide, which disk, or partition is going to hold the \texttt{luks2} encrypted \texttt{lvm2} stuff.
 
 
-In my case I’m now using my NVMe SSD, with a \texttt{GPT} partition scheme, for both the \texttt{EFI System Partition}, in my case \texttt{/dev/nvme0n1p1}, defined as a \texttt{EFI System} partition type in \texttt{fdisk}, as well as the main \texttt{LUKS} volume, in my case \texttt{/dev/nvme0n1p2}, defined as a \texttt{Linux filesystem} partition type in \texttt{fdisk}.
+In my case I’m now using my NVMe SSD, with a \texttt{GPT} partition scheme, for both the \texttt{EFI System Partition}, in my case \textit{/dev/nvme0n1p1}, defined as a \texttt{EFI System} partition type in \texttt{fdisk}, as well as the main \texttt{LUKS} volume, in my case \textit{/dev/nvme0n1p2}, defined as a \texttt{Linux filesystem} partition type in \texttt{fdisk}.
 
 
 After partitioning our disk, we now have to set everything up.
@@ -543,7 +546,7 @@ After partitioning our disk, we now have to set everything up.
 I won’t setup my \texttt{EFI System Partition} with \texttt{cryptsetup}, as it makes no sense in my case.
 
 
-Every \texttt{EFI} binary (or \texttt{STUB}) has to be signed with my own \texttt{Secure Boot} keys, as described in \hyperlink{manual-secure-boot-setup}{The manual way}, so tempering with the \texttt{EFI System Partition} poses no risk to my system.
+Every \texttt{EFI} binary (or \texttt{STUB}) has to be signed with my own \texttt{Secure Boot} keys, as described in \hyperlink{x-manual-secure-boot-setup}{The manual way}, so tempering with the \texttt{EFI System Partition} poses no risk to my system.
 
 
 Instead I will simply format it with a \texttt{FAT32} filesystem
@@ -578,7 +581,7 @@ After that we have to open the volume
 root@archiso ~ # cryptsetup open /dev/nvme0n1p2 cryptroot
 \end{minted}
 
-The volume is now accessible under \texttt{/dev/mapper/cryptroot}.
+The volume is now accessible under \textit{/dev/mapper/cryptroot}.
 
 
 
@@ -657,7 +660,7 @@ root@archiso ~ # cryptsetup close cryptroot
 \newpage
 
 \hypertarget{x-preparing-the-chroot-environment}{\section{Preparing the \texttt{chroot} environment}}
-First it might make sense to edit \texttt{/etc/pacman.d/mirrorlist} to move the mirror(s) geographically closest to you to the top.
+First it might make sense to edit \textit{/etc/pacman.d/mirrorlist} to move the mirror(s) geographically closest to you to the top.
 
 
 After that we can \texttt{pacstrap} the \textbf{minimum packages} needed.
@@ -733,7 +736,7 @@ With \texttt{polkit} installed, create a file to enable users of the \texttt{net
 
 
 \begin{mintedlisting}
-    \caption*{\texttt{./etc/\linebreak[3]{}polkit-1/\linebreak[3]{}rules.d/\linebreak[3]{}50-org.freedesktop.NetworkManager.rules}}
+    \caption*{\textit{./etc/\ab{}polkit-1/\ab{}rules.d/\ab{}50-org.freedesktop.NetworkManager.rules}}
     \begin{minted}{text}
 polkit.addRule(function(action, subject) {
     if (action.id.indexOf("org.freedesktop.NetworkManager.") == 0 && subject.isInGroup("network")) {
@@ -751,11 +754,11 @@ If you use \texttt{UEFI}, you’ll also need the \texttt{efibootmgr}, in order t
 After that you have to set your timezone and update the system clock.
 
 
-Generally speaking, you can find all the different timezones under \texttt{/usr/\allowbreak{}share/\allowbreak{}zoneinfo}.
-In my case, my timezone resides under \texttt{/usr/\allowbreak{}share/\allowbreak{}zoneinfo/\allowbreak{}Europe/\allowbreak{}Berlin}.
+Generally speaking, you can find all the different timezones under \textit{/usr/\ab{}share/\ab{}zoneinfo}.
+In my case, my timezone resides under \textit{/usr/\ab{}share/\ab{}zoneinfo/\ab{}Europe/\ab{}Berlin}.
 
 
-To achieve the desired result, I want to symlink this to \texttt{/etc/localtime} and set the hardware clock.
+To achieve the desired result, I want to symlink this to \textit{/etc/localtime} and set the hardware clock.
 
 
 \begin{minted}{console}
@@ -785,7 +788,7 @@ and check that everything is alright
 Now you have to generate your locale information.
 
 
-For that you have to edit \texttt{/etc/locale.gen} and uncomment the locales you want to enable.
+For that you have to edit \textit{/etc/locale.gen} and uncomment the locales you want to enable.
 
 
 \begin{NOTE}
@@ -831,7 +834,7 @@ This enables you to see your PC in your router, etc.
 \newpage
 
 \hypertarget{x-hostname}{\subsection{\texttt{hostname}}}
-To change the \texttt{hostname}, simply edit \texttt{/etc/hostname}, enter the desired name, then save and quit.
+To change the \texttt{hostname}, simply edit \textit{/etc/hostname}, enter the desired name, then save and quit.
 
 
 \begin{minted}{text}
@@ -842,7 +845,7 @@ DustArch
 \newpage
 
 \hypertarget{x-hosts}{\subsection{\texttt{hosts}}}
-Now we need to specify some \texttt{hosts} entries by editing \texttt{/etc/hosts}
+Now we need to specify some \texttt{hosts} entries by editing \textit{/etc/hosts}
 
 
 \begin{minted}{text}
@@ -895,7 +898,7 @@ We are going to create a new user and set the password, groups and shell for thi
 We now have to allow the \texttt{wheel} group \texttt{sudo} access.
 
 
-For that we edit \texttt{/etc/sudoers} and uncomment the \texttt{\%wheel} line
+For that we edit \textit{/etc/sudoers} and uncomment the \texttt{\%wheel} line
 
 
 \begin{minted}{text}
@@ -982,7 +985,7 @@ In both cases you’ll have to \textbf{run the following comman} now
 \end{minted}
 
 \begin{NOTE}
-    It should obvious that you would need to replace \texttt{/dev/sdb} with the disk you actually want to use.
+    It should obvious that you would need to replace \textit{/dev/sdb} with the disk you actually want to use.
     Note however that you have to specify a \textbf{disk} and \textbf{not a partition}, so \textbf{no number}.
 
 \end{NOTE}
@@ -990,7 +993,7 @@ In both cases you’ll have to \textbf{run the following comman} now
 \newpage
 
 \hypertarget{x-uefi}{\subsubsection{\texttt{UEFI}}}
-If you chose the \texttt{UEFI - GPT} variation, you’ll have to \textbf{have the \texttt{EFI System Partition} mounted} at \texttt{/boot} (where \texttt{/dev/sda2} is the partition holding said \texttt{EFI System Partition} in my particular setup)
+If you chose the \texttt{UEFI - GPT} variation, you’ll have to \textbf{have the \texttt{EFI System Partition} mounted} at \textit{/boot} (where \textit{/dev/sda2} is the partition holding said \texttt{EFI System Partition} in my particular setup)
 
 
 Now \textbf{install \texttt{grub} to the \texttt{EFI System Partition}}
@@ -1104,6 +1107,7 @@ menuentry '=> Reboot' {
 \hypertarget{x-installing-memtest}{\paragraph{Installing \texttt{memtest}}}
 As I want all possible options to possibly troubleshoot my PC right there in my \texttt{grub} menu,  without the need to boot into a live OS, I also want to have a memory tester there.
 
+\bigskip
 
 \begin{packagetable}
     \texttt{extra} & \texttt{memtest86+} \\ 
@@ -1111,6 +1115,7 @@ As I want all possible options to possibly troubleshoot my PC right there in my 
 
 For a \texttt{BIOS} setup, you’ll simply need to install the \texttt{memtest86+} package, with no further configuration.
 
+\bigskip
 
 \begin{packagetable}
     \texttt{AUR} & \texttt{memtest86-efi} \\ 
@@ -1130,7 +1135,7 @@ Now select option 3, to install it as a \texttt{grub2} menu item.
 \newpage
 
 \hypertarget{x-enabling-hibernation}{\paragraph{Enabling hibernation}}
-We need to add the \texttt{resume} kernel parameter to \texttt{/etc/default/grub}, containing my \texttt{swap} partition \texttt{UUID}, in my case
+We need to add the \texttt{resume} kernel parameter to \textit{/etc/default/grub}, containing my \texttt{swap} partition \texttt{UUID}, in my case
 
 
 \begin{minted}{console}
@@ -1138,11 +1143,11 @@ GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet resume=UUID=097c6f11-f246-40eb-a702
 \end{minted}
 
 \begin{NOTE}
-    If you have to change anything, like the \texttt{swap} partition \texttt{UUID}, inside the \texttt{grub} configuration files, you’ll always have to rerun \texttt{grub-mkconfig} as explained in \hyperlink{generating-the-grub-config}{Generating the \texttt{grub} config}.
+    If you have to change anything, like the \texttt{swap} partition \texttt{UUID}, inside the \texttt{grub} configuration files, you’ll always have to rerun \texttt{grub-mkconfig} as explained in \hyperlink{x-generating-the-grub-config}{Generating the \texttt{grub} config}.
 
 \end{NOTE}
 \hypertarget{x-generating-the-grub-config}{\paragraph{Generating the \texttt{grub} config}}
-Now we can finally generate our \texttt{grub.cfg}
+Now we can finally generate our \textit{grub.cfg}
 
 
 \begin{minted}{console}
@@ -1160,7 +1165,7 @@ Now you’re good to boot into your new system.
     There is nothing particularily better about using a \texttt{systemd} based \texttt{ramdisk} instead of a \texttt{busybox} one, it’s just that I prefer it.
 
 
-    Some advantages, at least in my opinion, that the \texttt{systemd} based \texttt{ramidsk} has, are the included \texttt{resume} hook, as well as password caching, when decrypting encrypted volumes, which means that because I use the same \texttt{LUKS} password for both my data storage \texttt{HDD}, as well as my \texttt{cryptroot}, I only have to input the password once for my \texttt{cryptroot} and my data storage \texttt{HDD} will get decrypted too, without the need to create \texttt{/etc/crypttab} entries, etc.
+    Some advantages, at least in my opinion, that the \texttt{systemd} based \texttt{ramidsk} has, are the included \texttt{resume} hook, as well as password caching, when decrypting encrypted volumes, which means that because I use the same \texttt{LUKS} password for both my data storage \texttt{HDD}, as well as my \texttt{cryptroot}, I only have to input the password once for my \texttt{cryptroot} and my data storage \texttt{HDD} will get decrypted too, without the need to create \textit{/etc/crypttab} entries, etc.
 
 \end{NOTE}
 To switch to a \texttt{systemd} based \texttt{ramdisk}, you will normally need to substitute the \texttt{busybox} specific hooks for \texttt{systemd} ones.
@@ -1189,7 +1194,7 @@ You will also need to use \texttt{systemd} hooks from now on, for example \textt
 
     \item \texttt{encrypt}
 
-        Isn’t used in the default \texttt{/etc/mkinitcpio.conf}, but could be important later on, for example when using \hyperlink{full-system-encryption}{Full system encryption}.
+        Isn’t used in the default \textit{/etc/mkinitcpio.conf}, but could be important later on, for example when using \hyperlink{x-full-system-encryption}{Full system encryption}.
         You need to substitute this with \texttt{sd-encrypt}.
 
     \item \texttt{lvm2}
@@ -1218,7 +1223,7 @@ In order to use the hibernation feature, you should make sure that your \texttt{
 
     \begin{enumerate}
 
-        \item{add the \texttt{resume} hook to \texttt{/etc/mkinitcpio.conf}, before \texttt{fsck} and definetely after \texttt{block}}
+        \item{add the \texttt{resume} hook to \textit{/etc/mkinitcpio.conf}, before \texttt{fsck} and definetely after \texttt{block}}
 
             \begin{minted}{text}
 HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)
@@ -1254,7 +1259,7 @@ HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)
     If you need \texttt{Secure Boot} to be enabled, e.g. for Windows, but you couldn’t care less for the security it could bring to your device, use this method.
 
 
-    If you want to actually make use of the \texttt{Secure Boot} feature, read \hyperlink{manual-secure-boot-setup}{The manual way}.
+    If you want to actually make use of the \texttt{Secure Boot} feature, read \hyperlink{x-manual-secure-boot-setup}{The manual way}.
 
 \end{WARNING}
 \begin{packagetable}
@@ -1271,7 +1276,7 @@ You can either proceed by disabling \texttt{Secure Boot} in your firmware settin
 If you decided on using \texttt{Secure Boot}, you will first have to install the package.
 
 
-Now we just need to copy \texttt{shimx64.efi}, as well as \texttt{mmx64.efi} to our \texttt{EFI System Partition}
+Now we just need to copy \textit{shimx64.efi}, as well as \textit{mmx64.efi} to our \texttt{EFI System Partition}
 
 
 \begin{minted}{console}
@@ -1291,7 +1296,7 @@ bcdedit /set {bootmgr} path \EFI\grub\shimx64.efi
 Now you will be greeted by \texttt{MokManager} everytime you update your bootloader or kernel.
 
 
-Just choose \texttt{Enroll hash from disk} and enroll your bootloader (\texttt{grubx64.efi}) and kernel (\texttt{vmlinuz-linux}).
+Just choose \texttt{Enroll hash from disk} and enroll your bootloader (\textit{grubx64.efi}) and kernel (\texttt{vmlinuz-linux}).
 
 
 Reboot and your system should fire up just fine.
@@ -1302,7 +1307,7 @@ Reboot and your system should fire up just fine.
 
 \hypertarget{x-the-manual-way}{\subsection{The manual way}}
 \begin{WARNING}
-    As this is a very tedious and time consuming process, it only makes sense when also utilizing some sort of disk encryption, which is, why I would advise you to read \hyperlink{full-system-encryption}{Full system encryption} first.
+    As this is a very tedious and time consuming process, it only makes sense when also utilizing some sort of disk encryption, which is, why I would advise you to read \hyperlink{x-full-system-encryption}{Full system encryption} first.
 
 \end{WARNING}
 
@@ -1312,23 +1317,23 @@ Reboot and your system should fire up just fine.
 In the following subsections, we will be dealing with some different file formats.
 
 
-\begin{sidebar}{\texttt{.key}}
+\begin{sidebar}{\textit{.key}}
     \texttt{PEM} format private keys for \texttt{EFI} binary and \texttt{EFI} signature list signing.
 \end{sidebar}
 
-\begin{sidebar}{\texttt{.crt}}
+\begin{sidebar}{\textit{.crt}}
     \texttt{PEM} format certificates for \texttt{sbsign}.
 \end{sidebar}
 
-\begin{sidebar}{\texttt{.cer}}
+\begin{sidebar}{\textit{.cer}}
     \texttt{DER} format certigficates for firmware.
 \end{sidebar}
 
-\begin{sidebar}{\texttt{.esl}}
+\begin{sidebar}{\textit{.esl}}
     Certificates in \texttt{EFI} Signature List for \texttt{KeyTool} and/or firmware.
 \end{sidebar}
 
-\begin{sidebar}{\texttt{.auth}}
+\begin{sidebar}{\textit{.auth}}
     Certificates in \texttt{EFI} Signature List with authentication header (i.e. a signed certificate update file) for \texttt{KeyTool} and/or firmware.
 \end{sidebar}
 
@@ -1432,8 +1437,8 @@ In order to ensure a smooth operation, with actual security, we need to move som
 \newpage
 
 \hypertarget{x-kernel-initramfs-microcode}{\paragraph{Kernel, \texttt{initramfs}, microcode}}
-\texttt{pacman} will put its unsigned and unencrypted kernel, \texttt{initramfs} and microcode images into \texttt{/boot}, which is, why it will be no longer a good idea, to leave your \texttt{EFI System Partition} mounted there.
-Instead we will create a new mount point under \texttt{/efi} and modify our \texttt{fstab} accordingly.
+\texttt{pacman} will put its unsigned and unencrypted kernel, \texttt{initramfs} and microcode images into \textit{/boot}, which is, why it will be no longer a good idea, to leave your \texttt{EFI System Partition} mounted there.
+Instead we will create a new mount point under \textit{/efi} and modify our \texttt{fstab} accordingly.
 
 
 
@@ -1443,7 +1448,7 @@ Instead we will create a new mount point under \texttt{/efi} and modify our \tex
 As you probably want to automate signing sooner or later and only use the ultimately necessary keys for this process, as well as store the other more important keys somewhere more safe and secure than your \texttt{root} home directory, we will move the necessary keys.
 
 
-I personally like to create a \texttt{/etc/efi-keys} directory, \texttt{chmod}ded to \texttt{700} and place my \texttt{db.crt} and \texttt{db.key} there.
+I personally like to create a \textit{/etc/efi-keys} directory, \texttt{chmod}ded to \texttt{700} and place my \textit{db.crt} and \textit{db.key} there.
 All the keys will get packed into a \texttt{tar} archive and encrypted with a strong symmetric pass phrase and stored somewhere secure and safe.
 
 
@@ -1470,10 +1475,10 @@ In my case, I used this, to sign the boot loader, kernel and \texttt{initramfs} 
     If I update my kernel, boot loader, or create an updated \texttt{initramfs} on my Arch Linux USB installation, I have to sign those files again, in order to be able to boot it on my PC.
 
 
-    Of course you can always script and automate stuff, but if you want something more easy for day to day use, I really recommend that you try out \texttt{sbupdate},  which I will explain in the next section \hyperlink{sbupdate}{\texttt{sbupdate}}.
+    Of course you can always script and automate stuff, but if you want something more easy for day to day use, I really recommend that you try out \texttt{sbupdate},  which I will explain in the next section \hyperlink{x-sbupdate}{\texttt{sbupdate}}.
 
 \end{NOTE}
-For example, if I want to sign the kernel image of my USB installation, where I mounted the boot partition to \texttt{/mnt/dustarchusb/boot}, I would have to do the following
+For example, if I want to sign the kernel image of my USB installation, where I mounted the boot partition to \textit{/mnt/dustarchusb/boot}, I would have to do the following
 
 
 \begin{minted}{console}
@@ -1508,7 +1513,7 @@ Fortunately there is an easy and uncomplicated tool out there, that does all tha
 It not only signs everything and also foreign \texttt{EFI} binaries, if specified, but also combines your kernel and \texttt{initramfs} into a single executable \texttt{EFI} binary, so you don’t even need a boot loader, if your motherboard implementation supports booting those.
 
 
-After installing \texttt{sbupdate}, we can edit the \texttt{/etc/sbupdate.conf} file, to set everything up.
+After installing \texttt{sbupdate}, we can edit the \textit{/etc/sbupdate.conf} file, to set everything up.
 
 
 Everything in this config should be self-explanatory.
@@ -1560,7 +1565,7 @@ Of course you can extend this list, with whichever entries you need.
 \newpage
 
 \hypertarget{x-enrolling-everything}{\subsubsection{Enrolling everything}}
-First off, copy all \texttt{.cer}, \texttt{.esl} and \texttt{.auth} files to a \texttt{FAT} formatted filesystem.
+First off, copy all \textit{.cer}, \textit{.esl} and \textit{.auth} files to a \texttt{FAT} formatted filesystem.
 I’m using my \texttt{EFI System Partition} for this.
 
 
@@ -1693,7 +1698,7 @@ DustArch% sudo pacman -Syu
 \newpage
 
 \hypertarget{x-enabling-the-multilib-repository}{\section{Enabling the \texttt{multilib} repository}}
-In order to make 32-bit packages available to \texttt{pacman}, we’ll need to enable the \texttt{multilib} repository in \texttt{/etc/pacman.conf} first.
+In order to make 32-bit packages available to \texttt{pacman}, we’ll need to enable the \texttt{multilib} repository in \textit{/etc/pacman.conf} first.
 Simply uncomment
 
 
@@ -1721,7 +1726,7 @@ In my case I’ll be using the \texttt{zsh} shell.
     I am using \texttt{zsh} because of its auto completion functionality and extensibility, as well as a brilliant \texttt{vim} like navigation implementation through a plugin, though that might not be what you’re looking for.
 
 \end{NOTE}
-We already set the correct shell for the \texttt{dustvoice} user in the \hyperlink{create-a-personal-user}{Create a personal user} step, but I want to use \texttt{zsh} for the \texttt{root} user too, so I’ll have to change \texttt{root}'s default shell to it.
+We already set the correct shell for the \texttt{dustvoice} user in the \hyperlink{x-create-a-personal-user}{Create a personal user} step, but I want to use \texttt{zsh} for the \texttt{root} user too, so I’ll have to change \texttt{root}'s default shell to it.
 
 
 \begin{minted}{text}
@@ -1739,7 +1744,7 @@ Don’t worry about the looks by the way, we’re gonna change all that in just 
     \texttt{extra} & \texttt{git} \\ 
 \end{packagetable}
 
-Install the package and you’re good to go for now, as we’ll care about the \texttt{.gitconfig} in just a second.
+Install the package and you’re good to go for now, as we’ll care about the \textit{.gitconfig} in just a second.
 
 
 
@@ -1825,7 +1830,7 @@ In this step we’re going to setup a home environment for both the \texttt{root
 \begin{NOTE}
     In my case, I want to access all my \texttt{git} repositories with my \texttt{gpg} key on my smartcard.
     For that I have to configure the \texttt{gpg-agent} with some configuration files that reside in a \texttt{git} repository.
-    This means I will have to reside to using the \texttt{https} URL of the repository first and later changing the URL either in the corresponding \texttt{.git/config} file, or by issuing the appropriate command.
+    This means I will have to reside to using the \texttt{https} URL of the repository first and later changing the URL either in the corresponding \textit{.git/config} file, or by issuing the appropriate command.
 
 \end{NOTE}
 
@@ -1836,7 +1841,7 @@ To provide myself with a base configuration, which I can then extend, I have cre
 
 
 The special thing about this \texttt{dotfiles} repository is that it \textbf{is} my home folder.
-By using a curated \texttt{.gitignore} file, I’m able to only include the configuration files I want to keep between installs into the repository and ignore everything else.
+By using a curated \textit{.gitignore} file, I’m able to only include the configuration files I want to keep between installs into the repository and ignore everything else.
 
 
 To achieve this very specific setup, I have to turn my home directory into said \texttt{dotfiles} repository first
@@ -1850,7 +1855,7 @@ DustArch% git reset origin/master --hard
 DustArch% git branch --set-upstream-to=origin/master master
 \end{minted}
 
-Now I can issue any \texttt{git} command in my \texttt{~} directory, because it now is a \texttt{git} repository.
+Now I can issue any \texttt{git} command in my \textit{~} directory, because it now is a \texttt{git} repository.
 
 
 
@@ -1885,7 +1890,7 @@ $ gpg-connect-agent updatestartuptty /bye
 \end{minted}
 
 \begin{NOTE}
-    You would have to adapt the \texttt{keygrip} present in the \texttt{~/.gnupg/sshcontrol} file to your specific \texttt{keygrip}, retrieved with \texttt{gpg -K --with-keygrip}.
+    You would have to adapt the \texttt{keygrip} present in the \textit{~/.gnupg/sshcontrol} file to your specific \texttt{keygrip}, retrieved with \texttt{gpg -K --with-keygrip}.
 
 \end{NOTE}
 Now, as mentioned before, I’ll switch to using \texttt{ssh} for authentication, rather than \texttt{https}
@@ -1978,7 +1983,7 @@ $ gpgconf --list-dirs
 \end{NOTE}
 
 \begin{example}
-    An example for a valid \texttt{~/.ssh/config} would be
+    An example for a valid \textit{~/.ssh/config} would be
 
 
     \begin{minted}{console}
@@ -2027,7 +2032,7 @@ dustvoice@DustArch ~
 $ sudo -iu root
 \end{minted}
 
-Now go back to \hyperlink{setup-home}{Setting up a \texttt{home} environment} to repeat all commands for the \texttt{root} user.
+Now go back to \hyperlink{x-setup-home}{Setting up a \texttt{home} environment} to repeat all commands for the \texttt{root} user.
 
 
 \begin{WARNING}
@@ -2061,7 +2066,7 @@ dustvoice@DustArch ~
 $ cat /proc/asound/cards
 \end{minted}
 
-and then create \texttt{/etc/asound.conf}
+and then create \textit{/etc/asound.conf}
 
 
 \begin{minted}{text}
@@ -2085,7 +2090,7 @@ defaults.ctl.card 2
 Some applications require \texttt{pulseaudio}, or work better with it, for example \texttt{discord}, so it might make sense to use \texttt{pulseaudio}
 
 
-For enabling real-time priority for \texttt{pulseaudio} on Arch Linux, please make sure your user is part of the \texttt{audio} group and edit the file \texttt{/etc/pulse/daemon.conf}, so that you uncomment the lines
+For enabling real-time priority for \texttt{pulseaudio} on Arch Linux, please make sure your user is part of the \texttt{audio} group and edit the file \textit{/etc/pulse/daemon.conf}, so that you uncomment the lines
 
 
 \begin{minted}{text}
@@ -2258,7 +2263,7 @@ Finally connect to your device
 \end{minted}
 
 \begin{NOTE}
-    If your device is an audio device, of some kind you might have to install \texttt{pulseaudio-bluetooth} and append 2 lines to \texttt{/etc/pulse/system.pa} as well.
+    If your device is an audio device, of some kind you might have to install \texttt{pulseaudio-bluetooth} and append 2 lines to \textit{/etc/pulse/system.pa} as well.
 
 
     append the following 2 lines
@@ -2328,7 +2333,7 @@ dustvoice@DustArch ~
 $ sudo nvidia-settings
 \end{minted}
 
-will enable you to \emph{"Save to X Configuration File"}, witch merges your changes with \texttt{/etc/X11/xorg.conf}.
+will enable you to \emph{"Save to X Configuration File"}, witch merges your changes with \textit{/etc/X11/xorg.conf}.
 
 
 With
@@ -2339,7 +2344,7 @@ dustvoice@DustArch ~
 $ nvidia-settings
 \end{minted}
 
-you’ll only be able to save the current configuration to \texttt{~/.nvidia-settings-rc}, witch you have to source after \texttt{X} startup with
+you’ll only be able to save the current configuration to \textit{~/.nvidia-settings-rc}, witch you have to source after \texttt{X} startup with
 
 
 \begin{minted}{console}
@@ -2372,7 +2377,7 @@ If anything goes wrong in the process, remember that you can press \textbf{Ctrl+
 
 If you’re using an NVIDIA graphics card, you might want to use \texttt{nvidia-xrun\textsuperscript{\texttt{AUR}}} instead of \texttt{startx}.
 This has the advantage, of the \texttt{nvidia} kernel modules, as well as the \texttt{nouveau} ones not loaded at boot time, thus saving power.
-\texttt{nvidia-xrun\textsuperscript{\texttt{AUR}}} will then load the correct kernel modules and run the \texttt{.nvidia-xinitrc} script in your home directory (for more file locations look into the documentation for \texttt{nvidia-xrun\textsuperscript{\texttt{AUR}}}).
+\texttt{nvidia-xrun\textsuperscript{\texttt{AUR}}} will then load the correct kernel modules and run the \textit{.nvidia-xinitrc} script in your home directory (for more file locations look into the documentation for \texttt{nvidia-xrun\textsuperscript{\texttt{AUR}}}).
 
 
 \begin{IMPORTANT}
@@ -2390,12 +2395,12 @@ This has the advantage, of the \texttt{nvidia} kernel modules, as well as the \t
 Now we need to blacklist \textbf{both \texttt{nouveau} and \texttt{nvidia}} kernel modules.
 
 
-To do that, we first have to find out, where our active \texttt{modprobe.d} directory is located.
-There are 2 possible locations, generally speaking: \texttt{/etc/modprobe.d} and \texttt{/usr/lib/modprobe.d}.
+To do that, we first have to find out, where our active \textit{modprobe.d} directory is located.
+There are 2 possible locations, generally speaking: \textit{/etc/modprobe.d} and \textit{/usr/lib/modprobe.d}.
 In my case it was the latter, which I could tell, because this directory already had files in it.
 
 
-Now I’ll create a new file named \texttt{nvidia-xrun.conf} and write the following into it
+Now I’ll create a new file named \textit{nvidia-xrun.conf} and write the following into it
 
 
 \begin{minted}{text}
@@ -2440,7 +2445,7 @@ $ sudo systemctl enable nvidia-xrun-pm.service
     \end{minted}
 \end{NOTE}
 \begin{NOTE}
-    The required \texttt{.nvidia-xinitrc} file, mentioned previously, should already be provided in the \texttt{dotfiles} repository.
+    The required \textit{.nvidia-xinitrc} file, mentioned previously, should already be provided in the \texttt{dotfiles} repository.
 
 \end{NOTE}
 Now instead of \texttt{startx}, just run \texttt{nvidia-xrun}, enter your \texttt{sudo} password and you’re good to go.
@@ -2466,7 +2471,7 @@ This makes working with the linux terminal much easier.
 
 
 \begin{NOTE}
-    To view a list of keybinds, you just need to press \texttt{CTRL+b} followed by \texttt{?}.
+    To view a list of keybinds, you just need to press \texttt{Ctrl +b} followed by \texttt{?}.
 
 \end{NOTE}
 
@@ -2574,7 +2579,7 @@ To use \texttt{asciidoctor-pdf}, you might be wondering how you are supposed to 
 This \texttt{fbida} package provides the \texttt{fbgs} software, which renders a PDF document using the native framebuffer.
 
 
-To view this PDF document (\texttt{Documentation.pdf}) for example, you would run
+To view this PDF document (\textit{Documentation.pdf}) for example, you would run
 
 
 \begin{minted}{console}
@@ -2598,7 +2603,7 @@ Some additional software providing some kind of \texttt{GUI} to work with, but t
 
 \hypertarget{x-password-management}{\subsection{\texttt{Pass}word management}}
 I’m using \texttt{pass} as my password manager.
-As we already installed it in the \hyperlink{additional-tools-setup-home}{Additional required tools} step and updated the \texttt{submodule} that holds our \texttt{.password-store}, there is nothing left to do in this step
+As we already installed it in the \hyperlink{x-additional-tools-setup-home}{Additional required tools} step and updated the \texttt{submodule} that holds our \textit{.password-store}, there is nothing left to do in this step
 
 
 
@@ -2648,26 +2653,26 @@ $ gem install rouge
     \end{itemize}
 
 \end{NOTE}
-Now the only thing left, in my case at least, is adding \texttt{~/.gem/ruby/2.7.0/bin} to your path.
+Now the only thing left, in my case at least, is adding \textit{~/.gem/ruby/2.7.0/bin} to your path.
 
 
 \begin{NOTE}
     Please note that if you run a ruby version different from \texttt{2.7.0}, or if you upgrade your ruby version, you have to use the \texttt{bin} path for that version.
 
 \end{NOTE}
-For \texttt{zsh} you’ll want to add a new entry inside the \texttt{.zshpath} file
+For \texttt{zsh} you’ll want to add a new entry inside the \textit{.zshpath} file
 
 
 \begin{minted}{text}
 path+=("$HOME/.gem/ruby/2.7.0/bin")
 \end{minted}
 
-which then gets sourced by the provided \texttt{.zshenv} file.
-An example is provided with the \texttt{.zshpath.example} file
+which then gets sourced by the provided \textit{.zshenv} file.
+An example is provided with the \textit{.zshpath.example} file
 
 
 \begin{NOTE}
-    You might have to re-\texttt{source} the \texttt{.zshenv} file to make the changes take effect immediately
+    You might have to re-\texttt{source} the \textit{.zshenv} file to make the changes take effect immediately
 
 
     \begin{minted}{console}
@@ -2787,7 +2792,7 @@ If you want to access the android’s file system from the command line, you wil
     \texttt{AUR} & \texttt{simple-mtpfs} \\ 
 \end{packagetable}
 
-Edit \texttt{/etc/fuse.conf} to uncomment
+Edit \textit{/etc/fuse.conf} to uncomment
 
 
 \begin{minted}{text}
@@ -3089,7 +3094,7 @@ To copy something from the terminal to the \texttt{xorg} clipboard, use \texttt{
 For this functionality, especially in combination with \texttt{rofi}, use \texttt{scrot}
 
 
-\texttt{scrot ~/Pictures/filename.png} then saves the screen shot under \texttt{~/Pictures/filename.png}.
+\texttt{scrot ~/Pictures/filename.png} then saves the screen shot under \textit{~/Pictures/filename.png}.
 
 
 
@@ -3197,7 +3202,7 @@ I’ll use \texttt{libreoffice-fresh} for anything that I’m not able to do wit
     \texttt{extra} & \texttt{avahi cups cups-pdf nss-mdns print-manager system-config-printer} \\ 
 \end{packagetable}
 
-In order to be able to print from the \texttt{gtk} print dialog, we’ll also need \texttt{system-config-printer} and \texttt{print-manager}.
+In order to be able to print from the \texttt{gtk} print dialog, we’ll also need \texttt{system-\ab{}config-\ab{}printer} and \texttt{print-manager}.
 
 
 \begin{minted}{console}
@@ -3207,7 +3212,7 @@ dustvoice@DustArch ~
 $ sudo systemctl start avahi-daemon.service
 \end{minted}
 
-Now you have to edit \texttt{/etc/nsswitch.conf} and add \texttt{mdns4\_minimal [NOTFOUND=return]}
+Now you have to edit \textit{/etc/nsswitch.conf} and add\\ \texttt{mdns4\_minimal [NOTFOUND=return]}
 
 
 \begin{minted}{text}
@@ -3385,7 +3390,7 @@ To e.g. edit and produce audio, you could use \texttt{ardour}, because it’s ea
     In order to create \texttt{mp3} files, for sharing with other devices, because they have problems with \texttt{wav} files, for example, you can just use \texttt{ffmpeg}.
 
 
-    and after that we’re going to convert \texttt{in.wav} to \texttt{out.mp3}
+    and after that we’re going to convert \textit{in.wav} to \textit{out.mp3}
 
 
     \begin{minted}{console}
@@ -3505,8 +3510,8 @@ $ sudo pacman -Syu
 That’s both true and false.
 
 
-You have to make sure, \textbf{that your boot partition is mounted at \texttt{/boot}} in order for everything to upgrade correctly.
-That’s because the moment you upgrade the \texttt{linux} package without having the correct partition mounted at \texttt{/boot}, your system won’t boot.
+You have to make sure, \textbf{that your boot partition is mounted at \textit{/boot}} in order for everything to upgrade correctly.
+That’s because the moment you upgrade the \texttt{linux} package without having the correct partition mounted at \textit{/boot}, your system won’t boot.
 You also might have to do \texttt{grub-mkconfig -o /boot/grub/grub.cfg} after you install a different kernel image.
 
 
@@ -3544,8 +3549,8 @@ root@DustArch ~
 $ uname -a
 \end{minted}
 
-Now we’ll make sure first that nothing is mounted at \texttt{/boot}, because the process will likely create some unwanted files.
-The process will also create a new \texttt{/boot} folder, which we’re going to delete afterwards.
+Now we’ll make sure first that nothing is mounted at \textit{/boot}, because the process will likely create some unwanted files.
+The process will also create a new \textit{/boot} folder, which we’re going to delete afterwards.
 
 
 \begin{minted}{console}
@@ -3561,7 +3566,7 @@ root@DustArch ~
 $ cd /var/cache/pacman/pkg
 \end{minted}
 
-There should be a file located named something like \texttt{linux-<version>.pkg.tar.xz}, where \texttt{<version>} would be somewhat equivalent to the previously noted version number
+There should be a file located named something like \textit{linux-<version>.pkg.tar.xz}, where \texttt{<version>} would be somewhat equivalent to the previously noted version number
 
 
 Now downgrade the \texttt{linux} package
@@ -3572,7 +3577,7 @@ root@DustArch ~
 $ pacman -U linux-<version>.pkg.tar.xz
 \end{minted}
 
-After that remove the possibly created \texttt{/boot} directory
+After that remove the possibly created \textit{/boot} directory
 
 
 \begin{minted}{console}

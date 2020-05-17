@@ -2,8 +2,5 @@
 /*/
 !/.gitignore
 
-!/arch.png
-!/Documentation.adoc
-!/generate-pdfs
-
-!/latex
+!/Documentation.tex
+!/Documentation.pdf
