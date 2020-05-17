@@ -131,9 +131,6 @@
 \newenvironment{titledasciidocbox}[1]
 {\leftskip6em\rightskip6em\par{\bf #1}\vskip-0.6em\par}
 {\par}
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% http://texblog.org/tag/rightskip/
@@ -736,7 +733,7 @@ With \texttt{polkit} installed, create a file to enable users of the \texttt{net
 
 
 \begin{mintedlisting}
-    \caption*{\mintinline{text}{./etc/polkit-1/rules.d/50-org.freedesktop.NetworkManager.rules}}
+    \caption*{\texttt{./etc/\linebreak[3]{}polkit-1/\linebreak[3]{}rules.d/\linebreak[3]{}50-org.freedesktop.NetworkManager.rules}}
     \begin{minted}{text}
 polkit.addRule(function(action, subject) {
     if (action.id.indexOf("org.freedesktop.NetworkManager.") == 0 && subject.isInGroup("network")) {
@@ -754,8 +751,8 @@ If you use \texttt{UEFI}, you’ll also need the \texttt{efibootmgr}, in order t
 After that you have to set your timezone and update the system clock.
 
 
-Generally speaking, you can find all the different timezones under \texttt{/usr/share/zoneinfo}.
-In my case, my timezone resides under \texttt{/usr/share/zoneinfo/Europe/Berlin}.
+Generally speaking, you can find all the different timezones under \texttt{/usr/\allowbreak{}share/\allowbreak{}zoneinfo}.
+In my case, my timezone resides under \texttt{/usr/\allowbreak{}share/\allowbreak{}zoneinfo/\allowbreak{}Europe/\allowbreak{}Berlin}.
 
 
 To achieve the desired result, I want to symlink this to \texttt{/etc/localtime} and set the hardware clock.
