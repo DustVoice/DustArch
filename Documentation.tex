@@ -4,7 +4,7 @@
 
 \title{\texorpdfstring{{\scshape\huge DustArch\\\vspace{\parskip}}}{DustArch: }DustVoice’s Arch Linux from scratch}
 \author{David Holland}
-\date{2020-05-18}
+\date{2020-05-19}
 
 \begin{document}
 \maketitle
@@ -679,8 +679,8 @@ In all cases, you now have to create the main \texttt{grub.cfg} configuration fi
 
 But before we actually generate it, we’ll make some changes to the default \texttt{grub} settings, which the \texttt{grub.cfg} will be generated from.
 
-\subsubsubsection{Adjust the timeout}
-\label{sec:adjust-the-timeout}
+\paragraph{Adjust the timeout}
+\label{par:adjust-the-timeout}
 
 First of all, I want my \texttt{grub} menu to wait indefinitely for my command to boot an OS.
 
@@ -702,8 +702,8 @@ GRUB_SAVEDEFAULT="true"
     \end{minted}
 \end{NOTE}
 
-\subsubsubsection{Enable the recovery}
-\label{sec:enable-the-recovery}
+\paragraph{Enable the recovery}
+\label{par:enable-the-recovery}
 
 After that I also want the recovery option showing up, which means that besides the standard and fallback images, also the recovery one would show up.
 
@@ -711,8 +711,8 @@ After that I also want the recovery option showing up, which means that besides 
 GRUB_DISABLE_RECOVERY=false
 \end{minted}
 
-\subsubsubsection{NVIDIA fix}
-\label{sec:nvidia-fix}
+\paragraph{NVIDIA fix}
+\label{par:nvidia-fix}
 
 Now, as I’m using the binary NVIDIA driver for my graphics card, I also want to make sure, to revert \texttt{grub} back to text mode, after I select a boot entry, in order for the NVIDIA driver to work properly.
 You might not need this
@@ -721,8 +721,8 @@ You might not need this
 GRUB_GFXPAYLOAD_LINUX=text
 \end{minted}
 
-\subsubsubsection{Add power options}
-\label{sec:add-power-options}
+\paragraph{Add power options}
+\label{par:add-power-options}
 
 I also want to add two new menu entries, to enable me to shut down the PC, or reboot it, right from the \texttt{grub} menu.
 
@@ -736,13 +736,13 @@ menuentry '=> Reboot' {
 }
 \end{minted}
 
-\subsubsubsection{Installing \texttt{memtest}}
-\label{sec:installing-memtest}
+\paragraph{Installing \texttt{memtest}}
+\label{par:installing-memtest}
 
 As I want all possible options to possibly troubleshoot my PC right there in my \texttt{grub} menu,  without the need to boot into a live OS, I also want to have a memory tester there.
 
-\subsubsubsubsection{\texttt{BIOS}}
-\label{sec:installing-memtest-bios}
+\subparagraph{\texttt{BIOS}}
+\label{par:installing-memtest-bios}
 
 \begin{packagetable}
     \texttt{extra} & \texttt{memtest86+} \\ 
@@ -750,8 +750,8 @@ As I want all possible options to possibly troubleshoot my PC right there in my 
 
 For a \texttt{BIOS} setup, you’ll simply need to install the \texttt{memtest86+} package, with no further configuration.
 
-\subsubsubsubsection{\texttt{UEFI}}
-\label{sec:installing-memtest-uefi}
+\subparagraph{\texttt{UEFI}}
+\label{par:installing-memtest-uefi}
 
 \begin{packagetable}
     \texttt{AUR} & \texttt{memtest86-efi} \\ 
@@ -765,8 +765,8 @@ For a \texttt{UEFI} setup, you’ll first need to install the package and then t
 
 Now select option 3, to install it as a \texttt{grub2} menu item.
 
-\subsubsubsection{Enabling hibernation}
-\label{sec:enabling-hibernation}
+\paragraph{Enabling hibernation}
+\label{par:enabling-hibernation}
 
 We need to add the \texttt{resume} kernel parameter to \textit{/etc/default/grub}, containing my \texttt{swap} partition \texttt{UUID}, in my case
 
@@ -775,11 +775,11 @@ GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet resume=UUID=097c6f11-f246-40eb-a702
 \end{minted}
 
 \begin{NOTE}
-    If you have to change anything, like the \texttt{swap} partition \texttt{UUID}, inside the \texttt{grub} configuration files, you’ll always have to rerun \texttt{grub-mkconfig} as explained in \nameref{sec:generating-the-grub-config} config.
+    If you have to change anything, like the \texttt{swap} partition \texttt{UUID}, inside the \texttt{grub} configuration files, you’ll always have to rerun \texttt{grub-mkconfig} as explained in the paragraph \nameref{par:generating-the-grub-config} of the section \nameref{sec:grub-config}.
 \end{NOTE}
 
-\subsubsubsection{Generating the \texttt{grub} config}
-\label{sec:generating-the-grub-config}
+\paragraph{Generating the \texttt{grub} config}
+\label{par:generating-the-grub-config}
 
 Now we can finally generate our \textit{grub.cfg}
 
@@ -830,7 +830,7 @@ You will also need to use \texttt{systemd} hooks from now on, for example \textt
 \end{itemize}
 
 \begin{NOTE}
-    You can find all purposes of the hooks, as well as the \texttt{busybox}/\texttt{systemd} equivalent of each one in the \hreffn{https://wiki.archlinux.org/index.php/Mkinitcpio\#Common\_hooks}{ArchWiki}.
+    You can find all purposes of the individual hooks, as well as the \texttt{busybox} / \texttt{systemd} equivalent of each one in the \hreffn{https://wiki.archlinux.org/index.php/Mkinitcpio\#Common\_hooks}{ArchWiki}.
 \end{NOTE}
 
 \section{Hibernation}
@@ -904,7 +904,7 @@ bcdedit /set {bootmgr} path \EFI\grub\shimx64.efi
 
 Now you will be greeted by \texttt{MokManager} everytime you update your bootloader or kernel.
 
-Just choose \texttt{Enroll hash from disk} and enroll your bootloader (\textit{grubx64.efi}) and kernel (\texttt{vmlinuz-linux}).
+Just choose \textbf{Enroll hash from disk} and enroll your bootloader (\textit{grubx64.efi}) and kernel (\textit{vmlinuz-linux}).
 
 Reboot and your system should fire up just fine.
 
@@ -947,8 +947,8 @@ First off, we have to generate our \texttt{Secure Boot} keys.
 
 These will be used to sign any binary which will be executed by the firwmare.
 
-\subsubsubsection{\texttt{GUID}}
-\label{sec:guid}
+\paragraph{\texttt{GUID}}
+\label{par:guid}
 
 Let’s create a \texttt{GUID} first to use with the next commands.
 
@@ -956,8 +956,8 @@ Let’s create a \texttt{GUID} first to use with the next commands.
 [root@archiso ~/sb]# uuidgen --random > GUID.txt
 \end{minted}
 
-\subsubsubsection{\texttt{PK}}
-\label{sec:pk}
+\paragraph{\texttt{PK}}
+\label{par:pk}
 
 We can now generate our \texttt{PK} (Platform Key)
 
@@ -974,8 +974,8 @@ In order to allow deletion of the \texttt{PK}, for firmwares which do not provid
 [root@archiso ~/sb]# sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt PK /dev/null rm_PK.auth
 \end{minted}
 
-\subsubsubsection{\texttt{KEK}}
-\label{sec:kek}
+\paragraph{\texttt{KEK}}
+\label{par:kek}
 
 We proced in a similar fashion with the \texttt{KEK} (Key Exchange Key)
 
@@ -986,8 +986,8 @@ We proced in a similar fashion with the \texttt{KEK} (Key Exchange Key)
 [root@archiso ~/sb]# sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt KEK KEK.esl KEK.auth
 \end{minted}
 
-\subsubsubsection{\texttt{DB}}
-\label{sec:db}
+\paragraph{\texttt{DB}}
+\label{par:db}
 
 And finally the \texttt{DB} (Signature Database) key.
 
@@ -1021,14 +1021,14 @@ No need to sign the Windows boot loader.
 
 In order to ensure a smooth operation, with actual security, we need to move some stuff around.
 
-\subsubsubsection{Kernel, \texttt{initramfs}, microcode}
-\label{sec:kernel-initramfs-microcode}
+\paragraph{Kernel, \texttt{initramfs}, microcode}
+\label{par:kernel-initramfs-microcode}
 
 \texttt{pacman} will put its unsigned and unencrypted kernel, \texttt{initramfs} and microcode images into \textit{/boot}, which is, why it will be no longer a good idea, to leave your EFI System Partition mounted there.
 Instead we will create a new mount point under \textit{/efi} and modify our \texttt{fstab} accordingly.
 
-\subsubsubsection{Keys}
-\label{sec:keys}
+\paragraph{Keys}
+\label{par:keys}
 
 As you probably want to automate signing sooner or later and only use the ultimately necessary keys for this process, as well as store the other more important keys somewhere more safe and secure than your \texttt{root} home directory, we will move the necessary keys.
 
@@ -1041,8 +1041,8 @@ All the keys will get packed into a \texttt{tar} archive and encrypted with a st
 Signing is the process of, well, signing your \texttt{EFI} binaries, in order for them to be allowed to be executed, by the motherboard firmware.
 At the end of the day, that’s why you’re doing all this, to prevent an attack by launching unknown code.
 
-\subsubsubsection{Manual signing}
-\label{sec:manual-signing}
+\paragraph{Manual signing}
+\label{par:manual-signing}
 
 Of course, you can sign images yourself manually.
 In my case, I used this, to sign the boot loader, kernel and \texttt{initramfs} of my USB installation of Arch Linux.
@@ -1052,7 +1052,7 @@ In my case, I used this, to sign the boot loader, kernel and \texttt{initramfs} 
 
     If I update my kernel, boot loader, or create an updated \texttt{initramfs} on my Arch Linux USB installation, I have to sign those files again, in order to be able to boot it on my PC.
 
-    Of course you can always script and automate stuff, but if you want something more easy for day to day use, I really recommend that you try out \texttt{sbupdate},  which I will explain in the next section \nameref{sec:sbupdate}.
+    Of course you can always script and automate stuff, but if you want something more easy for day to day use, I really recommend that you try out \texttt{sbupdate},  which I will explain in the next paragraph \nameref{par:sbupdate}.
 \end{NOTE}
 
 For example, if I want to sign the kernel image of my USB installation, where I mounted the boot partition to \textit{/mnt/dustarchusb/boot}, I would have to do the following
@@ -1061,8 +1061,8 @@ For example, if I want to sign the kernel image of my USB installation, where I 
 [root@archiso ~/sb]# sbsign --key /etc/efi-keys/db.key --cert /etc/efi-keys/db.crt --output /boot/vmlinuz-linux /boot/vmlinuz-linux
 \end{minted}
 
-\subsubsubsection{\texttt{sbupdate}}
-\label{sec:sbupdate}
+\paragraph{\texttt{sbupdate}}
+\label{par:sbupdate}
 
 \begin{packagetable}
     \texttt{AUR} & \texttt{sbupdate-git} \\ 
@@ -1185,7 +1185,7 @@ DustArch% sudo systemctl restart NetworkManager.service
 
 and then try \texttt{ping}ing again.
 
-If you’re trying to utilize a Wi-Fi connection, use \texttt{nmcli}, the \texttt{NetworkManager}'s command line tool, or \texttt{nmtui}, the \texttt{NetworkManager} terminal user interface, to connect to a Wi-Fi network.
+If you're trying to utilize a Wi-Fi connection, use \texttt{nmcli}, the \texttt{NetworkManager}'s command line tool, or \texttt{nmtui}, the \texttt{NetworkManager} terminal user interface, to connect to a Wi-Fi network.
 
 \begin{NOTE}
     I never got \texttt{nmtui} to behave like I wanted it to, in my particular case at least, which is the reason why I use \texttt{nmcli} or the GUI tools.
@@ -2633,8 +2633,8 @@ You might consider using \texttt{vlc}
 
 You can also make use of the plugins provided in the package list above.
 
-\subsubsubsection{Showing keystrokes}
-\label{sec:showing-keystrokes}
+\paragraph{Showing keystrokes}
+\label{par:showing-keystrokes}
 
 \begin{packagetable}
     \texttt{AUR} & \texttt{screenkey} \\ 
