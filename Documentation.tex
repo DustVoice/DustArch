@@ -48,6 +48,7 @@ After doing that, we can now install any software from the official repositories
 root@archiso ~ # pacman -S <package_name>
 \end{minted}
 
+\noindent
 where you would replace \texttt{<package\_name>} with the actual package name.
 
 If you don’t know the exact package name, or if you just want to search for a keyword, for example \texttt{xfce} to list all packages having to do something with \texttt{xfce}, use
@@ -324,6 +325,7 @@ root@archiso ~ # mkfs.ext4 -L / /dev/DustArch1/root
 root@archiso ~ # mkswap /dev/DustArch1/swap
 \end{minted}
 
+\noindent
 as well as mounting them and enabling the \texttt{swap}, in order to proceed with the next steps.
 
 \begin{minted}{console}
@@ -388,6 +390,7 @@ After that generate an \texttt{fstab} using \texttt{genfstab}
 root@archiso ~ # genfstab -U /mnt >> /mnt/etc/fstab
 \end{minted}
 
+\noindent
 and you’re ready to enter the \texttt{chroot} environment.
 
 \chapter{Entering the \texttt{chroot}}
@@ -464,6 +467,7 @@ Now you can also enable time synchronization over network
 [root@archiso /]# timedatectl set-ntp true
 \end{minted}
 
+\noindent
 and check that everything is alright
 
 \begin{minted}{console}
@@ -483,9 +487,12 @@ For that you have to edit \textit{/etc/locale.gen} and uncomment the locales you
 
 In my case I only uncommented the \texttt{en\_US.UTF-8 UTF8} line
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{/etc/locale.gen}}
+    \begin{minted}{text}
 en_US.UTF-8 UTF8
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
 After that you still have to actually generate the locales by issuing
 
@@ -493,6 +500,7 @@ After that you still have to actually generate the locales by issuing
 [root@archiso /]# locale-gen
 \end{minted}
 
+\noindent
 and set the locale
 
 \begin{minted}{console}
@@ -514,23 +522,29 @@ This enables you to see your PC in your router, etc.
 
 To change the \texttt{hostname}, simply edit \textit{/etc/hostname}, enter the desired name, then save and quit.
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{/etc/hostname}}
+    \begin{minted}{text}
 DustArch
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
 \subsection{\texttt{hosts}}
 \label{sec:hosts}
 
 Now we need to specify some \texttt{hosts} entries by editing \textit{/etc/hosts}
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{/etc/hosts}}
+    \begin{minted}{text}
 # Static table lookup for hostnames.
 # See hosts(5) for details.
 
 127.0.0.1   localhost           .
 ::1         localhost           .
 127.0.1.1   DustArch.localhost  DustArch
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
 \section{User setup}
 \label{sec:user-setup}
@@ -546,6 +560,7 @@ To change the password for the current user (the \texttt{root} user) issue
 [root@archiso /]# passwd
 \end{minted}
 
+\noindent
 and choose a new password.
 
 \subsection{Create a personal user}
@@ -567,22 +582,33 @@ We now have to allow the \texttt{wheel} group \texttt{sudo} access.
 
 For that we edit \textit{/etc/sudoers} and uncomment the \texttt{\%wheel} line
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{/etc/sudoers}}
+    \begin{minted}{text}
 %wheel ALL=(ALL) ALL
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
 You could also add a new line below the \texttt{root} line
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{/etc/sudoers}}
+    \begin{minted}{text}
 root ALL=(ALL) ALL
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
+\noindent
 with your new username
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{/etc/sudoers}}
+    \begin{minted}{text}
 dustvoice ALL=(ALL) ALL
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
+\noindent
 to solely grant the new user \texttt{sudo} privileges.
 
 \section{Boot manager}
@@ -619,6 +645,7 @@ First make sure, all the required packages are installed
 [root@archiso /]# pacman -S grub dosfstools os-prober mtools
 \end{minted}
 
+\noindent
 and if you want to use \texttt{UEFI}, also
 
 \begin{minted}{console}
@@ -669,6 +696,7 @@ bcdedit /set {bootmgr} path \EFI\grub\grubx64.efi
 [root@archiso /]# ls /boot/EFI/grub
     \end{minted}
 
+    \noindent
     under Linux to make sure, that the \texttt{grubx64.efi} file is really there.
 \end{IMPORTANT}
 
@@ -684,6 +712,7 @@ But before we actually generate it, we’ll make some changes to the default \te
 
 First of all, I want my \texttt{grub} menu to wait indefinitely for my command to boot an OS.
 
+% TODO: Add grup.cfg path!
 \begin{minted}{text}
 GRUB_TIMEOUT=-1
 \end{minted}
@@ -844,9 +873,12 @@ In order to use the hibernation feature, you should make sure that your \texttt{
     \begin{enumerate}
         \item add the \texttt{resume} hook to \textit{/etc/mkinitcpio.conf}, before \texttt{fsck} and definetely after \texttt{block}
 
-            \begin{minted}{text}
+            \begin{mintedlisting}
+                \caption*{\textit{/etc/mkinitcpio.conf}}
+                \begin{minted}{text}
 HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)
-            \end{minted}
+                \end{minted}
+            \end{mintedlisting}
         \item run
 
             \begin{minted}{console}
@@ -1103,6 +1135,7 @@ You will probably need to
             \item etc.
         \end{itemize}
 
+        \noindent
         to \texttt{CMDLINE\_DEFAULT}
 \end{itemize}
 
@@ -1183,6 +1216,7 @@ If there is no connection and you’re indeed using a wired connection, try rest
 DustArch% sudo systemctl restart NetworkManager.service
 \end{minted}
 
+\noindent
 and then try \texttt{ping}ing again.
 
 If you're trying to utilize a Wi-Fi connection, use \texttt{nmcli}, the \texttt{NetworkManager}'s command line tool, or \texttt{nmtui}, the \texttt{NetworkManager} terminal user interface, to connect to a Wi-Fi network.
@@ -1197,6 +1231,7 @@ First make sure, the scanning of nearby Wi-Fi networks is enabled for your Wi-Fi
 DustArch% nmcli radio
 \end{minted}
 
+\noindent
 and if not, enable it
 
 \begin{minted}{text}
@@ -1215,6 +1250,7 @@ Rescan for available networks
 DustArch% nmcli device wifi rescan
 \end{minted}
 
+\noindent
 and list all found networks
 
 \begin{minted}{text}
@@ -1244,11 +1280,15 @@ DustArch% sudo pacman -Syu
 In order to make 32-bit packages available to \texttt{pacman}, we’ll need to enable the \texttt{multilib} repository in \textit{/etc/pacman.conf} first.
 Simply uncomment
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{/etc/pacman.conf}}
+    \begin{minted}{text}
 [multilib]
 Include = /etc/pacman.d/mirrorlist
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
+\noindent
 and update \texttt{pacman}'s package repositories afterwards
 
 \begin{minted}{text}
@@ -1467,14 +1507,17 @@ This is very important for me, as I want to use my smartcard on my development s
 
 First of all, I want to setup a config file for \texttt{ssh}, as I don’t want to pass all parameters manually to ssh every time.
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{\~{}/.ssh/config}}
+    \begin{minted}{text}
 Host <connection name>
     HostName <remote address>
     ForwardAgent yes
     ForwardX11 yes
     RemoteForward <remote agent-socket> <local agent-extra-socket>
     RemoteForward <remote agent-ssh-socket> <local agent-ssh-socket>
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
 \begin{NOTE}
     You would of course, need to adapt the content in between the \texttt{<} and \texttt{>} brackets.
@@ -1490,23 +1533,29 @@ $ gpgconf --list-dirs
 \begin{example}
     An example for a valid \textit{\~{}/.ssh/config} would be
 
-    \begin{minted}{console}
+    \begin{mintedlisting}
+        \caption*{\textit{\~{}/.ssh/config}}
+        \begin{minted}{text}
 Host archserver
     HostName pc.dustvoice.de
     ForwardAgent yes
     ForwardX11 yes
     RemoteForward /run/user/1000/gnupg/S.gpg-agent /run/user/1000/gnupg/S.gpg-agent.extra
     RemoteForward /run/user/1000/gnupg/S.gpg-agent.ssh /run/user/1000/gnupg/S.gpg-agent.ssh
-    \end{minted}
+        \end{minted}
+    \end{mintedlisting}
 \end{example}
 
 Now you’ll still need to enable some settings on the remote machine(s).
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{/etc/ssh/sshd\_config}}
+    \begin{minted}{text}
 StreamLocalBindUnlink yes
 AllowAgentForwarding yes
 X11Forwarding yes
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
 Now just restart your remote machine(s) and you’re ready to go.
 
@@ -1560,12 +1609,16 @@ dustvoice@DustArch ~
 $ cat /proc/asound/cards
 \end{minted}
 
+\noindent
 and then create \textit{/etc/asound.conf}
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{/etc/asound.conf}}
+    \begin{minted}{text}
 defaults.pcm.card 2
 defaults.ctl.card 2
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
 \begin{NOTE}
     It should be apparent, that you would have to switch out \texttt{2} with the number corresponding to the sound card you want to use.
@@ -1583,19 +1636,26 @@ Some applications require \texttt{pulseaudio}, or work better with it, for examp
 
 For enabling real-time priority for \texttt{pulseaudio} on Arch Linux, please make sure your user is part of the \texttt{audio} group and edit the file \textit{/etc/pulse/daemon.conf}, so that you uncomment the lines
 
-\begin{minted}{text}
+% TODO: Check what values I currently use!
+\begin{mintedlisting}
+    \caption*{\textit{/etc/pulse/daemon.conf}}
+    \begin{minted}{text}
 high-priority = yes
 nice-level = -11
 
 realtime-scheduling = yes
 realtime-priority = 5
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
 If your system can handle the load, you can also increase the remixing quality, by changing the \texttt{resample-method}
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{/etc/pulse/daemon.conf}}
+    \begin{minted}{text}
 resample-method = speex-float-10
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
 Of course a restart of the \texttt{pulseaudio} daemon is necessary to reflect the changes you just made
 
@@ -1633,6 +1693,7 @@ dustvoice@DustArch ~
 $ play audio.mp3
 \end{minted}
 
+\noindent
 to play audio.
 
 \section{Bluetooth}
@@ -1691,6 +1752,7 @@ Now enter device discovery mode
 (insert) [DustVoice]# scan on
 \end{minted}
 
+\noindent
 and list found devices
 
 \begin{minted}{console}
@@ -1711,6 +1773,7 @@ Now turn on the agent
 (insert) [DustVoice]# agent on
 \end{minted}
 
+\noindent
 and pair with your device
 
 \begin{minted}{console}
@@ -1732,15 +1795,19 @@ Finally connect to your device
 \end{minted}
 
 \begin{NOTE}
-    If your device is an audio device, of some kind you might have to install \texttt{pulseaudio-bluetooth} and append 2 lines to \textit{/etc/pulse/system.pa} as well.
+    If your device is an audio device, of some kind you might have to install \texttt{pulseaudio-bluetooth}.
 
-    append the following 2 lines
+    You will then also need to append 2 lines to \textit{/etc/pulse/system.pa}
 
-    \begin{minted}{text}
+    \begin{mintedlisting}
+        \caption*{\textit{/etc/pulse/system.pa}}
+        \begin{minted}{text}
 load-module module-bluetooth-policy
 load-module module-bluetooth-discover
-    \end{minted}
+        \end{minted}
+    \end{mintedlisting}
 
+    \noindent
     and restart \texttt{pulseaudio}
 
     \begin{minted}{console}
@@ -1793,6 +1860,7 @@ dustvoice@DustArch ~
 $ sudo nvidia-settings
 \end{minted}
 
+\noindent
 will enable you to \emph{"Save to X Configuration File"}, witch merges your changes with \textit{/etc/X11/xorg.conf}.
 
 With
@@ -1802,6 +1870,7 @@ dustvoice@DustArch ~
 $ nvidia-settings
 \end{minted}
 
+\noindent
 you’ll only be able to save the current configuration to \textit{\~{}/.nvidia-settings-rc}, witch you have to source after \texttt{X} startup with
 
 \begin{minted}{console}
@@ -1852,13 +1921,16 @@ In my case it was the latter, which I could tell, because this directory already
 
 Now I’ll create a new file named \textit{nvidia-xrun.conf} and write the following into it
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{/usr/lib/modprobe.d/nvidia-xrun.conf}}
+    \begin{minted}{text}
 blacklist nvidia
 blacklist nvidia-drm
 blacklist nvidia-modeset
 blacklist nvidia-uvm
 blacklist nouveau
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
 With this config in place,
 
@@ -1867,6 +1939,7 @@ dustvoice@DustArch ~
 $ lsmod | grep nvidia
 \end{minted}
 
+\noindent
 and
 
 \begin{minted}{console}
@@ -1874,6 +1947,7 @@ dustvoice@DustArch ~
 $ lsmod | grep nouveau
 \end{minted}
 
+\noindent
 should return no output.
 Else you might have to place some additional entries into the file.
 
@@ -1937,6 +2011,7 @@ dustvoice@DustArch ~
 $ weechat
 \end{minted}
 
+\noindent
 and install \texttt{vimode}, as well as configure it
 
 \begin{minted}{text}
@@ -1969,6 +2044,7 @@ Now you just need to add a new connection, for example \texttt{irc.freenode.net}
 /server add freenode irc.freenode.net
 \end{minted}
 
+\noindent
 and connect to it
 
 \begin{minted}{text}
@@ -1989,6 +2065,7 @@ and connect to it
 /fset weechat.var.name
     \end{minted}
 
+    \noindent
     after that, using the cursor, select the entry you want to modify (for example \texttt{plugins.var.python.vimode}) and then press \texttt{s} (make sure you’re in \texttt{insert} mode) and \texttt{Return}, in order to modify the existing value.
 \end{NOTE}
 
@@ -2075,10 +2152,14 @@ Now the only thing left, in my case at least, is adding \textit{\~{}/.gem/ruby/2
 
 For \texttt{zsh} you’ll want to add a new entry inside the \textit{.zshpath} file
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{~/.zshpath}}
+    \begin{minted}{text}
 path+=("$HOME/.gem/ruby/2.7.0/bin")
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
+\noindent
 which then gets sourced by the provided \textit{.zshenv} file.
 An example is provided with the \textit{.zshpath.example} file
 
@@ -2192,10 +2273,14 @@ If you want to access the android’s file system from the command line, you wil
 
 Edit \textit{/etc/fuse.conf} to uncomment
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{/etc/fuse.conf}
+    \begin{minted}{text}
 user_allow_other
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
+\noindent
 and mount the android device
 
 \begin{minted}{console}
@@ -2207,6 +2292,7 @@ dustvoice@DustArch ~
 $ simple-mtpfs --device <number> ~/mnt -allow_other
 \end{minted}
 
+\noindent
 and respectively unmount it
 
 \begin{minted}{console}
@@ -2336,8 +2422,9 @@ I’ll use \texttt{xss-lock} to hook into the necessary \texttt{systemd} events 
 
     If you use something other than \texttt{bspwm}, you need to make sure this command gets executed upon start of the \texttt{X}-session
 
-    \begin{minted}{text}
-xss-lock -l -- xsecurelock &
+    \begin{minted}{console}
+dustvoice@DustArch ~
+$ xss-lock -l -- xsecurelock &
     \end{minted}
 \end{NOTE}
 
@@ -2382,6 +2469,7 @@ dustvoice@DustArch ~
 $ killall picom
     \end{minted}
 
+    \noindent
     or
 
     \begin{minted}{console}
@@ -2545,11 +2633,14 @@ dustvoice@DustArch ~
 $ sudo systemctl start avahi-daemon.service
 \end{minted}
 
-Now you have to edit \textit{/etc/nsswitch.conf} and add\\ \texttt{mdns4\_minimal [NOTFOUND=return]}
+Now you have to edit \textit{/etc/nsswitch.conf} and add \texttt{mdns4\_minimal [NOTFOUND=return]}
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \caption*{\textit{/etc/nsswitch.conf}}
+    \begin{minted}{text}
 hosts: files mymachines myhostname mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
 Now continue with this
 
@@ -2669,13 +2760,17 @@ Wanna remote control your own or another PC?
 \subsection{Audio Production}
 \label{sec:audio-production}
 
-You might have to edit \texttt{/etc/security/limits.conf}, to increase the allowed locked memory amount.
+You might have to edit \textit{/etc/security/limits.conf}, to increase the allowed locked memory amount.
 
 In my case I have 32GB of RAM and I want the \texttt{audio} group to be able to allocate most of the RAM, which is why I added the following line to the file
 
-\begin{minted}{text}
+% TODO: Double check, how I currently use the jack setup for audio production as it really works this time!
+\begin{mintedlisting}
+    \caption*{\textit{/etc/security/limits.conf}}
+    \begin{minted}{text}
 @audio - memlock 29360128
-\end{minted}
+    \end{minted}
+\end{mintedlisting}
 
 \subsubsection{Ardour}
 \label{sec:ardour}
@@ -2728,6 +2823,7 @@ dustvoice@DustArch ~
 $ sudo modprobe vboxdrv
 \end{minted}
 
+\noindent
 and add the user which is supposed to run \texttt{virtualbox} to the \texttt{vboxusers} group
 
 \begin{minted}{console}
@@ -2735,6 +2831,7 @@ dustvoice@DustArch ~
 pass:[$ sudo usermod -a G vboxusers $]USER
 \end{minted}
 
+\noindent
 and if you want to use \texttt{rawdisk} functionality, also to the \texttt{disk} group
 
 \begin{minted}{console}
@@ -2806,6 +2903,7 @@ root@DustArch ~
 $ uname -a
 \end{minted}
 
+\noindent
 and
 
 \begin{minted}{console}
@@ -2871,6 +2969,7 @@ dustvoice@DustArch ~
 $ sudo pacman -Syu
 \end{minted}
 
+\noindent
 and you should be fine now.
 
 \chapter{Additional notes}

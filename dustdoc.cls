@@ -76,23 +76,23 @@
 \definecolor{draculaBG}{HTML}{282a36}
 
 \newenvironment{NOTE}
-{\begin{tcolorbox}[before upper={\setlength{\parskip}{0.5em}}, colback=admonitionBG,coltitle=draculaFG,colframe=draculaBlue,colbacktitle=draculaBlue,title=NOTE]}
+{\begin{tcolorbox}[before upper={\setlength{\parindent}{1.5em}\noindent}, colback=admonitionBG,coltitle=draculaFG,colframe=draculaBlue,colbacktitle=draculaBlue,title=NOTE]}
 {\end{tcolorbox}}
 
 \newenvironment{TIP}
-{\begin{tcolorbox}[before upper={\setlength{\parskip}{0.5em}},colback=admonitionBG,coltitle=draculaBG,colframe=draculaYellow,colbacktitle=draculaYellow,title=TIP]}
+{\begin{tcolorbox}[before upper={\setlength{\parindent}{1.5em}\noindent},colback=admonitionBG,coltitle=draculaBG,colframe=draculaYellow,colbacktitle=draculaYellow,title=TIP]}
 {\end{tcolorbox}}
 
 \newenvironment{IMPORTANT}
-{\begin{tcolorbox}[before upper={\setlength{\parskip}{0.5em}},colback=admonitionBG,coltitle=draculaFG,colframe=draculaRed,colbacktitle=draculaRed,title=IMPORTANT]}
+{\begin{tcolorbox}[before upper={\setlength{\parindent}{1.5em}\noindent},colback=admonitionBG,coltitle=draculaFG,colframe=draculaRed,colbacktitle=draculaRed,title=IMPORTANT]}
 {\end{tcolorbox}}
 
 \newenvironment{WARNING}
-{\begin{tcolorbox}[before upper={\setlength{\parskip}{0.5em}},colback=admonitionBG,coltitle=draculaBG,colframe=draculaOrange,colbacktitle=draculaOrange,title=WARNING]}
+{\begin{tcolorbox}[before upper={\setlength{\parindent}{1.5em}\noindent},colback=admonitionBG,coltitle=draculaBG,colframe=draculaOrange,colbacktitle=draculaOrange,title=WARNING]}
 {\end{tcolorbox}}
 
 \newenvironment{CAUTION}
-{\begin{tcolorbox}[before upper={\setlength{\parskip}{0.5em}},colback=admonitionBG,coltitle=draculaBG,colframe=draculaPink,colbacktitle=draculaPink,title=CAUTION]}
+{\begin{tcolorbox}[before upper={\setlength{\parindent}{1.5em}\noindent},colback=admonitionBG,coltitle=draculaBG,colframe=draculaPink,colbacktitle=draculaPink,title=CAUTION]}
 {\end{tcolorbox}}
 
 \newenvironment{packagetable}
@@ -112,8 +112,8 @@
 
 \newcommand{\hreffn}[2]{\href{#1}{#2}\footnote{#1}}
 
-\setlength{\parindent}{0.0pt}
-\setlength{\parskip}{0.5em}
+\setlength{\parindent}{1.5em}
+\setlength{\parskip}{0.0pt plus 1.0pt}
 
 \setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{3}
