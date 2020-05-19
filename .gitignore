@@ -2,5 +2,6 @@
 /*/
 !/.gitignore
 
+!/dustdoc.cls
 !/Documentation.tex
 !/Documentation.pdf
