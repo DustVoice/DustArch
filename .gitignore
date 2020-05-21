@@ -3,5 +3,8 @@
 !/.gitignore
 
 !/dustdoc.cls
+!/generate-pdfs
 !/Documentation.tex
 !/Documentation.pdf
+!/print_a4.tex
+!/print_a4.pdf

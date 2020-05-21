@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+lualatex -shell-escape Documentation.tex
+lualatex -shell-escape Documentation.tex
+lualatex print_a4.tex
