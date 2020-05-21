@@ -39,7 +39,7 @@
 \RequirePackage{titlesec}
 \RequirePackage{titletoc}
 
-\RequirePackage[pdfpagelabels]{hyperref}
+\RequirePackage{hyperref}
 
 \hypersetup{
     colorlinks=true,

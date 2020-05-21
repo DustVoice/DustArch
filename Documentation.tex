@@ -14,19 +14,19 @@
 \chapter{Inside the \texttt{archiso}}
 \label{sec:inside-the-archiso}
 
-This chapter is aimed at providing help with the general installation of a customized Arch Linux from within an official Arch Linux image (\texttt{archiso}).
+This chapter is aimed at assisting with the general setup of a customized Arch Linux installation, using an official Arch Linux image (\texttt{archiso}).
 
 \begin{NOTE}
-    As Arch Linux is a rolling release Linux distribution, it is advised, to have a working internet connection, in order to get the latest package upgrades and to install additional software, as the \texttt{archiso} only has very few packages available from cache.
+    As Arch Linux is a rolling release GNU/Linux distribution, it is advised, to have a working internet connection, in order to get the latest package upgrades and to install additional software, as the \texttt{archiso} doesn't have all packages available from cache, especially the ones that need to be installed from the \texttt{AUR}.
 
-    Furthermore, one should bear in mind that depending on the version, or rather modification date, the guide may already be outdated.
+    Furthermore, one should bear in mind that depending on the version, or rather modification date, of this guide, the exact steps taken may already be outdated.
     If you encounter any problems along the way, you will either have to resolve the issue yourself, or utilize the great \hreffn{https://wiki.archlinux.org/}{ArchWiki}, or the \hreffn{https://bbs.archlinux.org/}{Arch Linux forums}.
 \end{NOTE}
 
 \section{\texttt{Sy}ncing up \texttt{pacman}}
 \label{sec:syncing-up-pacman}
 
-First of all we need to sync up \texttt{pacman}'s package repository, in order to be able to install packages
+First of all we need to sync up \texttt{pacman}'s package repository, in order to be able to install the latest, as well as new packages to the \texttt{archiso} and our new system.
 
 \begin{minted}{console}
 root@archiso ~ # pacman -Sy
@@ -42,6 +42,7 @@ root@archiso ~ # pacman -Sy
 
 \subsection{Official repositories}
 \label{sec:official-repositories}
+
 After doing that, we can now install any software from the official repositories by issuing
 
 \begin{minted}{console}
@@ -51,20 +52,20 @@ root@archiso ~ # pacman -S <package_name>
 \noindent
 where you would replace \texttt{<package\_name>} with the actual package name.
 
-If you don’t know the exact package name, or if you just want to search for a keyword, for example \texttt{xfce} to list all packages having to do something with \texttt{xfce}, use
-
-\begin{minted}{console}
-root@archiso ~ # pacman -Ss <keyword>
-\end{minted}
-
 If you want to remove an installed package, just use
 
 \begin{minted}{console}
 root@archiso ~ # pacman -Rsu <package_name>
 \end{minted}
 
+If you don’t know the exact package name, or if you just want to search for a keyword, for example \texttt{xfce}, to list all packages having to do something with \texttt{xfce}, use
+
+\begin{minted}{console}
+root@archiso ~ # pacman -Ss <keyword>
+\end{minted}
+
 \begin{CAUTION}
-    If you have to force remove, which you should use \textbf{with extreme caution}, you can use
+    If you really need to force remove a package, which you should use \textbf{with extreme caution}, you could use
 
     \begin{minted}{console}
 root@archiso ~ # pacman -Rdd <package_name>
@@ -73,10 +74,11 @@ root@archiso ~ # pacman -Rdd <package_name>
 
 \subsection{\texttt{AUR}}
 \label{sec:aur}
-If you want to install a package from the \hreffn{https://aur.archlinux.org/}{\texttt{AUR}}, I would proceed as follows
+
+If you want to install a package from the \hreffn{https://aur.archlinux.org/}{\texttt{AUR}}, I would advise proceeding in the following manner
 
 \begin{enumerate}
-    \item \texttt{cd} into the dedicated directory, if you’re using the \texttt{dotfiles} repo, which provides an \texttt{update.sh} script within that folder, to check every subfolder for updates
+    \item \texttt{cd} into the dedicated \textit{~/AUR} directory, if you’re using the \texttt{dotfiles} repo, which provides you with an \textit{update} \texttt{bash} script within that folder, to check every subfolder for updates
 
         \begin{minted}{console}
 dustvoice@archiso ~ $ cd AUR
@@ -100,7 +102,7 @@ dustvoice@archiso ~/AUR $ cd pacman-git
 dustvoice@archiso ~/AUR/pacman-git $ makepkg -si
         \end{minted}
 
-    \item Delete all files created by \texttt{makepkg}, in order to easily see, if a package needs an update by using \texttt{git fetch --all} and \texttt{git status}
+    \item Delete all files created by \texttt{makepkg}, in order to easily see, if a package needs an update by using \mintinline{console}{$ git fetch --all} and \mintinline{console}{$ git status}
 
         \begin{minted}{console}
 dustvoice@archiso ~/AUR/pacman-git $ git reset HEAD --hard
@@ -109,68 +111,63 @@ dustvoice@archiso ~/AUR/pacman-git $ git clean -fdx
 \end{enumerate}
 
 \begin{NOTE}
-    You might have to resolve any \texttt{AUR} dependencies, which can’t be resolved with \texttt{pacman}.
+    You might have to resolve some \texttt{AUR} dependencies manually, which can’t be automatically resolved by \texttt{makepkg}'s \texttt{-s} option, whitch uses \texttt{pacman}.
 \end{NOTE}
 
 \begin{WARNING}
-    In order to install that \texttt{AUR} package, you \textbf{must} switch to your normal user, because \texttt{makepkg} doesn’t run as root.
+    In order to install the desired \texttt{AUR} package, you \textbf{must} switch to your normal, non-\texttt{root} user, because \texttt{makepkg} doesn’t run as \texttt{root}.
 \end{WARNING}
 
 \begin{NOTE}
-    There is an \texttt{update.sh} \texttt{bash} script available in the \texttt{AUR} directory, when using the \texttt{dotfiles} repository, which enables you to quickly check all installed \texttt{AUR} packages for updates and even install them in the same step.
+    As mentioned before, there is an \textit{update} \texttt{bash} script available within the \textit{~/AUR} directory, when using the \texttt{dotfiles} repository, which enables you to quickly check all cloned \texttt{AUR} repositories within said directory for updates and even install them in the same step.
 
-    Issue \mintinline{console}{$ ./update.sh --help} for command line options.
+    Issue \mintinline{console}{$ ./update --help} for command line options.
 \end{NOTE}
 
 \subsection{Software categories}
 \label{sec:software-categories}
 
-There are three categories of software in this guide:
+In this guide, software is categorized in three different categories
 
 \begin{itemize}
     \item \texttt{Console} software is intended to be used with either the native linux console, or with a terminal emulator
 
-    \item \texttt{GUI} software is intended to be used in a graphical desktop environment
+    \item \texttt{GUI} software is intended to be used within a graphical desktop environment
 
-    \item \texttt{Hybrid} software can either be used within both a console and a graphical desktop environment (\texttt{networkmanager}), or there are packages available for both console and a graphical desktop environment (\texttt{pulseaudio} with \texttt{pulsemixer} for \textsuperscript{\texttt{console}} and \texttt{pavucontrol} for \textsuperscript{\texttt{GUI}})
+    \item \texttt{Hybrid} software can either be used within both a console and a graphical desktop environment (e.g. \texttt{networkmanager}), or there are packages available for both console and a graphical desktop environment (e.g. \texttt{pulseaudio} with \texttt{pulsemixer} for \texttt{Console} and \texttt{pavucontrol} for \texttt{GUI})
 \end{itemize}
 
 \subsection{Software installation}
 \label{sec:software-installation}
-In this guide, I’ll be explicitly mark the packages installed in a specific section.
 
-This enables you to
+In this guide, I’ll be explicitly listing the packages installed in a specific section at the beginning of the individual sections.
+
+This allows you to
 
 \begin{itemize}
     \item clearly see what packages get installed / need to be installed in a specific section
 
     \item install packages before you start with the section in order to minimize waiting time
 
-    \item not have to read through bloating lines like
-
-        \begin{minted}{console}
-dustvoice@DustArch ~
-$ sudo pacman -S some-package
-        \end{minted}
-
-    \item not have to accidentally reinstall already installed packages
+    \item not having to accidentally reinstall already installed packages
 \end{itemize}
 
 \begin{NOTE}
     The packages are always the recommended packages.
 
-    For further clarification for specific packages (e.g. \texttt{UEFI} specific packages), continue reading the section, as there is most certainly a explanation there.
+    For further clarification for specific packages (e.g. \texttt{UEFI} specific packages), continue reading the section, as there is most certainly an explanation there.
 
-    Of course, you can adapt everything to your needs.
+    Of course, as always, you can and should adapt everything according to your needs, as this guide is, again, \textbf{no tutorial, but a guide}.
 \end{NOTE}
 
 \subsubsection{Example section}
 \label{sec:example-section}
+
 \begin{packagetable}
-    \texttt{core} & \texttt{libutil-linux} \\ 
-    \texttt{extra} & \texttt{git} \\ 
-    \texttt{community} & \texttt{ardour cadence jsampler linuxsampler qsampler sample-package} \\ 
-    \texttt{AUR} & \texttt{sbupdate} \\ 
+    \texttt{core} & \texttt{libutil-linux} \\
+    \texttt{extra} & \texttt{git} \\
+    \texttt{community} & \texttt{ardour cadence jsampler linuxsampler qsampler sample-package} \\
+    \texttt{AUR} & \texttt{sbupdate} \\
 \end{packagetable}
 
 You have to configure \texttt{sample-package} by editing \texttt{/etc/sample.conf}
@@ -184,18 +181,28 @@ Sample.text=useful
 
 \section{Formatting the drive}
 \label{sec:formatting-the-drive}
-First you have to list all the available drives by issuing
+
+First you probably want to get a list of all available drives, together with their corresponding device name, by issuing
 
 \begin{minted}{console}
 root@archiso ~ # fdisk -l
 \end{minted}
 
 \begin{NOTE}
-    The output of \texttt{fdisk -l} is dependent on your system configuration.
+    The output of \texttt{fdisk -l} is dependent on your system configuration and many other factors, like \texttt{BIOS} initialization order, etc.
+
+    \begin{CAUTION}
+        Don't assume the same device location between reboots!
+
+        Always double check!
+
+        There is nothing worse than formatting a drive you didn't mean to format!
+    \end{CAUTION}
 \end{NOTE}
 
 \subsection{The standard way}
 \label{sec:the-standard-way}
+
 In my case, the partition I want to install the root file system on is \textit{/dev/sdb2}.
 \textit{/dev/sdb3} will be my \texttt{swap} partition.
 
@@ -433,7 +440,7 @@ Make sure to enable the \texttt{NetworkManager.service} service, in order for th
 With \texttt{polkit} installed, create a file to enable users of the \texttt{network} group to add new networks without the need of \texttt{sudo}.
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/polkit-1/rules.d/\allowbreak{}50-org.freedesktop.NetworkManager.rules}}
+    \caption*{\textit{/etc/polkit-1/rules.d/\allowbreak{}50-org.freedesktop.\allowbreak{}NetworkManager.rules}}
     \begin{minted}{text}
 polkit.addRule(function(action, subject) {
     if (action.id.indexOf("org.freedesktop.NetworkManager.") == 0 && subject.isInGroup("network")) {
@@ -936,7 +943,7 @@ bcdedit /set {bootmgr} path \EFI\grub\shimx64.efi
 
 Now you will be greeted by \texttt{MokManager} everytime you update your bootloader or kernel.
 
-Just choose \textbf{Enroll hash from disk} and enroll your bootloader (\textit{grubx64.efi}) and kernel (\textit{vmlinuz-linux}).
+Just choose "Enroll hash from disk" and enroll your bootloader binary (\textit{grubx64.efi}) and kernel (\textit{vmlinuz-linux}).
 
 Reboot and your system should fire up just fine.
 
@@ -1219,7 +1226,7 @@ DustArch% sudo systemctl restart NetworkManager.service
 \noindent
 and then try \texttt{ping}ing again.
 
-If you're trying to utilize a Wi-Fi connection, use \texttt{nmcli}, the \texttt{NetworkManager}'s command line tool, or \texttt{nmtui}, the \texttt{NetworkManager} terminal user interface, to connect to a Wi-Fi network.
+If you're trying to utilize a Wi-Fi connection, use \texttt{nmcli}, the \texttt{Network\allowbreak{}Manager}'s command line tool, or \texttt{nmtui}, the \texttt{NetworkManager} terminal user interface, to connect to a Wi-Fi network.
 
 \begin{NOTE}
     I never got \texttt{nmtui} to behave like I wanted it to, in my particular case at least, which is the reason why I use \texttt{nmcli} or the GUI tools.
@@ -2415,7 +2422,7 @@ As you now have a working graphical desktop environment, you might want to insta
 Probably the first thing you’ll want to set up is a session locker, which locks your \texttt{X}-session after resuming from sleep, hibernation, etc.
 It then requires you to input your password again, so no unauthorized user can access you machine.
 
-I’ll use \texttt{xss-lock} to hook into the necessary \texttt{systemd} events and \texttt{xsecurelock} as my locker.
+I’ll use \texttt{xss-lock} to hook into the necessary \texttt{systemd} events and then use \texttt{xsecurelock} as my locker.
 
 \begin{NOTE}
     I have placed the required command to start \texttt{xss-lock} with the right parameters inside my \texttt{bspwm} configuration file.
@@ -2633,7 +2640,8 @@ dustvoice@DustArch ~
 $ sudo systemctl start avahi-daemon.service
 \end{minted}
 
-Now you have to edit \textit{/etc/nsswitch.conf} and add \texttt{mdns4\_minimal [NOTFOUND=return]}
+Now you have to edit \textit{/etc/nsswitch.conf} and add\newline
+\texttt{mdns4\_minimal [NOTFOUND=return]}
 
 \begin{mintedlisting}
     \caption*{\textit{/etc/nsswitch.conf}}
@@ -2942,7 +2950,7 @@ root@DustArch ~
 $ cd /var/cache/pacman/pkg
 \end{minted}
 
-There should be a file located named something like \textit{linux-<version>.pkg.tar.xz}, where \texttt{<version>} would be somewhat equivalent to the previously noted version number
+There should be a file located named something like \textit{linux-\allowbreak{}<version>.\allowbreak{}pkg.tar.xz}, where \texttt{<version>} would be somewhat equivalent to the previously noted version number
 
 Now downgrade the \texttt{linux} package
 
