@@ -170,7 +170,7 @@ This allows you to
     \texttt{AUR} & \texttt{sbupdate} \\
 \end{packagetable}
 
-You have to configure \texttt{sample-package} by editing \texttt{/etc/sample.conf}
+You have to configure \texttt{sample-package}, by editing \texttt{/etc/sample.conf}
 
 \begin{mintedlisting}
     \caption*{\textit{/etc/sample.conf}}
@@ -182,7 +182,7 @@ Sample.text=useful
 \section{Formatting the drive}
 \label{sec:formatting-the-drive}
 
-First you probably want to get a list of all available drives, together with their corresponding device name, by issuing
+First, you probably want to get a list of all available drives, together with their corresponding device name, by issuing
 
 \begin{minted}{console}
 root@archiso ~ # fdisk -l
@@ -192,7 +192,7 @@ root@archiso ~ # fdisk -l
     The output of \texttt{fdisk -l} is dependent on your system configuration and many other factors, like \texttt{BIOS} initialization order, etc.
 
     \begin{CAUTION}
-        Don't assume the same device location between reboots!
+        Don't assume the same path of a device between reboots!
 
         Always double check!
 
@@ -207,14 +207,13 @@ In my case, the partition I want to install the root file system on is \textit{/
 \textit{/dev/sdb3} will be my \texttt{swap} partition.
 
 \begin{NOTE}
-    A \texttt{swap} size \textbf{twice the size of your RAM} is recommended by a lot of people.
+    A \texttt{swap} size twice the size of your RAM is recommended by a lot of people.
 
-    With bigger RAM sizes available today, this isn’t necessary anymore.
     To be exact, every distribution has different recommendations for \texttt{swap} sizes.
-
     Also \texttt{swap} size heavily depends on whether you want to be able to hibernate, etc.
 
-    You should make the \texttt{swap} size \textbf{at least your RAM size} and for RAM sizes over \texttt{4GB} and the wish to hibernate, at least one and a half your RAM size.
+    \paragraph{In my opinion}
+    You should make the \texttt{swap} size at least your RAM size and for RAM sizes over \texttt{4GB} and the wish to hibernate, at least one and a half your RAM size.
 \end{NOTE}
 
 \begin{IMPORTANT}
@@ -236,7 +235,7 @@ root@archiso ~ # mount /dev/sdb2 /mnt
 \end{minted}
 
 \begin{NOTE}
-    If you have an additional \texttt{EFI system partition}, because of a \emph{UEFI - GPT} setup or e.g. an existing Windows installation, which we will assume to be located under \textit{/dev/sda2} (\textit{/dev/sda} is the disk of my Windows install), you’ll have to \texttt{mount} this partition to the new systems \textit{/boot} folder
+    If you have an additional EFI System partition, because of a \emph{UEFI - GPT} setup or an existing Windows installation, for example, which we will assume to be located under \textit{/dev/sda2} (\textit{/dev/sda} is the disk of my Windows install), you’ll have to \texttt{mount} this partition to the new system's \textit{/boot} folder
 
     \begin{minted}{console}
 root@archiso ~ # mkdir /mnt/boot
@@ -254,27 +253,27 @@ root@archiso ~ # mount /dev/sda2 /mnt/boot
 \end{NOTE}
 
 \begin{NOTE}
-    This setup has different partitions used for the EFI System Partition, the \texttt{root} partition, etc. than used in the rest of the guide.
+    This setup has different partitions, used for the EFI System partition, the \texttt{root} partition, etc., compared to the ones used in the rest of the guide.
     If you want to use \texttt{grub} in conjunction with some full system encryption, you would have to adapt the disk and partition names accordingly.
-    The only part of the guide, which currently uses the drive/partition naming scheme used in this section is \nameref{sec:the-manual-way}.
+    The only part of the guide, which currently uses the drives \& partitions used in this section is \nameref{sec:the-manual-way}.
 \end{NOTE}
 
-So first we have to decide, which disk, or partition is going to hold the \texttt{luks2} encrypted \texttt{lvm2} stuff.
+To start things, we first have to decide, which disk, or partition, is going to hold the \texttt{luks2} encrypted \texttt{lvm2} stuff.
 
-In my case I’m now using my NVMe SSD, with a \texttt{GPT} partition scheme, for both the EFI System Partition, in my case \textit{/dev/nvme0n1p1}, defined as a \texttt{EFI System} partition type in \texttt{fdisk}, as well as the main \texttt{LUKS} volume, in my case \textit{/dev/nvme0n1p2}, defined as a \texttt{Linux filesystem} partition type in \texttt{fdisk}.
+In my case I’ll be using my NVMe SSD, with a \texttt{GPT} partition scheme, for both the EFI System partition, in my case \textit{/dev/nvme0n1p1}, defined as a \texttt{EFI System} partition type in \texttt{fdisk}, as well as the main \texttt{LUKS} volume, in my case \textit{/dev/nvme0n1p2}, defined as a \texttt{Linux filesystem} partition type in \texttt{fdisk}.
 
 After partitioning our disk, we now have to set everything up.
 
-\subsubsection{EFI System Partition}
+\subsubsection{EFI System partition}
 \label{sec:efi-system-partition}
 
 \begin{packagetable}
-    \texttt{core} & \texttt{dosfstools} \\ 
+    \texttt{core} & \texttt{dosfstools} \\
 \end{packagetable}
 
-I won’t setup my EFI System Partition with \texttt{cryptsetup}, as it makes no sense in my case.
+I won’t setup my EFI System partition with \texttt{cryptsetup}, as it makes no sense in my case.
 
-Every \texttt{EFI} binary (or \texttt{STUB}) has to be signed with my own \texttt{Secure Boot} keys, as described in \nameref{sec:the-manual-way}, so tempering with the EFI System Partition poses no risk to my system.
+Every \texttt{EFI} binary (or \texttt{STUB}) will have to be signed with my custom Secure Boot keys, as described in \nameref{sec:the-manual-way}, so tempering with the EFI System partition poses no risk to my system.
 
 Instead I will simply format it with a \texttt{FAT32} filesystem
 
@@ -284,11 +283,15 @@ root@archiso ~ # mkfs.fat -F 32 -L /efi /dev/nvme0n1p1
 
 We will bother with mounting it later on.
 
+\begin{NOTE}
+    When you \textbf{do} want to encrypt your EFI System partition, in conjunction with using \texttt{grub}, please either use \texttt{LUKS 1}, or make sure to have the latest version of \texttt{grub} installed on your system, to make it work with \texttt{LUKS 2}!
+\end{NOTE}
+
 \subsubsection{\texttt{LUKS}}
 \label{sec:luks}
 
 \begin{packagetable}
-    \texttt{core} & \texttt{cryptsetup} \\ 
+    \texttt{core} & \texttt{cryptsetup} \\
 \end{packagetable}
 
 First off we have to create the \texttt{LUKS} volume
@@ -309,10 +312,10 @@ The volume is now accessible under \textit{/dev/mapper/cryptroot}.
 \label{sec:lvm}
 
 \begin{packagetable}
-    \texttt{core} & \texttt{lvm2} \\ 
+    \texttt{core} & \texttt{lvm2} \\
 \end{packagetable}
 
-I’m going to create one \texttt{PV} (Physical Volume) with the just created and opened \texttt{cryptroot} \texttt{LUKS} volume, one \texttt{VG} (Volume Group), named \texttt{DustArch1}, which will contain two \texttt{LV}s (Logical Volumes) named \texttt{root} and \texttt{swap} containing the \texttt{root} filesystem and the \texttt{swap} respectively.
+I’m going to create one \texttt{PV} (Physical Volume) using the just created and opened \texttt{cryptroot} \texttt{LUKS} volume, one \texttt{VG} (Volume Group), named \texttt{DustArch1}, which will contain two \texttt{LV}s (Logical Volumes) named \texttt{root} and \texttt{swap} containing the \texttt{root} filesystem and the \texttt{swap} space respectively.
 
 \begin{minted}{console}
 root@archiso ~ # pvcreate /dev/mapper/cryptroot
@@ -325,7 +328,7 @@ root@archiso ~ # lvcreate -L 100%FREE -n swap DustArch1
 \subsubsection{Format \& mount}
 \label{sec:format-and-mount}
 
-Now the only things left to do are formatting our freshly created logical volumes
+Now the only thing left to do is formatting our freshly created logical volumes appropriately
 
 \begin{minted}{console}
 root@archiso ~ # mkfs.ext4 -L / /dev/DustArch1/root
@@ -346,7 +349,7 @@ root@archiso ~ # swapon /dev/DustArch1/swap
 \label{sec:unmount-and-close}
 
 \begin{WARNING}
-    Only do this, after you’re finished with your setup within the \texttt{archiso} and are about to boot into your system, or else the next steps won’t work for you.
+    Only do this, after you’re finished with your setup within the \texttt{archiso} and are about to reboot into your new system, or else the next steps won’t work for you.
 \end{WARNING}
 
 To close everything back up again,
@@ -376,11 +379,39 @@ root@archiso ~ # cryptsetup close cryptroot
 
 First it might make sense to edit \textit{/etc/pacman.d/mirrorlist} to move the mirror(s) geographically closest to you to the top.
 
+If you're using an older version of the \texttt{archiso}, you might want to replace the mirrorlist present on the \texttt{archiso} with the newest one from \hreffn{https://archlinux.org/mirrorlist}{https://archlinux.org/mirrorlist}
+
+\begin{minted}{console}
+root@archiso ~ # curl https://archlinux.org/mirrorlist/all > /etc/pacman.d/mirrorlist
+\end{minted}
+
+\begin{NOTE}
+    \begin{packagetable}
+        \texttt{community} & \texttt{reflector} \\
+    \end{packagetable}
+
+    The best way to do this, is using a package from the official repositories named \texttt{reflector}.
+    It comes with all sorts of options, for example sorting mirrors by speed, filtering by country, etc.
+
+    \begin{minted}{console}
+root@archiso ~ # reflector --verbose --latest 200 --sort rate --save /etc/pacman.d/mirrorlist
+    \end{minted}
+
+    After that you would need to reinstall the \texttt{pacman-mirror} package and run
+
+    \begin{minted}{console}
+root@archiso ~ # pacman -Syyuu
+    \end{minted}
+
+    \noindent
+    for the best results.
+\end{NOTE}
+
 After that we can \texttt{pacstrap} the \textbf{minimum packages} needed.
 We will install all other packages later on.
 
 \begin{packagetable}
-    \texttt{core} & \texttt{base linux linux-firmware} \\ 
+    \texttt{core} & \texttt{base linux linux-firmware} \\
 \end{packagetable}
 
 \begin{NOTE}
@@ -406,32 +437,32 @@ and you’re ready to enter the \texttt{chroot} environment.
 \begin{NOTE}
     As we want to set up our new system, we need to have access to the different partitions, the internet, etc. which we wouldn’t get by solely using \texttt{chroot}.
 
-    That’s why we are using \texttt{arch-chroot}, provided by the \texttt{arch-install-scripts} package already shipped with the archiso.
-    This script takes care of all that stuff, so we can set up our system properly.
+    That’s why we are using \texttt{arch-chroot}, provided by the \texttt{arch-install-scripts} package, which is shipped with the \texttt{archiso}.
+    This script takes care of all the afforementioned stuff, so we can set up our system properly.
 \end{NOTE}
 
 \begin{minted}{console}
 root@archiso ~ # arch-chroot /mnt
 \end{minted}
 
-Et Voil\`{a}! You successfully \texttt{chroot}ed inside your new system and you’ll be greeted by a \texttt{bash} prompt.
+Et Voil\`{a}! You successfully \texttt{chroot}ed inside your new system and you’ll be greeted by a \texttt{bash} prompt, which is the default shell on fresh Arch Linux installations.
 
 \section{Installing additional packages}
 \label{sec:installing-additional-packages}
 
 \begin{packagetable}
-    \texttt{core} & \texttt{amd-ucode base-devel diffutils dmraid dnsmasq dosfstools efibootmgr exfat-utils grub iputils lvm2 openssh sudo usbutils} \\ 
-    \texttt{extra} & \texttt{efitools git intel-ucode networkmanager networkmanager-openconnect networkmanager-openvpn parted polkit rsync zsh} \\ 
-    \texttt{community} & \texttt{neovim os-prober} \\ 
+    \texttt{core} & \texttt{amd-ucode base-devel diffutils dmraid dnsmasq dosfstools efibootmgr exfat-utils grub iputils lvm2 openssh sudo usbutils} \\
+    \texttt{extra} & \texttt{efitools git intel-ucode networkmanager networkmanager-openconnect networkmanager-openvpn parted polkit rsync zsh} \\
+    \texttt{community} & \texttt{neovim os-prober} \\
 \end{packagetable}
 
 \begin{NOTE}
     There are many command line text editors available, like \texttt{nano}, \texttt{vi}, \texttt{vim}, \texttt{emacs}, etc.
 
-    I’ll be using \texttt{neovim}, though it shouldn’t matter what editor you choose.
+    I’ll be using \texttt{neovim}, though it shouldn’t matter what editor you choose for the rest of the guide.
 \end{NOTE}
 
-Make sure to enable the \texttt{NetworkManager.service} service, in order for the Internet connection to work upon booting into our fresh system later on.
+Make sure to enable the \texttt{NetworkManager.service} service, in order for the Internet connection to work correctly, upon booting into the fresh system later on.
 
 \begin{minted}{console}
 [root@archiso /]# systemctl enable NetworkManager.service
@@ -455,12 +486,12 @@ If you use \texttt{UEFI}, you’ll also need the \texttt{efibootmgr}, in order t
 \section{Master of time}
 \label{sec:master-of-time}
 
-After that you have to set your timezone and update the system clock.
+After that, you have to set your timezone and update the system clock.
 
 Generally speaking, you can find all the different timezones under \textit{/usr/\allowbreak{}share/\allowbreak{}zoneinfo}.
 In my case, my timezone resides under \textit{/usr/\allowbreak{}share/\allowbreak{}zoneinfo/\allowbreak{}Europe/\allowbreak{}Berlin}.
 
-To achieve the desired result, I want to symlink this to \textit{/etc/localtime} and set the hardware clock.
+To achieve the desired result, I will want to symlink this to \textit{/etc/localtime} and set the hardware clock.
 
 \begin{minted}{console}
 [root@archiso /]# ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
@@ -519,15 +550,14 @@ After that we’re done with this part.
 \section{Naming your machine}
 \label{sec:naming-your-machine}
 
-Now we can set the \texttt{hostname} and add \texttt{hosts} entries.
+Now we can set the \texttt{hostname} for our new install and add \texttt{hosts} entries.
 
-Apart from being mentioned in your command prompt, the \texttt{hostname} also serves the purpose of identifying, or naming your machine.
-This enables you to see your PC in your router, etc.
+Apart from being mentioned in your command prompt, the \texttt{hostname} also serves the purpose of identifying, or naming your machine locally, as well as in a networked scenario.  This will enable you to see your PC with the correct name in your router, etc.
 
 \subsection{\texttt{hostname}}
 \label{sec:hostname}
 
-To change the \texttt{hostname}, simply edit \textit{/etc/hostname}, enter the desired name, then save and quit.
+To change the \texttt{hostname}, simply edit \textit{/etc/hostname}, enter the desired name, then save and quit
 
 \begin{mintedlisting}
     \caption*{\textit{/etc/hostname}}
@@ -574,8 +604,8 @@ and choose a new password.
 \label{sec:create-a-personal-user}
 
 \begin{packagetable}
-    \texttt{core} & \texttt{sudo} \\ 
-    \texttt{extra} & \texttt{zsh} \\ 
+    \texttt{core} & \texttt{sudo} \\
+    \texttt{extra} & \texttt{zsh} \\
 \end{packagetable}
 
 We are going to create a new user and set the password, groups and shell for this user
@@ -616,31 +646,36 @@ dustvoice ALL=(ALL) ALL
 \end{mintedlisting}
 
 \noindent
-to solely grant the new user \texttt{sudo} privileges.
+to solely grant the \textbf{new} user \texttt{sudo} privileges.
 
 \section{Boot manager}
 \label{sec:boot-manager}
 
-In this section different boot managers are explained.
+In this section different boot managers / boot methods are explained.
 
 \subsection{\texttt{EFISTUB}}
 \label{sec:efistub}
 
 \begin{packagetable}
-    \texttt{core} & \texttt{efibootmgr} \\ 
+    \texttt{core} & \texttt{efibootmgr} \\
 \end{packagetable}
 
-You can directly load the kernel and the \texttt{initramfs} by using \texttt{efibootmgr}
+You can directly boot the system, by making use of the \texttt{EFISTUB} contained in the kernel image.
+To utilize this, we can use the \texttt{efibootmgr}
 
 \begin{minted}{console}
 [root@archiso /]# efibootmgr --disk /dev/sda --part 2 --create --label "Arch Linux" --loader /vmlinuz-linux --unicode 'root=6ff60fab-c046-47f2-848c-791fbc52df09 rw initrd=\initramfs-linux.img resume=UUID=097c6f11-f246-40eb-a702-ba83c92654f2' --verbose
 \end{minted}
 
+\begin{NOTE}
+    This only makes sense of course, if you're using \texttt{UEFI} instead of \texttt{BIOS}.
+\end{NOTE}
+
 \subsection{\texttt{grub}}
 \label{sec:grub}
 
 \begin{packagetable}
-    \texttt{core} & \texttt{efibootmgr grub} \\ 
+    \texttt{core} & \texttt{efibootmgr grub} \\
 \end{packagetable}
 
 Now onto installing the boot manager.
@@ -680,16 +715,16 @@ In both cases you’ll have to \textbf{run the following comman} now
 \subsubsection{\texttt{UEFI}}
 \label{sec:uefi}
 
-If you chose the \texttt{UEFI - GPT} variation, you’ll have to \textbf{have the EFI System Partition mounted} at \textit{/boot} (where \textit{/dev/sda2} is the partition holding said EFI System Partition in my particular setup)
+If you chose the \texttt{UEFI - GPT} variation, you’ll have to \textbf{have the EFI System partition mounted} at \textit{/boot} (where \textit{/dev/sda2} is the partition holding said EFI System partition in my particular setup)
 
-Now \textbf{install \texttt{grub} to the EFI System Partition}
+Now \textbf{install \texttt{grub} to the EFI System partition}
 
 \begin{minted}{console}
 [root@archiso /]# grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
 \end{minted}
 
 \begin{IMPORTANT}
-    If you’ve planned on dual booting arch with Windows and therefore reused the EFI System Partition created by Windows, you might not be able to boot to grub just yet.
+    If you’ve planned on dual booting arch with Windows and therefore reused the EFI System partition created by Windows, you might not be able to boot to grub just yet.
 
     In this case, boot into Windows, open a \texttt{cmd} window as Administrator and type in
 
@@ -781,7 +816,7 @@ As I want all possible options to possibly troubleshoot my PC right there in my 
 \label{par:installing-memtest-bios}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{memtest86+} \\ 
+    \texttt{extra} & \texttt{memtest86+} \\
 \end{packagetable}
 
 For a \texttt{BIOS} setup, you’ll simply need to install the \texttt{memtest86+} package, with no further configuration.
@@ -790,7 +825,7 @@ For a \texttt{BIOS} setup, you’ll simply need to install the \texttt{memtest86
 \label{par:installing-memtest-uefi}
 
 \begin{packagetable}
-    \texttt{AUR} & \texttt{memtest86-efi} \\ 
+    \texttt{AUR} & \texttt{memtest86-efi} \\
 \end{packagetable}
 
 For a \texttt{UEFI} setup, you’ll first need to install the package and then tell \texttt{memtest86-efi\textsuperscript{\texttt{AUR}}} how to install itself
@@ -899,34 +934,34 @@ HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)
     If your motherboard doesn’t support this, you would need to use \hreffn{https://wiki.archlinux.org/index.php/Systemd-boot}{\texttt{systemd-boot}}.
 \end{NOTE}
 
-\section{\texttt{Secure Boot}}
+\section{Secure Boot}
 \label{sec:secure-boot}
 
 \subsection{\texttt{shim}}
 \label{sec:shim}
 
 \begin{packagetable}
-    \texttt{AUR} & \texttt{shim-signed} \\ 
+    \texttt{AUR} & \texttt{shim-signed} \\
 \end{packagetable}
 
 \begin{WARNING}
     This is a way of handling secure boot that aims at just making everything work!
 
-    It is not the way \texttt{Secure Boot} was intended to be used and you might as well disable it.
+    It is not the way Secure Boot was intended to be used and you might as well disable it.
 
-    If you need \texttt{Secure Boot} to be enabled, e.g. for Windows, but you couldn’t care less for the security it could bring to your device, use this method.
+    If you need Secure Boot to be enabled, e.g. for Windows, but you couldn’t care less for the security it could bring to your device, use this method.
 
-    If you want to actually make use of the \texttt{Secure Boot} feature, read \nameref{sec:the-manual-way}.
+    If you want to actually make use of the Secure Boot feature, read \nameref{sec:the-manual-way}.
 \end{WARNING}
 
 I know I told you that you’re now good to boot into your new system.
-That is only correct, if you’re \textbf{not} using \texttt{Secure Boot}.
+That is only correct, if you’re \textbf{not} using Secure Boot.
 
-You can either proceed by disabling \texttt{Secure Boot} in your firmware settings, or by using \texttt{shim} as kind of a pre-bootloader, as well as signing your bootloader (\texttt{grub}) and your kernel.
+You can either proceed by disabling Secure Boot in your firmware settings, or by using \texttt{shim} as kind of a pre-bootloader, as well as signing your bootloader (\texttt{grub}) and your kernel.
 
-If you decided on using \texttt{Secure Boot}, you will first have to install the package.
+If you decided on using Secure Boot, you will first have to install the package.
 
-Now we just need to copy \textit{shimx64.efi}, as well as \textit{mmx64.efi} to our EFI System Partition
+Now we just need to copy \textit{shimx64.efi}, as well as \textit{mmx64.efi} to our EFI System partition
 
 \begin{minted}{console}
 [root@archiso /]# cp /usr/share/shim-signed/shimx64.efi /boot/EFI/grub/
@@ -982,7 +1017,7 @@ In the following subsections, we will be dealing with some different file format
 \subsubsection{Create the keys}
 \label{sec:create-the-keys}
 
-First off, we have to generate our \texttt{Secure Boot} keys.
+First off, we have to generate our Secure Boot keys.
 
 These will be used to sign any binary which will be executed by the firwmare.
 
@@ -1063,7 +1098,7 @@ In order to ensure a smooth operation, with actual security, we need to move som
 \paragraph{Kernel, \texttt{initramfs}, microcode}
 \label{par:kernel-initramfs-microcode}
 
-\texttt{pacman} will put its unsigned and unencrypted kernel, \texttt{initramfs} and microcode images into \textit{/boot}, which is, why it will be no longer a good idea, to leave your EFI System Partition mounted there.
+\texttt{pacman} will put its unsigned and unencrypted kernel, \texttt{initramfs} and microcode images into \textit{/boot}, which is, why it will be no longer a good idea, to leave your EFI System partition mounted there.
 Instead we will create a new mount point under \textit{/efi} and modify our \texttt{fstab} accordingly.
 
 \paragraph{Keys}
@@ -1104,10 +1139,10 @@ For example, if I want to sign the kernel image of my USB installation, where I 
 \label{par:sbupdate}
 
 \begin{packagetable}
-    \texttt{AUR} & \texttt{sbupdate-git} \\ 
+    \texttt{AUR} & \texttt{sbupdate-git} \\
 \end{packagetable}
 
-Of course, if you’re using \texttt{Secure Boot} productively, you would want something more practical than manual signing, especially since you need to sign
+Of course, if you’re using Secure Boot productively, you would want something more practical than manual signing, especially since you need to sign
 
 \begin{itemize}
     \item the boot loader
@@ -1157,7 +1192,7 @@ After you’ve successfully configured \texttt{sbupdate}, you can run it as root
 \label{sec:add-efi-entries}
 
 \begin{packagetable}
-    \texttt{core} & \texttt{efibootmgr} \\ 
+    \texttt{core} & \texttt{efibootmgr} \\
 \end{packagetable}
 
 Now the only thing left to do, if you want to stay boot loader free anyways, is to add the signed images to the boot list of your \texttt{NVRAM}.
@@ -1174,12 +1209,12 @@ Of course you can extend this list, with whichever entries you need.
 \label{sec:enrolling-everything}
 
 First off, copy all \textit{.cer}, \textit{.esl} and \textit{.auth} files to a \texttt{FAT} formatted filesystem.
-I’m using my EFI System Partition for this.
+I’m using my EFI System partition for this.
 
 After that reboot into the firmware setup of your motherboard, clear the existing Platform Key, to set the firmware into "Setup Mode" and enroll the \texttt{db}, \texttt{KEK} and \texttt{PK} certificates in sequence.
 
 \begin{NOTE}
-    Enroll the Platform Key last, as it sets most firmware’s \texttt{Secure Boot} sections back into "User mode", exiting "Setup Mode".
+    Enroll the Platform Key last, as it sets most firmware’s Secure Boot sections back into "User mode", exiting "Setup Mode".
 \end{NOTE}
 
 \chapter{Inside the \texttt{DustArch}}
@@ -1324,7 +1359,7 @@ Don’t worry about the looks by the way, we’re gonna change all that in just 
 \label{sec:git}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{git} \\ 
+    \texttt{extra} & \texttt{git} \\
 \end{packagetable}
 
 Install the package and you’re good to go for now, as we’ll care about the \textit{.gitconfig} in just a second.
@@ -1333,7 +1368,7 @@ Install the package and you’re good to go for now, as we’ll care about the \
 \label{sec:security-is-important}
 
 \begin{packagetable}
-    \texttt{core} & \texttt{gnupg} \\ 
+    \texttt{core} & \texttt{gnupg} \\
 \end{packagetable}
 
 If you’ve followed the tutorial using a recent version of the archiso, you’ll probably already have the most recent version of \texttt{gnupg} installed by default.
@@ -1342,8 +1377,8 @@ If you’ve followed the tutorial using a recent version of the archiso, you’l
 \label{sec:smartcard-shenanigans}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{libusb-compat} \\ 
-    \texttt{community} & \texttt{ccid opensc pcsclite} \\ 
+    \texttt{extra} & \texttt{libusb-compat} \\
+    \texttt{community} & \texttt{ccid opensc pcsclite} \\
 \end{packagetable}
 
 After that you’ll still have to setup \texttt{gnupg} correctly.
@@ -1371,9 +1406,9 @@ DustArch% gpg --card-status
 \label{sec:additional-required-tools}
 
 \begin{packagetable}
-    \texttt{core} & \texttt{make openssh} \\ 
-    \texttt{extra} & \texttt{clang cmake jdk-openjdk python} \\ 
-    \texttt{community} & \texttt{pass python-pynvim} \\ 
+    \texttt{core} & \texttt{make openssh} \\
+    \texttt{extra} & \texttt{clang cmake jdk-openjdk python} \\
+    \texttt{community} & \texttt{pass python-pynvim} \\
 \end{packagetable}
 
 To minimize the effort required by the following steps, we’ll install most of the required packages beforehand
@@ -1602,7 +1637,7 @@ Well, why wouldn’t you want audio...
 \label{sec:alsa}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{alsa-utils} \\ 
+    \texttt{extra} & \texttt{alsa-utils} \\
 \end{packagetable}
 
 \begin{NOTE}
@@ -1635,8 +1670,8 @@ defaults.ctl.card 2
 \label{sec:pulseaudio}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{pavucontrol pulseaudio} \\ 
-    \texttt{community} & \texttt{pulsemixer} \\ 
+    \texttt{extra} & \texttt{pavucontrol pulseaudio} \\
+    \texttt{community} & \texttt{pulsemixer} \\
 \end{packagetable}
 
 Some applications require \texttt{pulseaudio}, or work better with it, for example \texttt{discord}, so it might make sense to use \texttt{pulseaudio}
@@ -1677,8 +1712,8 @@ $ pulseaudio --start
 \label{sec:jack}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{pulseaudio-jack} \\ 
-    \texttt{community} & \texttt{cadence jack2} \\ 
+    \texttt{extra} & \texttt{pulseaudio-jack} \\
+    \texttt{community} & \texttt{cadence jack2} \\
 \end{packagetable}
 
 If you either want to manually control audio routing, or if you use some kind of audio application like \texttt{ardour}, you’ll probably want to use \texttt{jack} and \texttt{cadence} as a GUI to control it, as it has native support for bridging \texttt{pulseaudio} to \texttt{jack}.
@@ -1687,8 +1722,8 @@ If you either want to manually control audio routing, or if you use some kind of
 \label{sec:audio-handling}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{libao libid3tag libmad libpulse opus wavpack} \\ 
-    \texttt{community} & \texttt{sox twolame} \\ 
+    \texttt{extra} & \texttt{libao libid3tag libmad libpulse opus wavpack} \\
+    \texttt{community} & \texttt{sox twolame} \\
 \end{packagetable}
 
 To also play audio, we need to install the mentioned packages and then simply do
@@ -1707,8 +1742,8 @@ to play audio.
 \label{sec:bluetooth}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{bluez bluez-util pulseaudio-bluetooth} \\ 
-    \texttt{community} & \texttt{blueman} \\ 
+    \texttt{extra} & \texttt{bluez bluez-util pulseaudio-bluetooth} \\
+    \texttt{community} & \texttt{blueman} \\
 \end{packagetable}
 
 To set up Bluetooth, we need to install the \texttt{bluez} and \texttt{bluez-utils} packages in order to have at least a command line utility \texttt{bluetoothctl} to configure connections
@@ -1831,9 +1866,9 @@ If you want a GUI to do all of this, just install \texttt{blueman} and launch \t
 \label{sec:graphical-desktop-environment}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{ttf-hack xclip xorg xorg-drivers xorg-xinit} \\ 
-    \texttt{community} & \texttt{arandr alacritty bspwm dmenu sxhkd} \\ 
-    \texttt{AUR} & \texttt{polybar} \\ 
+    \texttt{extra} & \texttt{ttf-hack xclip xorg xorg-drivers xorg-xinit} \\
+    \texttt{community} & \texttt{arandr alacritty bspwm dmenu sxhkd} \\
+    \texttt{AUR} & \texttt{polybar} \\
 \end{packagetable}
 
 If you decide, that you want to use a graphical desktop environment, you have to install additional packages in order for that to work.
@@ -1848,7 +1883,7 @@ If you decide, that you want to use a graphical desktop environment, you have to
 \label{sec:nvidia}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{nvidia nvidia-utils nvidia-settings opencl-nvidia} \\ 
+    \texttt{extra} & \texttt{nvidia nvidia-utils nvidia-settings opencl-nvidia} \\
 \end{packagetable}
 
 If you also want to utilize special NVIDIA functionality, for example for \texttt{davinci-resolve}, you’ll most likely need to install their proprietary driver.
@@ -1900,8 +1935,8 @@ If anything goes wrong in the process, remember that you can press \texttt{Ctrl+
 \label{sec:the-nvidia-way}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{bbswitch} \\ 
-    \texttt{AUR} & \texttt{nvidia-xrun} \\ 
+    \texttt{community} & \texttt{bbswitch} \\
+    \texttt{AUR} & \texttt{nvidia-xrun} \\
 \end{packagetable}
 
 If you’re using an NVIDIA graphics card, you might want to use \texttt{nvidia-xrun\textsuperscript{\texttt{AUR}}} instead of \texttt{startx}.
@@ -1914,7 +1949,7 @@ This has the advantage, of the \texttt{nvidia} kernel modules, as well as the \t
 
 \begin{NOTE}
     \begin{packagetable}
-        \texttt{AUR} & \texttt{nvidia-xrun-pm} \\ 
+        \texttt{AUR} & \texttt{nvidia-xrun-pm} \\
     \end{packagetable}
 
     If your hardware doesn’t support \texttt{bbswitch}, you would need to use \texttt{nvidia-xrun-pm\textsuperscript{\texttt{AUR}}} instead.
@@ -1986,7 +2021,7 @@ Software that is useful in combination with a \texttt{console}.
 \label{sec:tmux}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{tmux} \\ 
+    \texttt{community} & \texttt{tmux} \\
 \end{packagetable}
 
 I would reccommend to install \texttt{tmux} which enables you to have multiple terminal instances (called \texttt{windows} in \texttt{tmux}) open at the same time.
@@ -2006,7 +2041,7 @@ Here are some pieces of software to do exactly that.
 \label{sec:weechat}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{weechat} \\ 
+    \texttt{community} & \texttt{weechat} \\
 \end{packagetable}
 
 \texttt{weechat} is an \texttt{IRC} client for the terminal, with the best features and even a \texttt{vim} mode, by using a plugin
@@ -2080,8 +2115,8 @@ and connect to it
 \label{sec:console-pdf-viewer}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{ghostscript} \\ 
-    \texttt{community} & \texttt{fbida} \\ 
+    \texttt{extra} & \texttt{ghostscript} \\
+    \texttt{community} & \texttt{fbida} \\
 \end{packagetable}
 
 To use \texttt{asciidoctor-pdf}, you might be wondering how you are supposed to open the generated PDFs from the native linux console.
@@ -2114,7 +2149,7 @@ As we already installed it in the \nameref{sec:additional-required-tools} step a
 \label{sec:python}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{python} \\ 
+    \texttt{extra} & \texttt{python} \\
 \end{packagetable}
 
 Python has become really important for a magnitude of use cases.
@@ -2123,7 +2158,7 @@ Python has become really important for a magnitude of use cases.
 \label{sec:ruby-and-asciidoctor}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{ruby rubygems} \\ 
+    \texttt{extra} & \texttt{ruby rubygems} \\
 \end{packagetable}
 
 In order to use \texttt{asciidoctor}, we have to install \texttt{ruby} and \texttt{rubygems}.
@@ -2219,10 +2254,10 @@ $ git clone https://github.com/McMartin/FRUT.git
 \label{sec:using-juce}
 
 \begin{packagetable}
-    \texttt{core} & \texttt{gcc gnutls} \\ 
-    \texttt{extra} & \texttt{alsa-lib clang freeglut freetype2 ladspa libx11 libxcomposite libxinerama libxrandr mesa webkit2gtk} \\ 
-    \texttt{community} & \texttt{jack2 libcurl-gnutls} \\ 
-    \texttt{multilib} & \texttt{lib32-freeglut} \\ 
+    \texttt{core} & \texttt{gcc gnutls} \\
+    \texttt{extra} & \texttt{alsa-lib clang freeglut freetype2 ladspa libx11 libxcomposite libxinerama libxrandr mesa webkit2gtk} \\
+    \texttt{community} & \texttt{jack2 libcurl-gnutls} \\
+    \texttt{multilib} & \texttt{lib32-freeglut} \\
 \end{packagetable}
 
 In order to use \texttt{JUCE}, you’ll need to have some dependency packages installed, where \texttt{ladspa} and \texttt{lib32-freeglut} are not neccessarily needed.
@@ -2236,7 +2271,7 @@ Here are just some examples of development tools one could install in addition t
 \label{sec:code-formatting}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{astyle} \\ 
+    \texttt{community} & \texttt{astyle} \\
 \end{packagetable}
 
 We already have \texttt{clang-format} as a code formatter, but this only works for \texttt{C}-family languages.
@@ -2246,7 +2281,7 @@ For \texttt{java} stuff, we can use \texttt{astyle}
 \label{sec:documentation}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{doxygen} \\ 
+    \texttt{extra} & \texttt{doxygen} \\
 \end{packagetable}
 
 To generate a documentation from source code, I mostly use \texttt{doxygen}
@@ -2255,7 +2290,7 @@ To generate a documentation from source code, I mostly use \texttt{doxygen}
 \label{sec:build-tools}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{ninja} \\ 
+    \texttt{community} & \texttt{ninja} \\
 \end{packagetable}
 
 In addition to \texttt{make}, I’ll often times use \texttt{ninja} for my builds
@@ -2264,7 +2299,7 @@ In addition to \texttt{make}, I’ll often times use \texttt{ninja} for my build
 \label{sec:android-file-transfer}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{gvfs-mtp libmtp} \\ 
+    \texttt{extra} & \texttt{gvfs-mtp libmtp} \\
 \end{packagetable}
 
 Now you should be able to see your phone inside either your preferred filemanager, in my case \texttt{thunar}, or \texttt{gigolo\textsuperscript{\texttt{AUR}}}.
@@ -2275,7 +2310,7 @@ If you want to access the android’s file system from the command line, you wil
 \label{sec:simple-mtpfs-aur}
 
 \begin{packagetable}
-    \texttt{AUR} & \texttt{simple-mtpfs} \\ 
+    \texttt{AUR} & \texttt{simple-mtpfs} \\
 \end{packagetable}
 
 Edit \textit{/etc/fuse.conf} to uncomment
@@ -2313,7 +2348,7 @@ $ rmdir mnt
 \label{sec:adb}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{android-tools} \\ 
+    \texttt{community} & \texttt{android-tools} \\
 \end{packagetable}
 
 Kill the \texttt{adb} server, if it is running
@@ -2361,7 +2396,7 @@ $ adb kill-server
 \label{sec:partition-management}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{gparted parted} \\ 
+    \texttt{extra} & \texttt{gparted parted} \\
 \end{packagetable}
 
 You may also choose to use a graphical partitioning software instead of \texttt{fdisk} or \texttt{cfdisk}.
@@ -2372,8 +2407,8 @@ Of course there is also the \texttt{console} equivalent `parted.
 \label{sec:gui-pdf-viewer}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{evince} \\ 
-    \texttt{community} & \texttt{zathura zathura-pdf-mupdf} \\ 
+    \texttt{extra} & \texttt{evince} \\
+    \texttt{community} & \texttt{zathura zathura-pdf-mupdf} \\
 \end{packagetable}
 
 To use \texttt{asciidoctor-pdf}, you might be wondering how you are supposed to open the generated PDFs using the GUI.
@@ -2384,7 +2419,7 @@ To use \texttt{asciidoctor-pdf}, you might be wondering how you are supposed to 
 \label{sec:process-management}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{htop xfce4-taskmanager} \\ 
+    \texttt{extra} & \texttt{htop xfce4-taskmanager} \\
 \end{packagetable}
 
 The native tool is \texttt{top}.
@@ -2402,7 +2437,7 @@ Just some additional software related to videos.
 \label{sec:live-streaming-a-terminal-session}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{tmate} \\ 
+    \texttt{community} & \texttt{tmate} \\
 \end{packagetable}
 
 For this task, you’ll need a program called \texttt{tmate}.
@@ -2416,7 +2451,7 @@ As you now have a working graphical desktop environment, you might want to insta
 \label{sec:session-lock}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{xsecurelock xss-lock} \\ 
+    \texttt{community} & \texttt{xsecurelock xss-lock} \\
 \end{packagetable}
 
 Probably the first thing you’ll want to set up is a session locker, which locks your \texttt{X}-session after resuming from sleep, hibernation, etc.
@@ -2439,7 +2474,7 @@ $ xss-lock -l -- xsecurelock &
 \label{sec:xfce-polkit-aur}
 
 \begin{packagetable}
-    \texttt{AUR} & \texttt{xfce-polkit} \\ 
+    \texttt{AUR} & \texttt{xfce-polkit} \\
 \end{packagetable}
 
 In order for GUI applications to acquire \texttt{sudo} permissions, we need to install a \texttt{PolicyKit} authentication agent.
@@ -2454,7 +2489,7 @@ As I already launch it as a part of my \texttt{bspwm} configuration, I won’t h
 \label{sec:desktop-background}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{nitrogen} \\ 
+    \texttt{extra} & \texttt{nitrogen} \\
 \end{packagetable}
 
 You might want to consider installing \texttt{nitrogen}, in order to be able to set a background image
@@ -2463,7 +2498,7 @@ You might want to consider installing \texttt{nitrogen}, in order to be able to 
 \label{sec:compositing-software}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{picom} \\ 
+    \texttt{community} & \texttt{picom} \\
 \end{packagetable}
 
 To get buttery smooth animation as well as e.g. smooth video playback in \texttt{brave} without screen tearing, you might want to consider using a compositor, in my case one named \texttt{picom}
@@ -2491,7 +2526,7 @@ $ kill -9 <pid>
 \label{sec:networkmanager-applet}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{network-manager-applet} \\ 
+    \texttt{extra} & \texttt{network-manager-applet} \\
 \end{packagetable}
 
 To install the \texttt{NetworkManager} applet, which lives in your tray and provides you with a quick method to connect to different networks, you have to install the \texttt{network-manager-applet} package
@@ -2514,7 +2549,7 @@ If you want to edit the network connections with a more full screen approach, yo
 \label{sec:show-keyboard-layout}
 
 \begin{packagetable}
-    \texttt{AUR} & \texttt{xkblayout-state} \\ 
+    \texttt{AUR} & \texttt{xkblayout-state} \\
 \end{packagetable}
 
 To show, which keyboard layout and variant is currently in use, you can use \texttt{xkblayout-state\textsuperscript{\texttt{AUR}}}
@@ -2525,7 +2560,7 @@ Now simply issue the \texttt{layout} alias, provided by my custom \texttt{zsh} c
 \label{sec:x-clipboard}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{xclip} \\ 
+    \texttt{extra} & \texttt{xclip} \\
 \end{packagetable}
 
 To copy something from the terminal to the \texttt{xorg} clipboard, use \texttt{xclip}
@@ -2534,7 +2569,7 @@ To copy something from the terminal to the \texttt{xorg} clipboard, use \texttt{
 \label{sec:taking-screen-shots}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{scrot} \\ 
+    \texttt{community} & \texttt{scrot} \\
 \end{packagetable}
 
 For this functionality, especially in combination with \texttt{rofi}, use \texttt{scrot}
@@ -2545,7 +2580,7 @@ For this functionality, especially in combination with \texttt{rofi}, use \textt
 \label{sec:image-viewer}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{ristretto} \\ 
+    \texttt{extra} & \texttt{ristretto} \\
 \end{packagetable}
 
 Now that we can create screen shots, we might also want to view those
@@ -2559,8 +2594,8 @@ $ ristretto filename.png
 \label{sec:file-manager}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{gvfs thunar} \\ 
-    \texttt{AUR} & \texttt{gigolo} \\ 
+    \texttt{extra} & \texttt{gvfs thunar} \\
+    \texttt{AUR} & \texttt{gigolo} \\
 \end{packagetable}
 
 You probably also want to use a file manager.
@@ -2572,8 +2607,8 @@ To also be able to \texttt{mount} removable drives, without being \texttt{root} 
 \label{sec:archive-manager}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{cpio unrar unzip zip} \\ 
-    \texttt{community} & \texttt{xarchiver} \\ 
+    \texttt{extra} & \texttt{cpio unrar unzip zip} \\
+    \texttt{community} & \texttt{xarchiver} \\
 \end{packagetable}
 
 As we now have a file manager, it might be annoying, to open up a terminal every time you simply want to extract an archive of some sort.
@@ -2583,8 +2618,8 @@ That’s why we’ll use \texttt{xarchiver}.
 \label{sec:web-browser}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{firefox firefox-i18n-en-us} \\ 
-    \texttt{community} & \texttt{browserpass} \\ 
+    \texttt{extra} & \texttt{firefox firefox-i18n-en-us} \\
+    \texttt{community} & \texttt{browserpass} \\
 \end{packagetable}
 
 As you’re already using a GUI, you also might be interested in a web browser.
@@ -2605,7 +2640,7 @@ $ cd ~
 \label{sec:entering-the-dark-side}
 
 \begin{packagetable}
-    \texttt{AUR} & \texttt{tor-browser} \\ 
+    \texttt{AUR} & \texttt{tor-browser} \\
 \end{packagetable}
 
 You might want to be completely anonymous whilst browsing the web at some point.
@@ -2619,7 +2654,7 @@ Although this shouldn’t be your only precaution, using \texttt{tor-browser\tex
 \label{sec:office-utilities}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{libreoffice-fresh} \\ 
+    \texttt{extra} & \texttt{libreoffice-fresh} \\
 \end{packagetable}
 
 I’ll use \texttt{libreoffice-fresh} for anything that I’m not able to do with \texttt{neovim}.
@@ -2628,7 +2663,7 @@ I’ll use \texttt{libreoffice-fresh} for anything that I’m not able to do wit
 \label{sec:printing}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{avahi cups cups-pdf nss-mdns print-manager system-config-printer} \\ 
+    \texttt{extra} & \texttt{avahi cups cups-pdf nss-mdns print-manager system-config-printer} \\
 \end{packagetable}
 
 In order to be able to print from the \texttt{gtk} print dialog, we’ll also need \texttt{system-config-printer} and \texttt{print-manager}.
@@ -2675,7 +2710,7 @@ Here are some pieces of software to do exactly that.
 \label{sec:email}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{thunderbird} \\ 
+    \texttt{extra} & \texttt{thunderbird} \\
 \end{packagetable}
 
 There is nothing better than some classical email.
@@ -2684,7 +2719,7 @@ There is nothing better than some classical email.
 \label{sec:telegram}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{telegram-desktop} \\ 
+    \texttt{community} & \texttt{telegram-desktop} \\
 \end{packagetable}
 
 You want to have your \texttt{telegram} messages on your desktop PC?
@@ -2693,7 +2728,7 @@ You want to have your \texttt{telegram} messages on your desktop PC?
 \label{sec:teamspeak-3}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{teamspeak3} \\ 
+    \texttt{community} & \texttt{teamspeak3} \\
 \end{packagetable}
 
 Wanna chat with your gaming friends and they have a \texttt{teamspeak3} server?
@@ -2702,7 +2737,7 @@ Wanna chat with your gaming friends and they have a \texttt{teamspeak3} server?
 \label{sec:discord}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{discord} \\ 
+    \texttt{community} & \texttt{discord} \\
 \end{packagetable}
 
 You’d rather use \texttt{discord}?
@@ -2716,7 +2751,7 @@ Just some additional software related to videos.
 \label{sec:viewing-video}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{vlc} \\ 
+    \texttt{extra} & \texttt{vlc} \\
 \end{packagetable}
 
 You might consider using \texttt{vlc}
@@ -2725,7 +2760,7 @@ You might consider using \texttt{vlc}
 \label{sec:creating-video}
 
 \begin{packagetable}
-    \texttt{AUR} & \texttt{obs-linuxbrowser-bin obs-glcapture-git obs-studio-git} \\ 
+    \texttt{AUR} & \texttt{obs-linuxbrowser-bin obs-glcapture-git obs-studio-git} \\
 \end{packagetable}
 
 \texttt{obs-studio-git\textsuperscript{\texttt{AUR}}} should be the right choice.
@@ -2736,7 +2771,7 @@ You can also make use of the plugins provided in the package list above.
 \label{par:showing-keystrokes}
 
 \begin{packagetable}
-    \texttt{AUR} & \texttt{screenkey} \\ 
+    \texttt{AUR} & \texttt{screenkey} \\
 \end{packagetable}
 
 In order to show the viewers what keystrokes you’re pressing, you can use something like \texttt{screenkey\textsuperscript{\texttt{AUR}}}
@@ -2750,7 +2785,7 @@ In order to show the viewers what keystrokes you’re pressing, you can use some
 \label{sec:editing-video}
 
 \begin{packagetable}
-    \texttt{AUR} & \texttt{davinci-resolve} \\ 
+    \texttt{AUR} & \texttt{davinci-resolve} \\
 \end{packagetable}
 
 In my case, I’m using \texttt{davinci-resolve\textsuperscript{\texttt{AUR}}}.
@@ -2759,7 +2794,7 @@ In my case, I’m using \texttt{davinci-resolve\textsuperscript{\texttt{AUR}}}.
 \label{sec:utilizing-video}
 
 \begin{packagetable}
-    \texttt{AUR} & \texttt{teamviewer} \\ 
+    \texttt{AUR} & \texttt{teamviewer} \\
 \end{packagetable}
 
 Wanna remote control your own or another PC?
@@ -2784,14 +2819,14 @@ In my case I have 32GB of RAM and I want the \texttt{audio} group to be able to 
 \label{sec:ardour}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{ardour} \\ 
+    \texttt{community} & \texttt{ardour} \\
 \end{packagetable}
 
 To e.g. edit and produce audio, you could use \texttt{ardour}, because it’s easy to use, stable and cross platform.
 
 \begin{NOTE}
     \begin{packagetable}
-        \texttt{extra} & \texttt{ffmpeg} \\ 
+        \texttt{extra} & \texttt{ffmpeg} \\
     \end{packagetable}
 
     Ardour won’t natively save in the \texttt{mp3} format, due to licensing stuff.
@@ -2809,7 +2844,7 @@ $ ffmpeg -i in.wav -acodec mp3 out.mp3
 \label{sec:reaper}
 
 \begin{packagetable}
-    \texttt{AUR} & \texttt{reaper-bin} \\ 
+    \texttt{AUR} & \texttt{reaper-bin} \\
 \end{packagetable}
 
 Instead of \texttt{ardour}, I’m using \texttt{reaper}, which is available for linux as a beta version, in my case more stable than \texttt{ardour} and more easy to use for me.
@@ -2818,7 +2853,7 @@ Instead of \texttt{ardour}, I’m using \texttt{reaper}, which is available for 
 \label{sec:virtualization}
 
 \begin{packagetable}
-    \texttt{community} & \texttt{virtualbox virtualbox-host-modules-arch} \\ 
+    \texttt{community} & \texttt{virtualbox virtualbox-host-modules-arch} \\
 \end{packagetable}
 
 You might need to run another OS, for example Mac OS, from within Linux, e.g. for development/testing purposes.
@@ -2853,9 +2888,9 @@ Now just re-login and you’re good to go.
 \label{sec:gaming}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{pulseaudio pulseaudio-alsa} \\ 
-    \texttt{community} & \texttt{lutris} \\ 
-    \texttt{multilib} & \texttt{lib32-libpulse lib32-nvidia-utils steam} \\ 
+    \texttt{extra} & \texttt{pulseaudio pulseaudio-alsa} \\
+    \texttt{community} & \texttt{lutris} \\
+    \texttt{multilib} & \texttt{lib32-libpulse lib32-nvidia-utils steam} \\
 \end{packagetable}
 
 The first option for native/emulated gaming on Linux is obviously \texttt{steam}.
@@ -2866,7 +2901,7 @@ The second option would be \texttt{lutris}, a program, that configures a wine in
 \label{sec:wacom}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{libwacom xf86-input-wacom} \\ 
+    \texttt{extra} & \texttt{libwacom xf86-input-wacom} \\
 \end{packagetable}
 
 In order to use a Wacom graphics tablet, you’ll have to install some packages
@@ -2877,9 +2912,9 @@ You can now configure your tablet using the \texttt{xsetwacom} command.
 \label{sec:vnc-and-rdp}
 
 \begin{packagetable}
-    \texttt{extra} & \texttt{libvncserver} \\ 
-    \texttt{community} & \texttt{remmina} \\ 
-    \texttt{AUR} & \texttt{freerdp} \\ 
+    \texttt{extra} & \texttt{libvncserver} \\
+    \texttt{community} & \texttt{remmina} \\
+    \texttt{AUR} & \texttt{freerdp} \\
 \end{packagetable}
 
 In order to connect to a machine over \texttt{VNC} or to connect to a machine using the \texttt{Remote Desktop Protocol}, for example to connect to a Windows machine, I’ll need to install \texttt{freerdp\textsuperscript{\texttt{AUR}}}, as well as \texttt{libvncserver}, for \texttt{RDP} and \texttt{VNC} functionality respectively, as well as \texttt{remmina}, to have a GUI client for those two protocols.
@@ -2968,7 +3003,7 @@ root@DustArch ~
 $ mkdir /boot
 \end{minted}
 
-Now reboot and \texttt{mount} the \texttt{boot} partition, in my case an EFI System Partition.
+Now reboot and \texttt{mount} the \texttt{boot} partition, in my case an EFI System partition.
 
 Now simply rerun
 
