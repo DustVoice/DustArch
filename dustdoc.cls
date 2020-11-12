@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{dustdoc}[DustVoice's modified report class]
+\ProvidesClass{dustdoc}[DustVoice modified report class]
 
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{report}}
 \ProcessOptions
@@ -34,6 +34,7 @@
 
 \RequirePackage{microtype}
 \RequirePackage{hyphenat}
+\RequirePackage{seqsplit}
 
 \RequirePackage{titling}
 \RequirePackage{titlesec}
@@ -105,10 +106,10 @@
 \newcommand{\sectionbreak}{\clearpage}
 \newcommand{\subsectionbreak}{\clearpage}
 \newcommand{\subsubsectionbreak}{\clearpage}
-\dottedcontents{chapter}[1.2em]{}{1.2em}{1pc}
-\dottedcontents{section}[3.6em]{}{2.4em}{1pc}
-\dottedcontents{subsection}[6.0em]{}{3.6em}{1pc}
-\dottedcontents{subsubsection}[8.4em]{}{4.8em}{1pc}
+\dottedcontents{chapter}[1.5em]{}{1.5em}{1pc}
+\dottedcontents{section}[3.25em]{}{3.25em}{1pc}
+\dottedcontents{subsection}[5em]{}{5em}{1pc}
+\dottedcontents{subsubsection}[6.75em]{}{6.75em}{1pc}
 
 \newcommand{\hreffn}[2]{\href{#1}{#2}\footnote{#1}}
 
@@ -124,7 +125,7 @@
     \begin{titlingpage}
         \begin{center}
             \includegraphics[width=\textwidth]{arch.png}\par\vspace{10em}
-            {\huge \thetitle}\par\vspace{5em}
+            {\huge \thetitle}\par\vspace{2.5em}
             {\LARGE \theauthor}\par\vspace{2.5em}
             {\large \thedate}\par
         \end{center}

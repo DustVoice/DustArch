@@ -2,9 +2,9 @@
 
 \documentclass[10pt]{dustdoc}
 
-\title{\texorpdfstring{{\scshape\huge DustArch\\\vspace{\parskip}}}{DustArch: }DustVoice’s Arch Linux from scratch}
+\title{\texorpdfstring{{\scshape{\Huge DustArch}\\{\normalsize\vspace{2.5em}}}}{DustArch: }DustVoice’s Arch Linux from scratch}
 \author{David Holland}
-\date{2020-05-19}
+\date{\today{}}
 
 \begin{document}
 \maketitle
@@ -489,7 +489,8 @@ If you use \texttt{UEFI}, you’ll also need the \texttt{efibootmgr}, in order t
 After that, you have to set your timezone and update the system clock.
 
 Generally speaking, you can find all the different timezones under \textit{/usr/\allowbreak{}share/\allowbreak{}zoneinfo}.
-In my case, my timezone resides under \textit{/usr/\allowbreak{}share/\allowbreak{}zoneinfo/\allowbreak{}Europe/\allowbreak{}Berlin}.
+
+In my case, my timezone file resides under \textit{/usr/\allowbreak{}share/\allowbreak{}zoneinfo/\allowbreak{}Europe/\allowbreak{}Berlin}.
 
 To achieve the desired result, I will want to symlink this to \textit{/etc/localtime} and set the hardware clock.
 
