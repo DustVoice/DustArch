@@ -30,6 +30,7 @@
 \graphicspath{ {images/} }
 \DeclareGraphicsExtensions{.png, .jpg, jpeg, .pdf}
 
+\RequirePackage{float}
 \RequirePackage[newfloat]{minted}
 
 \RequirePackage{microtype}
@@ -100,7 +101,21 @@
 {\begin{longtabu}to \textwidth [b]{X[1,r]|X[1,l]}}
 {\end{longtabu}}
 
-\newenvironment{mintedlisting}{\captionsetup{format=plain,width=.75\textwidth,type=listing}}{}
+\newenvironment{mintedlisting}{%
+    \begin{listing}[H]
+        \captionsetup{%
+            format=plain,
+            width=.75\textwidth,
+            type=listing,
+            justification=centering,
+            singlelinecheck=off,
+            position=bottom,
+            skip=0pt,
+            name=Code-Listing
+        }
+}{%
+    \end{listing}
+}
 
 \newcommand{\chapterbreak}{\clearpage}
 \newcommand{\sectionbreak}{\clearpage}

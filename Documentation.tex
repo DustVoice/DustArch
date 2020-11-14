@@ -173,10 +173,11 @@ This allows you to
 You have to configure \texttt{sample-package}, by editing \texttt{/etc/sample.conf}
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/sample.conf}}
     \begin{minted}{text}
 Sample.text=useful
     \end{minted}
+
+    \caption{\textit{/etc/sample.conf}}
 \end{mintedlisting}
 
 \section{Formatting the drive}
@@ -471,7 +472,6 @@ Make sure to enable the \texttt{NetworkManager.service} service, in order for th
 With \texttt{polkit} installed, create a file to enable users of the \texttt{network} group to add new networks without the need of \texttt{sudo}.
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/polkit-1/rules.d/\allowbreak{}50-org.freedesktop.\allowbreak{}NetworkManager.rules}}
     \begin{minted}{text}
 polkit.addRule(function(action, subject) {
     if (action.id.indexOf("org.freedesktop.NetworkManager.") == 0 && subject.isInGroup("network")) {
@@ -479,6 +479,8 @@ polkit.addRule(function(action, subject) {
     }
 });
     \end{minted}
+
+    \caption{\textit{/etc/polkit-1/rules.d/\allowbreak{}50-org.freedesktop.\allowbreak{}NetworkManager.rules}}
 \end{mintedlisting}
 
 If you use \texttt{UEFI}, you’ll also need the \texttt{efibootmgr}, in order to modify the \texttt{UEFI} entries.
@@ -527,10 +529,11 @@ For that you have to edit \textit{/etc/locale.gen} and uncomment the locales you
 In my case I only uncommented the \texttt{en\_US.UTF-8 UTF8} line
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/locale.gen}}
     \begin{minted}{text}
 en_US.UTF-8 UTF8
     \end{minted}
+
+    \caption{\textit{/etc/locale.gen}}
 \end{mintedlisting}
 
 After that you still have to actually generate the locales by issuing
@@ -561,10 +564,11 @@ Apart from being mentioned in your command prompt, the \texttt{hostname} also se
 To change the \texttt{hostname}, simply edit \textit{/etc/hostname}, enter the desired name, then save and quit
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/hostname}}
     \begin{minted}{text}
 DustArch
     \end{minted}
+
+    \caption{\textit{/etc/hostname}}
 \end{mintedlisting}
 
 \subsection{\texttt{hosts}}
@@ -573,7 +577,6 @@ DustArch
 Now we need to specify some \texttt{hosts} entries by editing \textit{/etc/hosts}
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/hosts}}
     \begin{minted}{text}
 # Static table lookup for hostnames.
 # See hosts(5) for details.
@@ -582,6 +585,8 @@ Now we need to specify some \texttt{hosts} entries by editing \textit{/etc/hosts
 ::1         localhost           .
 127.0.1.1   DustArch.localhost  DustArch
     \end{minted}
+
+    \caption{\textit{/etc/hosts}}
 \end{mintedlisting}
 
 \section{User setup}
@@ -621,29 +626,32 @@ We now have to allow the \texttt{wheel} group \texttt{sudo} access.
 For that we edit \textit{/etc/sudoers} and uncomment the \texttt{\%wheel} line
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/sudoers}}
     \begin{minted}{text}
 %wheel ALL=(ALL) ALL
     \end{minted}
+
+    \caption{\textit{/etc/sudoers}}
 \end{mintedlisting}
 
 You could also add a new line below the \texttt{root} line
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/sudoers}}
     \begin{minted}{text}
 root ALL=(ALL) ALL
     \end{minted}
+
+    \caption{\textit{/etc/sudoers}}
 \end{mintedlisting}
 
 \noindent
 with your new username
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/sudoers}}
     \begin{minted}{text}
 dustvoice ALL=(ALL) ALL
     \end{minted}
+
+    \caption{\textit{/etc/sudoers}}
 \end{mintedlisting}
 
 \noindent
@@ -729,7 +737,7 @@ Now \textbf{install \texttt{grub} to the EFI System partition}
 
     In this case, boot into Windows, open a \texttt{cmd} window as Administrator and type in
 
-    \begin{minted}{console}
+    \begin{minted}{text}
 bcdedit /set {bootmgr} path \EFI\grub\grubx64.efi
     \end{minted}
 
@@ -755,10 +763,13 @@ But before we actually generate it, we’ll make some changes to the default \te
 
 First of all, I want my \texttt{grub} menu to wait indefinitely for my command to boot an OS.
 
-% TODO: Add grup.cfg path!
-\begin{minted}{text}
+\begin{mintedlisting}
+    \begin{minted}{text}
 GRUB_TIMEOUT=-1
-\end{minted}
+    \end{minted}
+
+    \caption{\textit{/boot/grub/grub.cfg}}
+\end{mintedlisting}
 
 \begin{NOTE}
     I decided on this, because I’m dual booting with Windows and after Windows updates itself, I don’t want to accidentally boot into my Arch Linux, just because I wasn’t quick enough to select the Windows Boot Loader from the \texttt{grub} menu.
@@ -767,11 +778,15 @@ GRUB_TIMEOUT=-1
 
     Another way of achieving what I described, would be to make \texttt{grub} remember the last selection.
 
-    \begin{minted}{text}
+    \begin{mintedlisting}
+        \begin{minted}{text}
 GRUB_TIMEOUT=5
 GRUB_DEFAULT=saved
 GRUB_SAVEDEFAULT="true"
-    \end{minted}
+        \end{minted}
+
+        \caption{\textit{/etc/default/grub}}
+    \end{mintedlisting}
 \end{NOTE}
 
 \paragraph{Enable the recovery}
@@ -779,9 +794,13 @@ GRUB_SAVEDEFAULT="true"
 
 After that I also want the recovery option showing up, which means that besides the standard and fallback images, also the recovery one would show up.
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \begin{minted}{text}
 GRUB_DISABLE_RECOVERY=false
-\end{minted}
+    \end{minted}
+
+    \caption{\textit{/etc/default/grub}}
+\end{mintedlisting}
 
 \paragraph{NVIDIA fix}
 \label{par:nvidia-fix}
@@ -789,16 +808,21 @@ GRUB_DISABLE_RECOVERY=false
 Now, as I’m using the binary NVIDIA driver for my graphics card, I also want to make sure, to revert \texttt{grub} back to text mode, after I select a boot entry, in order for the NVIDIA driver to work properly.
 You might not need this
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \begin{minted}{text}
 GRUB_GFXPAYLOAD_LINUX=text
-\end{minted}
+    \end{minted}
+
+    \caption{\textit{/etc/default/grub}}
+\end{mintedlisting}
 
 \paragraph{Add power options}
 \label{par:add-power-options}
 
 I also want to add two new menu entries, to enable me to shut down the PC, or reboot it, right from the \texttt{grub} menu.
 
-\begin{minted}{text}
+\begin{mintedlisting}
+    \begin{minted}{text}
 menuentry '=> Shutdown' {
     halt
 }
@@ -806,7 +830,10 @@ menuentry '=> Shutdown' {
 menuentry '=> Reboot' {
     reboot
 }
-\end{minted}
+    \end{minted}
+
+    \caption{\textit{/etc/default/grub}}
+\end{mintedlisting}
 
 \paragraph{Installing \texttt{memtest}}
 \label{par:installing-memtest}
@@ -842,9 +869,13 @@ Now select option 3, to install it as a \texttt{grub2} menu item.
 
 We need to add the \texttt{resume} kernel parameter to \textit{/etc/default/grub}, containing my \texttt{swap} partition \texttt{UUID}, in my case
 
-\begin{minted}{console}
+\begin{mintedlisting}
+    \begin{minted}{text}
 GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet resume=UUID=097c6f11-f246-40eb-a702-ba83c92654f2"
-\end{minted}
+    \end{minted}
+
+    \caption{\textit{/etc/default/grub}}
+\end{mintedlisting}
 
 \begin{NOTE}
     If you have to change anything, like the \texttt{swap} partition \texttt{UUID}, inside the \texttt{grub} configuration files, you’ll always have to rerun \texttt{grub-mkconfig} as explained in the paragraph \nameref{par:generating-the-grub-config} of the section \nameref{sec:grub-config}.
@@ -917,10 +948,11 @@ In order to use the hibernation feature, you should make sure that your \texttt{
         \item add the \texttt{resume} hook to \textit{/etc/mkinitcpio.conf}, before \texttt{fsck} and definetely after \texttt{block}
 
             \begin{mintedlisting}
-                \caption*{\textit{/etc/mkinitcpio.conf}}
                 \begin{minted}{text}
 HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)
                 \end{minted}
+
+                \caption{\textit{/etc/mkinitcpio.conf}}
             \end{mintedlisting}
         \item run
 
@@ -1324,11 +1356,12 @@ In order to make 32-bit packages available to \texttt{pacman}, we’ll need to e
 Simply uncomment
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/pacman.conf}}
     \begin{minted}{text}
 [multilib]
 Include = /etc/pacman.d/mirrorlist
     \end{minted}
+
+    \caption{\textit{/etc/pacman.conf}}
 \end{mintedlisting}
 
 \noindent
@@ -1551,7 +1584,6 @@ This is very important for me, as I want to use my smartcard on my development s
 First of all, I want to setup a config file for \texttt{ssh}, as I don’t want to pass all parameters manually to ssh every time.
 
 \begin{mintedlisting}
-    \caption*{\textit{\~{}/.ssh/config}}
     \begin{minted}{text}
 Host <connection name>
     HostName <remote address>
@@ -1560,6 +1592,8 @@ Host <connection name>
     RemoteForward <remote agent-socket> <local agent-extra-socket>
     RemoteForward <remote agent-ssh-socket> <local agent-ssh-socket>
     \end{minted}
+
+    \caption{\textit{\~{}/.ssh/config}}
 \end{mintedlisting}
 
 \begin{NOTE}
@@ -1577,7 +1611,6 @@ $ gpgconf --list-dirs
     An example for a valid \textit{\~{}/.ssh/config} would be
 
     \begin{mintedlisting}
-        \caption*{\textit{\~{}/.ssh/config}}
         \begin{minted}{text}
 Host archserver
     HostName pc.dustvoice.de
@@ -1586,18 +1619,21 @@ Host archserver
     RemoteForward /run/user/1000/gnupg/S.gpg-agent /run/user/1000/gnupg/S.gpg-agent.extra
     RemoteForward /run/user/1000/gnupg/S.gpg-agent.ssh /run/user/1000/gnupg/S.gpg-agent.ssh
         \end{minted}
+
+        \caption{\textit{\~{}/.ssh/config}}
     \end{mintedlisting}
 \end{example}
 
 Now you’ll still need to enable some settings on the remote machine(s).
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/ssh/sshd\_config}}
     \begin{minted}{text}
 StreamLocalBindUnlink yes
 AllowAgentForwarding yes
 X11Forwarding yes
     \end{minted}
+
+    \caption{\textit{/etc/ssh/sshd\_config}}
 \end{mintedlisting}
 
 Now just restart your remote machine(s) and you’re ready to go.
@@ -1656,11 +1692,12 @@ $ cat /proc/asound/cards
 and then create \textit{/etc/asound.conf}
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/asound.conf}}
     \begin{minted}{text}
 defaults.pcm.card 2
 defaults.ctl.card 2
     \end{minted}
+
+    \caption{\textit{/etc/asound.conf}}
 \end{mintedlisting}
 
 \begin{NOTE}
@@ -1681,7 +1718,6 @@ For enabling real-time priority for \texttt{pulseaudio} on Arch Linux, please ma
 
 % TODO: Check what values I currently use!
 \begin{mintedlisting}
-    \caption*{\textit{/etc/pulse/daemon.conf}}
     \begin{minted}{text}
 high-priority = yes
 nice-level = -11
@@ -1689,15 +1725,18 @@ nice-level = -11
 realtime-scheduling = yes
 realtime-priority = 5
     \end{minted}
+
+    \caption{\textit{/etc/pulse/daemon.conf}}
 \end{mintedlisting}
 
 If your system can handle the load, you can also increase the remixing quality, by changing the \texttt{resample-method}
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/pulse/daemon.conf}}
     \begin{minted}{text}
 resample-method = speex-float-10
     \end{minted}
+
+    \caption{\textit{/etc/pulse/daemon.conf}}
 \end{mintedlisting}
 
 Of course a restart of the \texttt{pulseaudio} daemon is necessary to reflect the changes you just made
@@ -1843,11 +1882,12 @@ Finally connect to your device
     You will then also need to append 2 lines to \textit{/etc/pulse/system.pa}
 
     \begin{mintedlisting}
-        \caption*{\textit{/etc/pulse/system.pa}}
         \begin{minted}{text}
 load-module module-bluetooth-policy
 load-module module-bluetooth-discover
         \end{minted}
+
+        \caption{\textit{/etc/pulse/system.pa}}
     \end{mintedlisting}
 
     \noindent
@@ -1965,7 +2005,6 @@ In my case it was the latter, which I could tell, because this directory already
 Now I’ll create a new file named \textit{nvidia-xrun.conf} and write the following into it
 
 \begin{mintedlisting}
-    \caption*{\textit{/usr/lib/modprobe.d/nvidia-xrun.conf}}
     \begin{minted}{text}
 blacklist nvidia
 blacklist nvidia-drm
@@ -1973,6 +2012,8 @@ blacklist nvidia-modeset
 blacklist nvidia-uvm
 blacklist nouveau
     \end{minted}
+
+    \caption{\textit{/usr/lib/modprobe.d/nvidia-xrun.conf}}
 \end{mintedlisting}
 
 With this config in place,
@@ -2196,10 +2237,11 @@ Now the only thing left, in my case at least, is adding \textit{\~{}/.gem/ruby/2
 For \texttt{zsh} you’ll want to add a new entry inside the \textit{.zshpath} file
 
 \begin{mintedlisting}
-    \caption*{\textit{~/.zshpath}}
     \begin{minted}{text}
 path+=("$HOME/.gem/ruby/2.7.0/bin")
     \end{minted}
+
+    \caption{\textit{~/.zshpath}}
 \end{mintedlisting}
 
 \noindent
@@ -2317,10 +2359,11 @@ If you want to access the android’s file system from the command line, you wil
 Edit \textit{/etc/fuse.conf} to uncomment
 
 \begin{mintedlisting}
-    \caption*{/etc/fuse.conf}
     \begin{minted}{text}
 user_allow_other
     \end{minted}
+
+    \caption{\textit{/etc/fuse.conf}}
 \end{mintedlisting}
 
 \noindent
@@ -2680,10 +2723,11 @@ Now you have to edit \textit{/etc/nsswitch.conf} and add\newline
 \texttt{mdns4\_minimal [NOTFOUND=return]}
 
 \begin{mintedlisting}
-    \caption*{\textit{/etc/nsswitch.conf}}
     \begin{minted}{text}
 hosts: files mymachines myhostname mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns
     \end{minted}
+
+    \caption{\textit{/etc/nsswitch.conf}}
 \end{mintedlisting}
 
 Now continue with this
@@ -2810,10 +2854,11 @@ In my case I have 32GB of RAM and I want the \texttt{audio} group to be able to 
 
 % TODO: Double check, how I currently use the jack setup for audio production as it really works this time!
 \begin{mintedlisting}
-    \caption*{\textit{/etc/security/limits.conf}}
     \begin{minted}{text}
 @audio - memlock 29360128
     \end{minted}
+
+    \caption{\textit{/etc/security/limits.conf}}
 \end{mintedlisting}
 
 \subsubsection{Ardour}
