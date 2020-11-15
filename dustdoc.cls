@@ -50,6 +50,25 @@
     pageanchor=false
 }
 
+\makeatletter
+\renewcommand{\minted@inputpyg}{%
+    \expandafter\let\expandafter\minted@PYGstyle%
+    \csname PYG\minted@get@opt{style}{default}\endcsname
+    \VerbatimPygments{\PYG}{\minted@PYGstyle}%
+    \ifthenelse{\boolean{minted@isinline}}%
+    {\ifthenelse{\equal{\minted@get@opt{breaklines}{false}}{true}}%
+        {\let\FV@BeginVBox\relax
+            \let\FV@EndVBox\relax
+            \def\FV@BProcessLine##1{%
+                \FancyVerbFormatLine{%
+                    \FV@BreakByTokenAnywhereHook
+            \FancyVerbFormatText{\FancyVerbBreakStart##1\FancyVerbBreakStop}}}%
+        \minted@inputpyg@inline}%
+    {\minted@inputpyg@inline}}%
+    {\minted@inputpyg@block}%
+}
+\makeatother
+
 \setminted{breaklines=true,breakanywhere=true,breakbytoken=false,breakbytokenanywhere=false,tabsize=4,frame=single,framesep=.5em,samepage=false}
 \setmintedinline{breaklines=true,breakanywhere=true,breakbytoken=false,breakbytokenanywhere=false}
 
