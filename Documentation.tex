@@ -690,9 +690,9 @@ To utilize this, we can use \texttt{efibootmgr} to create an entry in the \textt
     \texttt{community} & \texttt{os-prober} \\
 \end{packagetable}
 
-You can of course also use a boot manager, to boot the system, as the name implies.
+Of course you can also use a boot manager to boot the system, as the name implies.
 
-If I can't use \texttt{EFISTUB}, either because the system hasn't \texttt{UEFI} support, or because I need another feature and/or convenience of a boot manager, I normally use \texttt{grub} in this case.
+If I can't use \texttt{EFISTUB}, e.g. either because the system has no \texttt{UEFI} support, or because I need another feature of a boot manager, I normally use \texttt{grub}.
 
 \begin{NOTE}
     You'll probably only need the \texttt{efibootmgr} package, if you plan to utilize \texttt{UEFI}.
@@ -2271,7 +2271,6 @@ path+=("pass:[$HOME/.gem/ruby/2.7.0/bin" "$]HOME/.gem/ruby/2.6.0/bin")
 \texttt{FRUT} makes it possible to manage \texttt{JUCE} projects purely from \texttt{cmake}.
 
 % TODO: Update things regarding FRUT, cmake, etc.
-
 \begin{NOTE}
     Note that apparently in the new \texttt{JUCE} version, \texttt{cmake} support is integrated.
     It remains to be seen how well this will work and if \texttt{FRUT} will become obsolete.

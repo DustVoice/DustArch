@@ -121,19 +121,19 @@
 {\end{longtabu}}
 
 \newenvironment{mintedlisting}{%
-    \begin{listing}[H]
+    \begin{listing}[H]%
         \captionsetup{%
-            format=plain,
-            width=.75\textwidth,
-            type=listing,
-            justification=centering,
-            singlelinecheck=off,
-            position=bottom,
-            skip=0pt,
-            name=Code-Listing
-        }
+            format=plain,%
+            width=.75\textwidth,%
+            type=listing,%
+            justification=centering,%
+            singlelinecheck=off,%
+            position=bottom,%
+            skip=0pt,%
+            name=Code-Listing%
+        }%
 }{%
-    \end{listing}
+    \end{listing}%
 }
 
 \newcommand{\chapterbreak}{\clearpage}
