@@ -4,7 +4,8 @@
 
 !/dustdoc.cls
 !/generate-pdfs
-!/Documentation.tex
 !/Documentation.pdf
+!/Documentation.tex
+!/Documentation_v2.org
 !/print_a4.tex
 !/print_a4.pdf

@@ -19,8 +19,10 @@
 
 \RequirePackage{array}
 \RequirePackage{caption}
-\RequirePackage{longtable}
-\RequirePackage{tabu}
+% Replaced because outdated and unmaintained
+%\RequirePackage{longtable}
+%\RequirePackage{tabu}
+\RequirePackage{tabularray}
 
 \RequirePackage{fix-cm}
 \RequirePackage{fontspec}
@@ -116,9 +118,19 @@
 {\begin{tcolorbox}[before upper={\setlength{\parindent}{1.5em}\noindent},colback=admonitionBG,coltitle=draculaBG,colframe=draculaPink,colbacktitle=draculaPink,title=CAUTION]}
 {\end{tcolorbox}}
 
-\newenvironment{packagetable}
-{\begin{longtabu}to \textwidth [b]{X[1,r]|X[1,l]}}
-{\end{longtabu}}
+% See note for tabu
+%\newenvironment{packagetable}
+%{\begin{longtabu}to \textwidth [b]{X[1,r]|X[1,l]}}
+%{\end{longtabu}}
+
+\NewTblrTheme{packagetable}{
+    \DefTblrTemplate{head}{default}{}
+    \DefTblrTemplate{foot}{default}{}
+}
+
+\newenvironment{pkgtable}
+{\begin{longtblr}[b, theme=packagetable]{colspec={X[1,r]|X[1,l]}, width=\textwidth}}
+{\end{longtblr}}
 
 \newenvironment{mintedlisting}{%
     \begin{listing}[H]%
