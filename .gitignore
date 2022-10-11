@@ -2,10 +2,10 @@
 /*/
 !/.gitignore
 
+!/changelog.org
+!/notes.org
+!/todo.org
+
 !/dustdoc.cls
-!/generate-pdfs
-!/Documentation.pdf
 !/Documentation.tex
-!/Documentation_v2.org
-!/print_a4.tex
-!/print_a4.pdf
+!/DustArch.org

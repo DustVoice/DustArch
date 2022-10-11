@@ -128,7 +128,7 @@
     \DefTblrTemplate{foot}{default}{}
 }
 
-\newenvironment{pkgtable}
+\newenvironment{pkgtable}[1]
 {\begin{longtblr}[b, theme=packagetable]{colspec={X[1,r]|X[1,l]}, width=\textwidth}}
 {\end{longtblr}}
 
