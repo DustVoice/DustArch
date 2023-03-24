@@ -212,7 +212,6 @@ For further clarification for specific packages (e.g. =UEFI= specific packages),
 Of course, as always, you can and *should* adapt everything according to your needs, as this guide is, again, /no tutorial, but a guide/.
 
 **** Example section
-
 #+ATTR_LATEX: :environment pkgtable
 |           / | <>                                                             |
 |         <r> | <l>                                                            |
@@ -1635,10 +1634,10 @@ You can do this with =efibootmgr=.
 
 #+begin_src fish
 root in ~/sb
-> efibootmgr -c -d /dev/nvme0n1 -p 1 -L "Arch Linux fallback" -l "EFI\\Arch\\linux-fallback-signed.efi"
+> efibootmgr -c -d /dev/sda -p 1 -L "Arch Linux fallback" -l "EFI\\Arch\\linux-fallback-signed.efi"
 
 root in ~/sb
-> efibootmgr -c -d /dev/nvme0n1 -p 1 -L "Arch Linux" -l "EFI\\Arch\\linux-signed.efi"
+> efibootmgr -c -d /dev/sda -p 1 -L "Arch Linux" -l "EFI\\Arch\\linux-signed.efi"
 #+end_src
 
 Of course you can extend this list, with whichever entries you need.
@@ -1691,17 +1690,15 @@ dustvoice in ~
 > sudo systemctl restart NetworkManager.service
 #+end_src
 
-and then try => ping=ing again.
+and then try ~> ping~-ing again.
 
-If you're trying to utilize a Wi-Fi connection, use =nmcli=, the
-NetworkManager's command line tool, or =nmtui=, the NetworkManager
-terminal user interface, to connect to a Wi-Fi network.
+*** Wi-Fi
 
-I never got =nmtui= to behave like I wanted it to, in my particular case
-at least, which is the reason why I use =nmcli= or the GUI tools.
+If you're trying to utilize a Wi-Fi connection, use =nmcli=, the NetworkManager's command line tool, or =nmtui=, the NetworkManager terminal user interface, to connect to a Wi-Fi network.
 
-First make sure, the scanning of nearby Wi-Fi networks is enabled for
-your Wi-Fi device
+I never got =nmtui= to behave like I wanted it to, in my particular case at least, which is the reason why I use =nmcli= or the GUI tools.
+
+First make sure, the scanning of nearby Wi-Fi networks is enabled for your Wi-Fi device
 
 #+begin_src fish
 dustvoice in ~
@@ -1743,11 +1740,10 @@ dustvoice in ~
 > nmcli device wifi connect --ask
 #+end_src
 
-Now try => ping=ing again.
+Now try ~> ping~-ing again.
 
 ** Update and upgrade
-After making sure that you have a working Internet connection, you can
-then proceed to update and upgrade all installed packages by issuing
+After making sure that you have a working Internet connection, you can then proceed to update and upgrade all installed packages by issuing
 
 #+begin_src fish
 dustvoice in ~
@@ -1755,9 +1751,8 @@ dustvoice in ~
 #+end_src
 
 ** Enabling the =multilib= repository
-In order to make 32-bit packages available to =pacman=, we'll need to
-enable the =multilib= repository in =/etc/pacman.conf= first. Simply
-uncomment
+In order to make 32-bit packages available to =pacman=, we'll need to enable the =multilib= repository in ~/etc/pacman.conf~ first.
+Simply uncomment
 
 #+begin_src fish
 [multilib]
@@ -1771,52 +1766,67 @@ dustvoice in ~
 > sudo pacman -Syu
 #+end_src
 
-** =zsh= for president
+** =fish= for president
 Of course you can use any shell you want. In my case I'll be using the
-=zsh= shell.
+=fish= shell.
 
-I am using =zsh= because of its auto completion functionality and
-extensibility, as well as a brilliant =vim= like navigation
-implementation through a plugin, though that might not be what you're
-looking for.
+I am using =fish= because of its auto completion functionality and extensibility, as well as brilliant =vim= like navigation implementation, though that might not be what you're looking for (at least way better than something like =elvish= or =nushell= at the moment of writing).
 
-We already set the correct shell for the =dustvoice= user in the step,
-but I want to use =zsh= for the =root= user too, so I'll have to change
-=root='s default shell to it.
+If you remember correctly, we set the login shell to =bash= when creating the =dustvoice= user, so you might wonder why we didn't directly set it to =fish=.
+Well =fish= isn't completely =POSIX= compliant, neither does it want to be.
+Therefore running =fish= as a login shell might not be the absolute best experience you ever had.
 
-#+begin_src fish
-dustvoice in ~
-> sudo chsh -s /usr/bin/zsh root
+Instead we populate our ~.bashrc~ with some scripting that will let =fish= take over any /interactive/ shell, while scripts, etc. that expect a =POSIX= compliant shell can have their way.
+
+#+begin_NOTE
+You can replicate the following instructions directly for the =root= user, to get the same kind of experience there
+#+end_NOTE
+
+#+begin_src text
+if [​[$- == *i* && $(ps --no-header --pid=$PPID --format=comm) != "fish" && -z ${BASH_EXECUTION_STRING} ]]
+then
+	exec fish
+fi
 #+end_src
+#+begin_center
+=~/.bashrc=
+#+end_center
 
-Don't worry about the looks by the way, we're gonna change all that in
-just a second.
+Don't worry about the looks by the way, we're gonna change all that in just a second.
 
 ** =git=
+#+ATTR_LATEX: :environment pkgtable
+|       / | <>         |
+|     <r> | <l>        |
+|  *repo* | *packages* |
+|---------+------------|
+| =extra= | =git=      |
 
-=extra= & =git=\\
-
-Install the package and you're good to go for now, as we'll care about
-the =.gitconfig= in just a second.
+Install the package and you're good to go for now, as we'll care about the =.gitconfig= in just a second.
 
 ** Security is important
+#+ATTR_LATEX: :environment pkgtable
+|           / | <>         |
+|         <r> | <l>        |
+|      *repo* | *packages* |
+|-------------+------------|
+|      =core= | =gnupg=    |
 
-=core= & =gnupg=\\
-
-If you've followed the tutorial using a recent version of the archiso,
-you'll probably already have the most recent version of =gnupg=
-installed by default.
+If you've followed the tutorial using a recent version of the archiso, you'll probably already have the most recent version of =gnupg= installed by default.
 
 *** Smartcard shenanigans
+#+ATTR_LATEX: :environment pkgtable
+|           / | <>                           |
+|         <r> | <l>                          |
+|      *repo* | *packages*                   |
+|-------------+------------------------------|
+|     =extra= | =libusb-compat=              |
+| =community= | =ccid opensc pcsclite usbip= |
 
-=extra= & =libusb-compat=\\
-=community= & =ccid opensc pcsclite=\\
+After that you'll still have to setup =gnupg= correctly.
+In my case I have my private keys stored on a smartcard.
 
-After that you'll still have to setup =gnupg= correctly. In my case I
-have my private keys stored on a smartcard.
-
-To use it, I'll have to install the listed packages and then enable and
-start the =pcscd.service= service
+To use it, I'll have to install the listed packages and then enable and start the =pcscd.service= service
 
 #+begin_src fish
 dustvoice in ~
@@ -1833,62 +1843,47 @@ dustvoice in ~
 > gpg --card-status
 #+end_src
 
-If your smartcard still isn't detected, try logging off completely or
-even restarting, as that sometimes is the solution to the problem.
+If your smartcard still isn't detected, try logging off completely or even restarting, as that sometimes is the solution to the problem.
 
 ** Additional required tools
+#+ATTR_LATEX: :environment pkgtable
+|           / | <>                               |
+|         <r> | <l>                              |
+|      *repo* | *packages*                       |
+|-------------+----------------------------------|
+|      =core= | =make openssh=                   |
+|     =extra= | =clang cmake jdk-openjdk python= |
+| =community= | =pass python-pynvim=             |
 
-core & make openssh\\
-extra & clang cmake jdk-openjdk python\\
-community & pass python-pynvim\\
+To minimize the effort required by the following steps, we'll install most of the required packages beforehand
 
-To minimize the effort required by the following steps, we'll install
-most of the required packages beforehand
-
-This will ensure, we proceed through the following section without the
-need for interruption, because a package needs to be installed, so the
-following content can be condensed to the relevant informations.
+This will ensure, we proceed through the following section without the need for interruption, because a package needs to be installed, so the following content can be condensed to the relevant informations.
 
 ** Setting up a =home= environment
-In this step we're going to setup a home environment for both the =root=
-and my personal =dustvoice= user.
+In this step we're going to setup a home environment for both the =root= and my personal =dustvoice= user.
 
-In my case these 2 home environments are mostly equivalent, which is why
-I'll execute the following commands as the =dustvoice= user first and
-then switch to the =root= user and repeat the same commands.
+In my case these 2 home environments are mostly equivalent, which is why I'll execute the following commands as the =dustvoice= user first and then switch to the =root= user and repeat the same commands.
 
-I decided on this, as I want to edit files with elevated permissions and
-still have the same editor style and functions/plugins.
+I decided on this, as I want to edit files with elevated permissions and still have the same editor style and functions/plugins.
 
-Note that this comes with some drawbacks. For example, if I change a
-configuration for my =dustvoice= user, I would have to regularly update
-it for the =root= user too. This bears the problem, that I have to
-register my smartcard for the root user. This in turn is problematic,
-cause the =gpg-agent= used for =ssh= authentication, doesn't behave well
-when used within a ~> su~ or ~> sudo -i~ session. So in order to update
-=root='s config files I would either need to symlink everything, which I
-won't do, or I'll need to login as the =root= user now and then, to
-update everything.
+Note that this comes with some drawbacks.
+For example, if I change a configuration for my =dustvoice= user, I would have to regularly update it for the =root= user too.
 
-In my case, I want to access all my =git= repositories with my =gpg= key
-on my smartcard. For that I have to configure the =gpg-agent= with some
-configuration files that reside in a =git= repository. This means I will
-have to reside to using the =https= URL of the repository first and
-later changing the URL either in the corresponding =.git/config= file,
-or by issuing the appropriate command.
+Also, I have to register my smartcard for the root user.
+This in turn is problematic, because the =gpg-agent= used for =ssh= authentication, doesn't behave well when used within a ~> su~ or ~> sudo -i~ session.
+So in order to update =root='s config files I would either need to symlink everything, which I won't do, or I'll need to login as the =root= user now and then, to update everything.
+
+In my case, I want to access all my =git= repositories with my =gpg= key on my smartcard.
+For that I have to configure the =gpg-agent= with some configuration files that reside in a =git= repository.
+This means I will have to get along with using the =https= URL of the repository first and later changing the URL either in the corresponding =.git/config= file, or by issuing the appropriate command.
 
 *** Use =dotfiles= for a base config
-To provide myself with a base configuration, which I can then extend, I
-have created a =dotfiles= repository, which contains all kinds of
-configurations.
+To provide myself with a base configuration, which I can then extend, I maintain a =dotfiles= repository, which contains all kinds of configurations.
 
-The special thing about this =dotfiles= repository is that it /is/ my
-home folder. By using a curated =.gitignore= file, I'm able to only
-include the configuration files I want to keep between installs into the
-repository and ignore everything else.
+The special thing about this =dotfiles= repository is that it /is/ my home folder.
+By using a curated =.gitignore= file, I'm able to only include the configuration files I want to keep between installs into the repository and ignore everything else.
 
-To achieve this very specific setup, I have to turn my home directory
-into said =dotfiles= repository first
+To achieve this very specific setup, I have to turn my home directory into said =dotfiles= repository first
 
 #+begin_src fish
 dustvoice in ~
@@ -1907,21 +1902,14 @@ dustvoice in ~
 > git branch --set-upstream-to=origin/master master
 #+end_src
 
-Now I can issue any =git= command in my =~= directory, because it now is
-a =git= repository.
+Now I can issue any =git= command in my ~$HOME~ directory, because it now is a =git= repository.
 
 *** Set up =gpg=
-As I wanted to keep my =dotfiles= repository as modular as possible, I
-utilize =git='s =submodule= feature. Furthermore I want to use my =nvim=
-repository, which contains all my configurations and plugins for
-=neovim=, on Windows, but without all the Linux specific configuration
-files. I am also using the =Pass= repository on my Android phone and
-Windows PC, where I only need this repository without the other Linux
-configuration files.
+As I wanted to keep my =dotfiles= repository as modular as possible, I utilize =git='s =submodule= feature.
+Furthermore I want to use my =nvim= repository, which contains all my configurations and plugins for =neovim=, on Windows, but without all the Linux specific configuration files.
+I am also using the =Pass= repository on my Android phone and Windows PC, where I only need this repository without the other Linux configuration files.
 
-Before we'll be able to update the =submodule=s (=nvim= config files and
-=pass=word-store) though, we will have to setup our =gpg= key as an
-=ssh= key, as I use it to authenticate
+Before we'll be able to update the =submodule=​s (=nvim= config files and =pass=) though, we will have to setup our =gpg= key as an =ssh= key, as I use it to authenticate
 
 #+begin_src fish
 dustvoice in ~
@@ -1944,21 +1932,17 @@ dustvoice in ~
 > gpg-connect-agent updatestartuptty /bye
 #+end_src
 
-You would have to adapt the =keygrip= present in the
-=~/.gnupg/sshcontrol= file to your specific =keygrip=, retrieved with
-~> gpg -K --with-keygrip~.
+You would have to adapt the =keygrip= present in the ~~/.gnupg/sshcontrol~ file to your specific =keygrip=, retrieved with ~> gpg -K --with-keygrip~.
 
-Now, as mentioned before, I'll switch to using =ssh= for authentication,
-rather than =https=
+Now, as mentioned before, I'll switch to using =ssh= for authentication, rather than =https=
 
 #+begin_src fish
 dustvoice in ~
 > git remote set-url origin git@git.dustvoice.de:DustVoice/dotfiles.git
 #+end_src
 
-As the best method to both make =zsh= recognize all the configuration
-changes, as well as the =gpg-agent= behave properly, is to re-login,
-we'll do just that
+As the best method to both make =fish= recognize all the configuration changes, as well as the =gpg-agent= behave properly, is to re-login.
+We'll do just that
 
 #+begin_src fish
 dustvoice in ~
@@ -1967,9 +1951,8 @@ dustvoice in ~
 
 It is very important to note, that I mean /a real re-login/.
 
-That means that if you've used =ssh= to log into your machine, it
-probably won't be sufficient to login into a new =ssh= session. You'll
-probably need to restart the machine completely.
+That means that if you've used =ssh= to log into your machine, it probably won't be sufficient to login into a new =ssh= session.
+You may need to restart the machine entirely.
 
 *** Finalize the =dotfiles=
 Now log back in and continue
