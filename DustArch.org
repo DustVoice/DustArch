@@ -119,7 +119,7 @@ To be on the safe side, it is advised to always use ~> pacman -Syu~ instead!
 After doing that, we can now install any software from the official repositories by issuing
 
 #+begin_src fish
-root in ~
+root in /
 > pacman -S <package_name>
 #+end_src
 
@@ -128,21 +128,21 @@ where you would replace =<package_name>= with the actual package name.
 If you want to remove an installed package, just use
 
 #+begin_src fish
-root in ~
+root in /
 > pacman -Rsu <package_name>
 #+end_src
 
 If you don't know the exact package name, or if you just want to search for a keyword, for example =xfce=, to list all packages having something to do with =xfce=, use
 
 #+begin_src fish
-root in ~
+root in /
 > pacman -Ss <keyword>
 #+end_src
 
 If you really need to force remove a package, which you should use /with extreme caution/, you could use
 
 #+begin_src fish
-root in ~
+root in /
 > pacman -Rdd <package_name>
 #+end_src
 
@@ -236,7 +236,7 @@ Sample.text=useful
 First, you probably want to get a list of all available drives, together with their corresponding device name, by issuing
 
 #+begin_src fish
-root in ~
+root in /
 > fdisk -l
 #+end_src
 
@@ -251,46 +251,18 @@ There is nothing worse than formatting a drive you didn't mean to format!
 #+end_CAUTION
 
 *** The standard way
-In my case, the partition I want to install the root file system on is ~/dev/sdb2~. ~/dev/sdb3~ will be my =swap= partition.
+In my case, the partition I want to install the root file system on will be ~/dev/mapper/DustPortable~, which is an unlocked =luks2= volume which will be located on ~/dev/sda2~. For my =swap=, I will use a swapfile.
 
+#+begin_NOTE
 A =swap= size twice the size of your RAM is recommended by a lot of people.
 
 To be exact, every distribution has different recommendations for =swap= sizes. Also =swap= size heavily depends on whether you want to be able to hibernate, etc.
+#+end_NOTE
 
-***** In my opinion
+**** In my opinion
 You should make the =swap= size at least your RAM size and for RAM sizes over =4GB= with the intention to hibernate, at least one and a half times your RAM size.
 
 If you haven't yet partitioned your disk, please refer to the [[https://wiki.archlinux.org/index.php/Partitioning][general partitioning tutorial]] in the ArchWiki.
-
-Now we need to format the partitions accordingly
-
-#+begin_src fish
-root in ~
-> mkfs.ext4 /dev/sdb2
-
-root in ~
-> mkswap /dev/sdb3
-#+end_src
-
-After doing that, we can turn on =swap= and mount the root partition.
-
-#+begin_src fish
-root in ~
-> swapon /dev/sdb3
-
-root in ~
-> mount /dev/sdb2 /mnt
-#+end_src
-
-If you have an additional EFI System partition, because of an /UEFI - GPT/ setup or an existing Windows installation for example, which we will assume to be located under =/dev/sda2= (=/dev/sda= is the disk of my Windows install), you'll have to mount this partition to the new system's =/boot= folder
-
-#+begin_src fish
-root in ~
-> mkdir /mnt/boot
-
-root in ~
-> mount /dev/sda2 /mnt/boot
-#+end_src
 
 *** Full system encryption
 
@@ -298,157 +270,252 @@ root in ~
 This is only one way to do it (read: it is the way I have previously done it).
 #+end_NOTE
 
-I'm using a =LVM= on =LUKS= setup, with =lvm2= and =luks2=.
+I'm using a =LUKS= setup, with =btrfs= and =luks2=.
 For more information look into the [[https://wiki.archlinux.org/][ArchWiki]].
 
-This setup has different partitions, used for the EFI System partition, =root= partition, etc. compared to the ones used in the rest of the guide. If you want to use =grub= in conjunction with some full system encryption, you would have to adapt the disk and partition names accordingly.
+This setup has different partitions, used for the EFI System partition, =root= partition, etc. compared to the ones used in the rest of the guide.
 The only part of the guide, which currently uses the drives & partitions used in this section is [[*The manual way]].
 
-To start things, we first have to decide, which disk, or partition, is going to hold the =luks2= encrypted =lvm2= stuff.
+To start things, we first have to decide, which disk, or partition, is going to be =luks2= encrypted.
 
-In my case I'll be using my NVMe SSD, with a =GPT= partition scheme, for both the EFI System partition, in my case ~/dev/nvme0n1p1~, defined as a =EFI System= partition type in =fdisk=, as well as the main =LUKS= volume, in my case ~/dev/nvme0n1p2~, defined as a =Linux filesystem= partition type in =fdisk=.
+In my case I'll be using my SSD in an USB-C enclosure to be ablet to take the system with me on the go.
+For that I will use a =GPT= partition scheme.
+I will then create a ~2 GiB~ EFI System partition (I have multiple kernels installed at a time), in my case ~/dev/sda1~, defined as a =EFI System= partition type in =gdisk=, as well as the main =luks2= volume, in my case ~/dev/sda2~, defined as a =Linux filesystem= partition type in =gdisk=.
 
 After partitioning our disk, we now have to set everything up.
 
 **** EFI System partition
 
 #+ATTR_LATEX: :environment pkgtable
-|           / | <>           |
-|         <r> | <l>          |
-|      *repo* | *packages*   |
-|-------------+--------------|
-|      =core= | =dosfstools= |
+|      / | <>           |
+|    <r> | <l>          |
+| *repo* | *packages*   |
+|--------+--------------|
+| =core= | =dosfstools= |
 
 I won't setup my EFI System partition with =cryptsetup=, as it makes no sense in my case.
 
-Every =EFI= binary (or =STUB=) will have to be signed with my custom Secure Boot keys, as described in , so tempering with the EFI System partition poses no risk to my system.
+Every =EFI= binary (or =STUB=) will have to be signed with my custom Secure Boot keys, as described in [[*The manual way]], so tempering with the EFI System partition poses no risk to my system.
 
 Instead I will simply format it with a =FAT32= filesystem
 
 #+begin_src fish
-root in ~
-> mkfs.fat -F 32 -L /efi /dev/nvme0n1p1
+root in /
+> mkfs.fat -F 32 -n EFI /dev/sda1
 #+end_src
 
 We will bother with mounting it later on.
 
-When you /do/ want to encrypt your EFI System partition, in conjunction with =grub=, please either use =LUKS 1=, or make sure to have the latest version of =grub= installed on your system, to make it work with =LUKS 2=!
+When you /do/ want to encrypt your EFI System partition, in conjunction with e.g. =grub=, please either use =LUKS 1=, or make sure to have the latest version of =grub= installed on your system, to make it work with =LUKS 2=!
+I will use =limine= though, so for me all of this isn't a consideration.
 
 **** =LUKS=
 
 #+ATTR_LATEX: :environment pkgtable
-|           / | <>           |
-|         <r> | <l>          |
-|      *repo* | *packages*   |
-|-------------+--------------|
-|      =core= | =cryptsetup= |
+|      / | <>           |
+|    <r> | <l>          |
+| *repo* | *packages*   |
+|--------+--------------|
+| =core= | =cryptsetup= |
 
 First off we have to create the =LUKS= volume
 
 #+begin_src fish
-root in ~
-> cryptsetup luksFormat --type luks2 /dev/nvme0n1p2
+root in /
+> cryptsetup luksFormat --type luks2 /dev/sda2
+#+end_src
+
+In my case, I will convert the keyslot the *Password-Based Key Derivation Function* (pbkdf) =pbkdf2=, as =luks2= defaults to =argon2id=, which doesn't play well with my portable setup, namely the differing RAM sizes.
+
+#+begin_src fish
+root in /
+> cryptsetup luksConvertKey --pbkdf pbkdf2 /dev/sda2
 #+end_src
 
 After that we have to open the volume
 
 #+begin_src fish
-root in ~
-> cryptsetup open /dev/nvme0n1p2 cryptroot
+root in /
+> cryptsetup open /dev/sda2 DustPortable
 #+end_src
 
-The volume is now accessible under =/dev/mapper/cryptroot=.
+The volume is now accessible under =/dev/mapper/DustPortable=.
 
-**** =LVM=
-
+**** =btrfs=
 #+ATTR_LATEX: :environment pkgtable
-|           / | <>         |
-|         <r> | <l>        |
-|      *repo* | *packages* |
-|-------------+------------|
-|      =core= | =lvm2=     |
+|      / | <>            |
+|    <r> | <l>           |
+| *repo* | *packages*    |
+|--------+---------------|
+| =core= | =btrfs-progs= |
 
-I'm going to create one =PV= (Physical Volume) using the just created and opened =cryptroot= =LUKS= volume, one =VG= (Volume Group), named =DustArch1=, which will contain two =LV=s (Logical Volumes) named =root= and =swap= containing the =root= filesystem and the =swap= space respectively.
-
-#+begin_src fish
-root in ~
-> pvcreate /dev/mapper/cryptroot
-
-root in ~
-> vgcreate DustArch1 /dev/mapper/cryptroot
-
-root in ~
-> lvcreate -l 100%FREE -n root DustArch1
-
-root in ~
-> lvreduce -L -32G /dev/DustArch1/root
-
-root in ~
-> lvcreate -l 100%FREE -n swap DustArch1
-#+end_src
-
-**** Format & mount
-Now the only thing left to do is formatting our freshly created logical volumes appropriately
+Fist off we need to create the filesystem
 
 #+begin_src fish
-root in ~
-> mkfs.ext4 -L / /dev/DustArch1/root
-
-root in ~
-> mkswap /dev/DustArch1/swap
+root in /
+> mkfs.btrfs -L DustPortable /dev/mapper/DustPortable
 #+end_src
 
-as well as mounting them and enabling =swap=, in order to proceed with the next steps.
+After that we mount the =btrfs= root under ~/mnt/meta~
 
 #+begin_src fish
-root in ~
-> mount /dev/DustArch1/root /mnt
+root in /
+> mkdir /mnt/meta
 
-root in ~
-> mkdir /mnt/efi
-
-root in ~
-> mount /dev/nvme0n1p1 /mnt/efi
-
-root in ~
-> swapon /dev/DustArch1/swap
+root in /
+> mount /dev/mapper/DustPortable /mnt/meta
 #+end_src
 
-**** Unmount & Close
-#+begin_WARNING
-Only do this, after you're finished with your setup within the =archiso= and are about to reboot into your new system, or else the next steps won't work for you.
-#+end_WARNING
+Now we create the desired filesystem layout.
 
-To close everything back up again,
+We will create 5 top level subvolumes that will be mounted at the appropriate places later on.
 
-1. unmount the volumes
+#+begin_src fish
+root in /mnt/meta
+> btrfs subvolume create @
 
-   #+begin_src fish
-   root in ~
-   > umount /mnt/efi /mnt
-   #+end_src
+root in /mnt/meta
+> btrfs subvolume create @home
 
-2. deactivate the =VG=
+root in /mnt/meta
+> btrfs subvolume create @snapshots
 
-   #+begin_src fish
-   root in ~
-   > vgchange -a n DustArch1
-   #+end_src
+root in /mnt/meta
+> btrfs subvolume create @var_log
 
-3. close the =LUKS= volume
-
-   #+begin_src fish
-   root in ~
-   > cryptsetup close cryptroot
-   #+end_src
+root in /mnt/meta
+> btrfs subvolume create @swapfile
+#+end_src
 
 ** Preparing the =chroot= environment
 As a first step it might make sense to edit =/etc/pacman.d/mirrorlist= to move the mirrors geographically closest to you to the top.
 
+*** =pacstrap= in
+Generally we need to =pacstrap= the /minimum packages/ needed.
+We will install all other packages later on.
+
+#+ATTR_LATEX: :environment pkgtable
+|      / | <>                                     |
+|    <r> | <l>                                    |
+| *repo* | *packages*                             |
+|--------+----------------------------------------|
+| =core= | =base base-devel linux linux-firmware= |
+
+This is the actual command used in my case
+
+#+begin_src fish
+root in /
+> pacstrap /mnt/meta/@ base base-devel linux linux-firmware
+#+end_src
+
+*** Mounting party
+Now we have to mount the subvolumes and boot partition we created earlier to the appropriate locations.
+
+First off, we mount the =/= subvolume =@=
+
+#+begin_src fish
+root in /
+> mkdir /mnt/DustPortable
+
+root in /
+> mount -o subvol=@ /dev/mapper/DustPortable /mnt/DustPortable
+#+end_src
+
+Now we can mount the =/home= subvolume =@home=
+
+#+begin_src fish
+root in /mnt/DustPortable
+> mount -o subvol=@home /dev/mapper/DustPortable home
+#+end_src
+
+The =/.snapshots= subvolume =@snapshots= closely follows
+
+#+begin_src fish
+root in /mnt/DustPortable
+> mkdir .snapshots
+
+root in /mnt/DustPortable
+> mount -o subvol=@snapshots /dev/mapper/DustPortable .snapshots
+#+end_src
+
+After that we have to move the log dir =/var/log= to the appropriate subvolume =@var_log=
+
+#+begin_src fish
+root in /mnt/DustPortable
+> mv var/log var/log_bak
+
+root in /mnt/DustPortable
+> mount -o subvol=@var_log /dev/mapper/DustPortable var/log
+
+root in /mnt/DustPortable
+> mkdir var/log
+
+root in /mnt/DustPortable
+> mv var/log_bak/* var/log/
+
+root in /mnt/DustPortable
+> rmdir var/log_bak
+#+end_src
+
+Finally we can generate the =swapfile=
+
+#+begin_src fish
+root in /mnt/DustPortable
+> mkdir swapfile
+
+root in /mnt/DustPortable
+> mount -o subvol=@swapfile /dev/mapper/DustPortable swapfile
+
+root in /mnt/DustPortable
+> btrfs filesystem mkswapfile --size 128G swapfile/swapfile
+
+root in /mnt/DustPortable
+> swapon swapfile/swapfile
+#+end_src
+
+#+begin_IMPORTANT
+I use my SSD inside a USB-C enclosure (although it is rated at 40Gbps it is *not* Thunderbolt 3!), which means that it /doesn't/ support =TRIM=.
+This is why I personally need to add =nodiscard= to every =mount= command option, which would look something along the lines of this
+
+#+begin_src fish
+root in /
+> mount -o subvol=@,nodiscard /dev/mapper/DustPortable /mnt/DustPortable
+#+end_src
+#+end_IMPORTANT
+
+The only thing left to do now is mounting the boot partition, namely my =EFI System Partition=
+
+#+begin_src fish
+root in /mnt/DustPortable
+> mv boot boot_bak
+
+root in /mnt/DustPortable
+> mkdir boot
+
+root in /mnt/DustPortable
+> mount /dev/sda1 boot
+
+root in /mnt/DustPortable
+> mv boot_bak/* boot/
+
+root in /mnt/DustPortable
+> rmdir boot_bak
+#+end_src
+
+After that we can generate the ~/etc/fstab~ using =genfstab=
+
+#+begin_src fish
+root in /
+> genfstab -U /mnt/DustPortable >> /mnt/DustPortable/etc/fstab
+#+end_src
+
+and you're ready to enter the =chroot= environment.
+
+*** Outdated =archiso=
 If you're using an older version of the =archiso=, you might want to replace the mirrorlist present on the =archiso= with the newest [[https://archlinux.org/mirrorlist/all][online one]]
 
 #+begin_src fish
-root in ~
+root in /
 > curl https://archlinux.org/mirrorlist/all > /etc/pacman.d/mirrorlist
 #+end_src
 
@@ -463,7 +530,7 @@ The best way to do this tho, is using a package from the official repositories n
 It comes with all sorts of options, for example sorting mirrors by speed, filtering by country, etc.
 
 #+begin_src fish
-root in ~
+root in /
 > reflector --verbose --latest 200 --sort rate --save /etc/pacman.d/mirrorlist
 #+end_src
 
@@ -471,107 +538,176 @@ After that you would need to reinstall the =pacman-mirror= package and
 run
 
 #+begin_src fish
-root in ~
+root in /
 > pacman -Syyuu
 #+end_src
 
 for best results.
 
-After that we can =pacstrap= the /minimum packages/ needed.
-We will install all other packages later on.
+#+begin_CAUTION
+Be wary though as there could arise keyring issues etc.
+Normally the =pacstrap= command takes care of syncing everything etc.
+#+end_CAUTION
 
-#+ATTR_LATEX: :environment pkgtable
-|           / | <>                          |
-|         <r> | <l>                         |
-|      *repo* | *packages*                  |
-|-------------+-----------------------------|
-|      =core= | =base linux linux-firmware= |
-
-This is the actual command used in my case
+*** Living behind a proxy
+If you're sitting behind a proxy, you're generally in for an unpleasant time.
+Generally you need to set the =http_proxy=, =https_proxy=, =ftp_proxy= variables as well as their *upper case* counterparts.
 
 #+begin_src fish
-root in ~
-> pacstrap /mnt base linux linux-firmware
+root in /
+> export http_proxy="http://ldiproxy.lsjv.rlp.de:8080"
+
+root in /
+> export https_proxy=$http_proxy
+
+root in /
+> export ftp_proxy=$http_proxy
+
+root in /
+> export HTTP_PROXY=$http_proxy
+
+root in /
+> export HTTPS_PROXY=$http_proxy
+
+root in /
+> export FTP_PROXY=$http_proxy
 #+end_src
 
-After that generate an =fstab= using =genfstab=
+If you can't =pacstrap= after that, you probaby have the issue thatthe =systemd-timesyncd=, as well as =pacman-init= service didn't execute correctly.
 
 #+begin_src fish
-root in ~
-> genfstab -U /mnt >> /mnt/etc/fstab
+root in /
+> systemctl status systemd-timesyncd.service
+
+root in /
+> systemctl status pacman-init.service
 #+end_src
 
-and you're ready to enter the =chroot= environment.
+To mitigate this, you need to initialize =pacman= yourself.
+
+First off check whether the correct time is set.
+
+#+begin_src fish
+root in /
+> timedatectl
+#+end_src
+
+In my case the time zone was not correctly set, why my time was off by one hour, so I had to set it manually.
+
+#+begin_src fish
+root in /
+> timedatectl set-timezone Europe/Berli
+#+end_src
+
+After that we have to execute the =pacman-init= stuff manually
+
+#+begin_src fish
+root in /
+> pacman-key --init
+
+root in /
+> pacman-key --populate
+#+end_src
+
+#+begin_NOTE
+You might also want to add the following lines to ~/etc/sudoers~, in order to keep the proxy environment variables alive when executing a command through =sudo=
+
+#+begin_src txt
+Defaults  env_keep += "http_proxy"
+Defaults  env_keep += "https_proxy"
+Defaults  env_keep += "ftp_proxy"
+Defaults  env_keep += "HTTP_PROXY"
+Defaults  env_keep += "HTTPS_PROXY"
+Defaults  env_keep += "FTP_PROXY"
+#+end_src
+#+begin_center
+=/etc/sudoers=
+#+end_center
+#+end_NOTE
 
 * Entering the =chroot=
-#+begin_NOTE
-As we want to set up our new system, we need to have access to the
-different partitions, the internet, etc.  which we wouldn't get by
-solely using =chroot=.
+#+ATTR_LATEX: :environment pkgtable
+|       / | <>                     |
+|     <r> | <l>                    |
+|  *repo* | *packages*             |
+|---------+------------------------|
+| =extra= | =arch-install-scripts= |
 
-That's why we are using =arch-chroot=, provided by the
-=arch-install-scripts= package, which is shipped with the =archiso=.
-This script takes care of all the afforementioned stuff, so we can set
-up our system properly.
+#+begin_NOTE
+As we want to set up our new system, we need to have access to the different partitions, the internet, etc. which we wouldn't get by solely using =chroot=.
+
+That's why we are using =arch-chroot=, provided by the =arch-install-scripts= package, which is shipped with the =archiso=. This script takes care of all the afforementioned stuff, so we can set up our system properly.
 #+end_NOTE
 
 #+begin_src fish
-root in ~
-> arch-chroot /mnt
+root in /
+> arch-chroot /mnt/DustPortable
 #+end_src
 
-Et Voilà! You successfully =chroot=-ed inside your new system and you'll
-be greeted by a =bash= prompt, which is the default shell on fresh Arch
-Linux installations.
+Et Voilà! You successfully =chroot=-ed inside your new system and you'll be greeted by a =bash= prompt, which is the default shell on fresh Arch Linux installations.
 
 ** Installing additional packages
-
-=core= &
-=amd-ucode base-devel diffutils dmraid dnsmasq dosfstools efibootmgr exfat-utils grub iputils lvm2 openssh sudo usbutils=\\
-=extra= &
-=efitools git intel-ucode networkmanager networkmanager-openconnect networkmanager-openvpn parted polkit rsync zsh=\\
-=community= & =neovim os-prober=\\
+#+ATTR_LATEX: :environment pkgtable
+|           / | <>                                                                                                                                                         |
+|         <r> | <l>                                                                                                                                                        |
+|      *repo* | *packages*                                                                                                                                                 |
+|-------------+------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|      =core= | =amd-ucode base-devel btrfs-progs diffutils dmraid dnsmasq dosfstools efibootmgr emacs-nativecomp exfat-utils iputils linux-headers openssh sudo usbutils= |
+|     =extra= | =efitools git intel-ucode networkmanager networkmanager-openconnect networkmanager-openvpn parted polkit rsync zsh=                                        |
+| =community= | =fish neovim=                                                                                                                                              |
+|       =AUR= | =limine=                                                                                                                                                   |
 
 There are many command line text editors available, like =nano=, =vi=,
 =vim=, =emacs=, etc.
 
-I'll be using =neovim=, though it shouldn't matter what editor you
-choose for the rest of the guide.
+I'll be using =neovim= as my simple text editor, until a certain point, at which I'll replace it with my doom-=emacs= setup, though it shouldn't matter what editor you choose for the rest of the guide.
 
-Make sure to enable the =NetworkManager.service= service, in order for
-the Internet connection to work correctly, upon booting into the fresh
-system later on.
+Make sure to enable the =NetworkManager.service= service, in order for the Internet connection to work correctly, upon booting into the fresh system later on.
 
 #+begin_src fish
 root in /
 > systemctl enable NetworkManager.service
 #+end_src
 
-With =polkit= installed, create a file to enable users of the =network=
-group to add new networks without the need of =sudo=.
+With =polkit= installed, create a file to enable users of the =network= group to add new networks without the need of =sudo=.
 
-#+begin_src fish
+#+begin_src txt
 polkit.addRule(function(action, subject) {
     if (action.id.indexOf("org.freedesktop.NetworkManager.") == 0 && subject.isInGroup("network")) {
         return polkit.Result.YES;
     }
 });
 #+end_src
+#+begin_center
+=/etc/polkit-1/rules.d/50-org.freedesktop.NetworkManager.rules=
+#+end_center
 
-If you use =UEFI=, you'll also need the =efibootmgr=, in order to modify
-the =UEFI= entries.
+If you use =UEFI=, you'll also need the =efibootmgr=, in order to modify the =UEFI= entries.
+
+*** Additional kernels
+#+ATTR_LATEX: :environment pkgtable
+|       / | <>                                                        |
+|     <r> | <l>                                                       |
+|  *repo* | *packages*                                                |
+|---------+-----------------------------------------------------------|
+|  =core= | =linux-lts linux-lts-headers linux-zen linux-zen-headers= |
+| =extra= | =linux-hardened linux-hardened-headers=                   |
+
+In addition to the standard =linux= kernel, there are a couple of different options out there.
+Just to name a few, there is =linux-lts=, =linux-zen= and =linux-hardened=.
+
+You can simply install them and then add the corresponding =initramfs= and kernel image to your bootloader entries.
+
+Make sure you have allocated enough space on your =EFI System Partition= though.
 
 ** Master of time
 After that, you have to set your timezone and update the system clock.
 
-Generally speaking, you can find all the different timezones under
-=/usr/share/zoneinfo=.
+Generally speaking, you can find all the different timezones under =/usr/share/zoneinfo=.
 
-In my case, my timezone file resides under
-=/usr/share/zoneinfo/Europe/Berlin=.
+In my case, my timezone file resides under =/usr/share/zoneinfo/Europe/Berlin=.
 
-To achieve the desired result, I will want to symlink this to
-=/etc/localtime= and set the hardware clock.
+To achieve the desired result, I will want to symlink this to =/etc/localtime= and set the hardware clock.
 
 #+begin_src fish
 root in /
@@ -630,17 +766,13 @@ root in /
 After that we're done with this part.
 
 ** Naming your machine
-Now we can set the =hostname= for our new install and add =hosts=
-entries.
+Now we can set the =hostname= for our new install and add =hosts= entries.
 
-Apart from being mentioned in your command prompt, the =hostname= also
-serves the purpose of identifying, or naming your machine locally, as
-well as in a networked scenario. This will enable you to see your PC
-with the correct name in your router, etc.
+Apart from being mentioned in your command prompt, the =hostname= also serves the purpose of identifying, or naming your machine locally, as well as in a networked scenario.
+This will enable you to see your PC with the correct name in your router, etc.
 
 *** =hostname=
-To change the =hostname=, simply edit =/etc/hostname=, enter the desired
-name, then save and quit
+To change the =hostname=, simply edit =/etc/hostname=, enter the desired name, then save and quit
 
 #+begin_src fish
 DustArch
@@ -659,10 +791,7 @@ Now we need to specify some =hosts= entries by editing =/etc/hosts=
 #+end_src
 
 ** User setup
-Now you should probably change the default =root= password and create a
-new non-=root= user for yourself, as using your new system purely
-through the native =root= user is not recommended from a security
-standpoint.
+Now you should probably change the default =root= password and create a new non-=root= user for yourself, as using your new system purely through the native =root= user is not recommended from a security standpoint.
 
 *** Give =root= a password
 To change the password for the current user (the =root= user) issue
@@ -675,16 +804,18 @@ root in /
 and choose a new password.
 
 *** Create a personal user
+#+ATTR_LATEX: :environment pkgtable
+|      / | <>          |
+|    <r> | <l>         |
+| *repo* | *packages*  |
+|--------+-------------|
+| =core= | =sudo bash= |
 
-=core= & =sudo=\\
-=extra= & =zsh=\\
-
-We are going to create a new user and set the password, groups and shell
-for this user
+We are going to create a new user and set the password, groups and shell for this user
 
 #+begin_src fish
 root in /
-> useradd -m -p "" -G "adm,audio,disk,floppy,kvm,log,lp,network,rfkill,scanner,storage,users,optical,power,wheel" -s /usr/bin/zsh dustvoice
+> useradd -m -p "" -G "adm,audio,disk,floppy,kvm,log,lp,network,rfkill,scanner,storage,users,optical,power,wheel" -s /bin/bash dustvoice
 
 root in /
 > passwd dustvoice
@@ -692,8 +823,7 @@ root in /
 
 We now have to allow the =wheel= group =sudo= access.
 
-For that we edit =/etc/sudoers= and uncomment the =|\%|wheel [|\ldots|]=
-line.
+For that we edit =/etc/sudoers= and uncomment the =%wheel= line.
 
 #+begin_src fish
 %wheel ALL=(ALL) ALL
@@ -718,43 +848,51 @@ In this section different boot managers / boot methods are explained.
 
 *** =EFISTUB=
 
-=core= & =efibootmgr=\\
+#+ATTR_LATEX: :environment pkgtable
+|      / | <>           |
+|    <r> | <l>          |
+| *repo* | *packages*   |
+|--------+--------------|
+| =core= | =efibootmgr= |
 
-You can directly boot the system, by making use of the =EFISTUB=
-contained in the kernel image. To utilize this, we can use =efibootmgr=
-to create an entry in the =UEFI=
+You can directly boot the system, by making use of the =EFISTUB= contained in the kernel image. To utilize this, we can use =efibootmgr= to create an entry in the =UEFI=
 
 #+begin_src fish
 root in /
 > efibootmgr --disk /dev/sda --part 2 --create --label "Arch Linux" --loader /vmlinuz-linux --unicode 'root=6ff60fab-c046-47f2-848c-791fbc52df09 rw initrd=\initramfs-linux.img resume=UUID=097c6f11-f246-40eb-a702-ba83c92654f2' --verbose
 #+end_src
 
-This only makes sense of course, if you're using =UEFI= instead of a
-legacy =BIOS=. In this case it doesn't matter of course, if your machine
-/theoretically supports/ =UEFI=, but rather if it is the /enabled mode/!
+This only makes sense of course, if you're using =UEFI= instead of a legacy =BIOS=. In this case it doesn't matter of course, if your machine /theoretically supports/ =UEFI=, but rather if it is the /enabled mode/!
 
 *** =grub=
+#+ATTR_LATEX: :environment pkgtable
+|           / | <>                           |
+|         <r> | <l>                          |
+|      *repo* | *packages*                   |
+|-------------+------------------------------|
+|      =core= | =dosfstools efibootmgr grub= |
+|     =extra= | =mtools=                     |
+| =community= | =os-prober=                  |
 
-=core= & =dosfstools efibootmgr grub=\\
-=extra= & =mtools=\\
-=community= & =os-prober=\\
+Of course you can also use a boot manager to boot the system, as the name implies.
 
-Of course you can also use a boot manager to boot the system, as the
-name implies.
+If I can't use =EFISTUB=, e.g. either because the system has no =UEFI= support, or because I need another feature of a boot manager, I could use =grub=.
 
-If I can't use =EFISTUB=, e.g. either because the system has no =UEFI=
-support, or because I need another feature of a boot manager, I normally
-use =grub=.
+#+begin_TIP
+Currently, I mainly use =limine= as a boot manager *especially* on my portable setup, as =grub= is *such a huge pain in the butt!*
 
-You'll probably only need the =efibootmgr= package, if you plan to
-utilize =UEFI=.
+=limine= is insanely easy to setup and configure, without all the =BIOS Boot partition= crap that I find myself mainly using this.
+Refer to the [[*=limine=]] section for further information.
+#+end_TIP
 
-**** =BIOS=
-If you chose the =BIOS - MBR= variation, you'll have to /do nothing
-special/.
+#+begin_NOTE
+You'll probably only need the =efibootmgr= package, if you plan to utilize =UEFI=.
+#+end_NOTE
 
-If you chose the =BIOS - GPT= variation, you'll have to /have a =+1M=
-boot partition/ created with the partition type set to =BIOS boot=.
+**** =grub= -> =BIOS=
+If you chose the =BIOS - MBR= variation, you'll have to /do nothing special/.
+
+If you chose the =BIOS - GPT= variation, you'll have to /have a =+1M= boot partition/ created with the partition type set to =BIOS boot=.
 
 In both cases you'll have to /run the following comman/ now
 
@@ -763,14 +901,10 @@ root in /
 > grub-install --target=i386-pc /dev/sdb
 #+end_src
 
-It should obvious that you would need to replace =/dev/sdb= with the
-disk you actually want to use. Note however that you have to specify a
-/disk/ and /not a partition/, so /no number/.
+It should obvious that you would need to replace =/dev/sdb= with the disk you actually want to use. Note however that you have to specify a /disk/ and /not a partition/, so /no number/.
 
-**** =UEFI=
-If you chose the =UEFI - GPT= variation, you'll have to /have the EFI
-System partition mounted/ at =/boot= (where =/dev/sda2= is the partition
-holding said EFI System partition in my particular setup)
+**** =grub= -> =UEFI=
+If you chose the =UEFI - GPT= variation, you'll have to /have the EFI System partition mounted/ at =/boot= (where =/dev/sda2= is the partition holding said EFI System partition in my particular setup)
 
 Now /install =grub= to the EFI System partition/
 
@@ -779,12 +913,9 @@ root in /
 > grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
 #+end_src
 
-If you've planned on dual booting arch with Windows and therefore reused
-the EFI System partition created by Windows, you might not be able to
-boot to grub just yet.
+If you've planned on dual booting arch with Windows and therefore reused the EFI System partition created by Windows, you might not be able to boot to grub just yet.
 
-In this case, boot into Windows, open a =cmd= window as Administrator
-and type in
+In this case, boot into Windows, open a =cmd= window as Administrator and type in
 
 #+begin_src fish
 bcdedit /set {bootmgr} path \EFI\grub\grubx64.efi
@@ -800,58 +931,57 @@ root in /
 under Linux to make sure, that the =grubx64.efi= file is really there.
 
 **** =grub= config
-In all cases, you now have to create the main =grub.cfg= configuration
-file.
+In all cases, you now have to create the main =grub.cfg= configuration file.
 
-But before we actually generate it, we'll make some changes to the
-default =grub= settings, which the =grub.cfg= will be generated from.
+But before we actually generate it, we'll make some changes to the default =grub= settings, which the =grub.cfg= will be generated from.
 
 ***** Adjust the timeout
-First of all, I want my =grub= menu to wait indefinitely for my command
-to boot an OS.
+First of all, I want my =grub= menu to wait indefinitely for my command to boot an OS.
 
-#+begin_src fish
+#+begin_src txt
 GRUB_TIMEOUT=-1
 #+end_src
+#+begin_center
+=/etc/default/grub=
+#+end_center
 
-I decided on this, because I'm dual booting with Windows and after
-Windows updates itself, I don't want to accidentally boot into my Arch
-Linux, just because I wasn't quick enough to select the Windows Boot
-Loader from the =grub= menu.
+I decided on this, because I'm dual booting with Windows and after Windows updates itself, I don't want to accidentally boot into my Arch Linux, just because I wasn't quick enough to select the Windows Boot Loader from the =grub= menu.
 
 Of course you can set this parameter to whatever you want.
 
-Another way of achieving what I described, would be to make =grub=
-remember the last selection.
+Another way of achieving what I described, would be to make =grub= remember the last selection.
 
-#+begin_src fish
+#+begin_src txt
 GRUB_TIMEOUT=5
 GRUB_DEFAULT=saved
 GRUB_SAVEDEFAULT="true"
 #+end_src
+#+begin_center
+=/etc/default/grub=
+#+end_center
 
 ***** Enable the recovery
-After that I also want the recovery option showing up, which means that
-besides the standard and fallback images, also the recovery one would
-show up.
+After that I also want the recovery option showing up, which means that besides the standard and fallback images, also the recovery one would show up.
 
-#+begin_src fish
+#+begin_src txt
 GRUB_DISABLE_RECOVERY=false
 #+end_src
+#+begin_center
+=/etc/default/grub=
+#+end_center
 
 ***** NVIDIA fix
-Now, as I'm using the binary NVIDIA driver for my graphics card, I also
-want to make sure, to revert =grub= back to text mode, after I select a
-boot entry, in order for the NVIDIA driver to work properly. You might
-not need this
+Now, as I'm using the binary NVIDIA driver for my graphics card, I also want to make sure, to revert =grub= back to text mode, after I select a boot entry, in order for the NVIDIA driver to work properly. You might not need this
 
-#+begin_src fish
+#+begin_src txt
 GRUB_GFXPAYLOAD_LINUX=text
 #+end_src
+#+begin_center
+=/etc/default/grub=
+#+end_center
 
 ***** Add power options
-I also want to add two new menu entries, to enable me to shut down the
-PC, or reboot it, right from the =grub= menu.
+I also want to add two new menu entries, to enable me to shut down the PC, or reboot it, right from the =grub= menu.
 
 #+begin_src fish
 menuentry '=> Shutdown' {
@@ -864,23 +994,27 @@ menuentry '=> Reboot' {
 #+end_src
 
 ***** Installing =memtest=
-As I want all possible options to possibly troubleshoot my PC right
-there in my =grub= menu, without the need to boot into a live OS, I also
-want to have a memory tester there.
+As I want all possible options to possibly troubleshoot my PC right there in my =grub= menu, without the need to boot into a live OS, I also want to have a memory tester there.
 
 ****** =BIOS=
+#+ATTR_LATEX: :environment pkgtable
+|       / | <>           |
+|     <r> | <l>          |
+|  *repo* | *packages*   |
+|---------+--------------|
+| =extra= | =memtest86+= |
 
-=extra= & =memtest86+=\\
-
-For a =BIOS= setup, you'll simply need to install the =memtest86+=
-package, with no further configuration.
+For a =BIOS= setup, you'll simply need to install the =memtest86+= package, with no further configuration.
 
 ****** =UEFI=
+#+ATTR_LATEX: :environment pkgtable
+|      / | <>              |
+|    <r> | <l>             |
+| *repo* | *packages*      |
+|--------+-----------------|
+|  =AUR= | =memtest86-efi= |
 
-=AUR= & =memtest86-efi=\\
-
-For a =UEFI= setup, you'll first need to install the package and then
-tell =memtest86-efi=^{=AUR=} how to install itself
+For a =UEFI= setup, you'll first need to install the package and then tell =memtest86-efi= ^{=AUR=} how to install itself
 
 #+begin_src fish
 root in /
@@ -890,27 +1024,26 @@ root in /
 Now select option 3, to install it as a =grub2= menu item.
 
 ***** Enabling hibernation
-We need to add the =resume= kernel parameter to =/etc/default/grub=,
-containing my =swap= partition =UUID=, in my case
+We need to add the =resume= kernel parameter to =/etc/default/grub=, containing my =swap= partition =UUID=, in my case
 
-#+begin_src fish
+#+begin_src txt
 GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet resume=UUID=097c6f11-f246-40eb-a702-ba83c92654f2"
 #+end_src
+#+begin_center
+=/etc/default/grub=
+#+end_center
 
-If you have to change anything, like the =swap= partition =UUID=, inside
-the =grub= configuration files, you'll always have to rerun
-~> grub-mkconfig~ as explained in the paragraph of the section .
+If you have to change anything, like the =swap= partition =UUID=, inside the =grub= configuration files, you'll always have to rerun ~> grub-mkconfig~ as explained in the paragraph of the section .
 
 ***** Disabling =os-prober=
-Sometimes it makes sense to disable the =os-prober= functionality of
-grub, even though =os-prober= is installed on the system (which auto
-enables it), for example when installing arch for portability purposes.
-We can disable the os-prober functionality in the =grub= default config
-file.
+Sometimes it makes sense to disable the =os-prober= functionality of grub, even though =os-prober= is installed on the system (which auto enables it), for example when installing arch for portability purposes. We can disable the os-prober functionality in the =grub= default config file.
 
-#+begin_src fish
+#+begin_src txt
 GRUB_DISABLE_OS_PROBER=true
 #+end_src
+#+begin_center
+=/etc/default/grub=
+#+end_center
 
 ***** Generating the =grub= config
 Now we can finally generate our =grub.cfg=
@@ -921,33 +1054,307 @@ root in /
 #+end_src
 
 Now you're good to boot into your new system.
+*** =limine=
+#+ATTR_LATEX: :environment pkgtable
+|      / | <>         |
+|    <r> | <l>        |
+| *repo* | *packages* |
+|--------+------------|
+|  =AUR= | =limine=   |
+
+#+begin_TIP
+You will have to switch to your normal user to install the =AUR= package.
+
+If you're at it though, you could also already install =paru=, to make things easier.
+
+#+ATTR_LATEX: :environment pkgtable
+|           / | <>             |
+|         <r> | <l>            |
+|      *repo* | *packages*     |
+|-------------+----------------|
+|     =extra= | =asp devtools= |
+| =community= | =bat=          |
+|       =AUR= | =paru-bin=     |
+
+#+begin_src fish
+root in /
+> su dustvoice
+
+dustvoice in ~
+> git clone https://aur.archlinux.org/paru-bin.git
+
+dustvoice in ~/paru-bin
+> makepkg -si
+
+dustvoice in ~
+> rm -rf paru-bin
+#+end_src
+#+end_TIP
+
+**** =Hybrid=
+To be able to boot from a =BIOS=, as well as a =UEFI= system, simply follow both of these guides.
+
+**** =BIOS=
+For installing =limine= on a =BIOS= system, you first need to copy ~/usr/share/limine/limine.sys~ (which replaces the need for a boot partition, like =grub= uses it) to a ~/~ or ~/boot~ directory of any partition on the disk you want to try and boot from.
+
+#+begin_src fish
+root in /
+> cp /usr/share/limine/limine.sys /boot/
+#+end_src
+
+After that deploy =limine= using =limine-deploy=
+
+#+begin_src fish
+root in /
+> limine-deploy /dev/sda
+#+end_src
+
+#+begin_NOTE
+Don't specify any partition number when using the =limine-deploy=!
+#+end_NOTE
+
+**** =UEFI=
+Simply copy ~/usr/share/limine/BOOTX64.EFI~ to the appropriate location on your =EFI System Partition=
+
+#+begin_src fish
+root in /
+> mkdir -p /boot/EFI/BOOT
+
+root in /
+> cp /usr/share/limine/BOOTX64.EFI /boot/EFI/BOOT/
+#+end_src
+
+#+begin_NOTE
+In case you're using the [[*Secure Boot]] method described under [[*=PreLoader=]], you would need to name it ~loader.efi~, as the =PreLoader= takes the place of the =BOOTX64.EFI= which gets auto started by most =UEFI= systems.
+#+end_NOTE
+
+**** config
+The only thing left to do is to create a ~limine.cfg~ file with all your desired boot entries in it.
+
+#+begin_NOTE
+I usually have multiple kernels installed at a time, which is why my config file is so big.
+Note that I will intall the kernels at a later time, but already specify them as boot entries.
+Therefore don't be suprised if those boot entries in turn won't work yet!
+#+end_NOTE
+
+***** Kernel =cmdline=
+First off we'll define a variable which we then use throughout our boot entries, in order to reduce complexity and redundancy and increase readability.
+
+#+begin_NOTE
+You need to replace the =[...]= part with the appropriate values for your system.
+
+For =[1]= the command to get the "physical" offset of the =swapfile= on =btrfs= is
+
+#+begin_src fish
+root in /
+> btrfs inspect-internal map-swapfile -r swapfile/swapfile
+#+end_src
+
+For =[2]=, getting the =UUID= of the =LUKS= volume is achieved by using =blkid=.
+#+end_NOTE
+
+#+begin_src txt
+${root_device}=root=/dev/mapper/DustPortable rw rootflags=subvol=@ resume=/dev/mapper/DustPortable resume_offset=[1] cryptdevice=UUID=[2]:DustPortable
+#+end_src
+#+begin_center
+=/boot/limine.cfg=
+#+end_center
+
+***** =limine= options
+Next we configure some options for =limine=
+
+#+begin_src txt
+TIMEOUT=no
+INTERFACE_BRANDING=DustPortable
+#+end_src
+#+begin_center
+=/boot/limine.cfg=
+#+end_center
+
+***** Boot entries
+Finally we can specify our boot entries
+
+#+begin_src txt
+:Arch Linux
+
+PROTOCOL=linux
+KERNEL_PATH=boot:///vmlinuz-linux
+CMDLINE=${root_device}
+MODULE_PATH=boot:///intel-ucode.img
+MODULE_PATH=boot:///amd-ucode.img
+MODULE_PATH=boot:///initramfs-linux.img
+
+:Arch Linux (Zen)
+
+PROTOCOL=linux
+KERNEL_PATH=boot:///vmlinuz-linux-zen
+CMDLINE=${root_device}
+MODULE_PATH=boot:///intel-ucode.img
+MODULE_PATH=boot:///amd-ucode.img
+MODULE_PATH=boot:///initramfs-linux-zen.img
+
+:Arch Linux (LTS)
+
+PROTOCOL=linux
+KERNEL_PATH=boot:///vmlinuz-linux-lts
+CMDLINE=${root_device}
+MODULE_PATH=boot:///intel-ucode.img
+MODULE_PATH=boot:///amd-ucode.img
+MODULE_PATH=boot:///initramfs-linux-lts.img
+
+:Arch Linux (Hardened)
+
+PROTOCOL=linux
+KERNEL_PATH=boot:///vmlinuz-linux-hardened
+CMDLINE=${root_device}
+MODULE_PATH=boot:///intel-ucode.img
+MODULE_PATH=boot:///amd-ucode.img
+MODULE_PATH=boot:///initramfs-linux-hardened.img
+
+:Arch Linux (fallback initramfs)
+
+::Arch Linux
+
+PROTOCOL=linux
+KERNEL_PATH=boot:///vmlinuz-linux
+CMDLINE=${root_device}
+MODULE_PATH=boot:///intel-ucode.img
+MODULE_PATH=boot:///amd-ucode.img
+MODULE_PATH=boot:///initramfs-linux-fallback.img
+
+::Arch Linux (Zen)
+
+PROTOCOL=linux
+KERNEL_PATH=boot:///vmlinuz-linux-zen
+CMDLINE=${root_device}
+MODULE_PATH=boot:///intel-ucode.img
+MODULE_PATH=boot:///amd-ucode.img
+MODULE_PATH=boot:///initramfs-linux-zen-fallback.img
+
+::Arch Linux (LTS)
+
+PROTOCOL=linux
+KERNEL_PATH=boot:///vmlinuz-linux-lts
+CMDLINE=${root_device}
+MODULE_PATH=boot:///intel-ucode.img
+MODULE_PATH=boot:///amd-ucode.img
+MODULE_PATH=boot:///initramfs-linux-lts-fallback.img
+
+::Arch Linux (Hardened)
+
+PROTOCOL=linux
+KERNEL_PATH=boot:///vmlinuz-linux-hardened
+CMDLINE=${root_device}
+MODULE_PATH=boot:///intel-ucode.img
+MODULE_PATH=boot:///amd-ucode.img
+MODULE_PATH=boot:///initramfs-linux-hardened-fallback.img
+#+end_src
+#+begin_center
+=/boot/limine.cfg=
+#+end_center
+
+** Configure the =initramfs=
+We'll add some custom entries to the ~/etc/mkinitcpio.conf~.
+
+#+begin_IMPORTANT
+It is crucial that after you're finised with editing the file, you run
+
+#+begin_src fish
+root in /
+> mkinitcpio -P
+#+end_src
+
+to regenerate the =initramfs=!
+#+end_IMPORTANT
+
+*** =BINARIES=
+First off, we some binaries to be present in the image, so that if we drop into a recovery shell, we can use them.
+
+#+begin_src txt
+BINARIES=(btrfs nvim zsh fish)
+#+end_src
+#+begin_center
+=/etc/mkinitcpio.conf=
+#+end_center
+
+*** Hibernation
+In order to use the hibernation feature, you should make sure that your =swap= partition/file is at least the size of your RAM.
+
+If you use a =busybox= based =ramdisk=, you need to add the =resume= hook to =/etc/mkinitcpio.conf=, before =fsck= and definetely after =block=
+
+#+begin_NOTE
+When using =EFISTUB= without =sbupdate=, your motherboard has to support kernel parameters for boot entries. If your motherboard doesn't support this, you would need to use .
+#+end_NOTE
+
+*** =HOOKS=
+Now we will specify every hook we need.
+Mentionworthy additions to the default set are the hooks =colors=, =encrypt=, =btrfs= and =resume=.
+
+#+begin_src txt
+HOOKS=(base udev colors block keyboard keymap consolefont autodetect kms modconf encrypt btrfs resume filesystems fsck)
+#+end_src
+#+begin_center
+=/etc/mkinitcpio.conf=
+#+end_center
+
+*** =colors=
+#+ATTR_LATEX: :environment pkgtable
+|           / | <>                      |
+|         <r> | <l>                     |
+|      *repo* | *packages*              |
+|-------------+-------------------------|
+| =community= | =terminus-font=         |
+|       =AUR= | =mkinitcpio-colors-git= |
+
+By creating a file ~/etc/vconsole.conf~ we can specify a custom font and colorscheme to use
+
+#+begin_src txt
+KEYMAP=us
+FONT=ter-116n
+COLOR_0=282a36
+COLOR_1=ff5555
+COLOR_2=50fa7b
+COLOR_3=f1fa8c
+COLOR_4=6272a4
+COLOR_5=bd93f9
+COLOR_6=8be9fd
+COLOR_7=d8d8d2
+COLOR_8=44475a
+COLOR_9=ff8585
+COLOR_10=80faab
+COLOR_11=f1fabc
+COLOR_12=92a2d4
+COLOR_13=ff79c6
+COLOR_14=bbe9fd
+COLOR_15=f8f8f2
+#+end_src
+#+begin_center
+=/etc/vconsole.conf=
+#+end_center
 
 ** Switch to a =systemd= based =ramdisk=
+#+begin_CAUTION
+I think it is worth noting that lately I didn't use a =systemd= based =ramdisk= on my portable setup anymore, as I encountered some issues.
 
-There is nothing particularily better about using a =systemd= based
-=ramdisk= instead of a =busybox= one, it's just that I prefer it.
+The underlying issue apparently were having the =block= and =keyboard= hook located after the =autodetect= hook.
+Reversing this so that =block= and =keyboard= precedes =autodetect= seems to fix the issue.
+In any case the =fallback initramfs= should always work.
 
-Some advantages, at least in my opinion, that the =systemd= based
-=ramidsk= has, are the included =resume= hook, as well as password
-caching, when decrypting encrypted volumes, which means that because I
-use the same =LUKS= password for both my data storage =HDD=, as well as
-my =cryptroot=, I only have to input the password once for my
-=cryptroot= and my data storage =HDD= will get decrypted too, without
-the need to create =/etc/crypttab= entries, etc.
+It is worth noting though, that with the =busybox= based one, you lose the ability to unlock multiple =LUKS= encrypted partitions / devices at once, if they share the same password.
+In that case you would need to use the ~/etc/crypttab~.
+#+end_CAUTION
 
-To switch to a =systemd= based =ramdisk=, you will normally need to
-substitute the =busybox= specific hooks for =systemd= ones. You will
-also need to use =systemd= hooks from now on, for example =sd-encrypt=
-instead of =encrypt=.
+There is nothing particularily better about using a =systemd= based =ramdisk= instead of a =busybox= one, it's just that I prefer it.
+
+Some advantages, at least in my opinion, that the =systemd= based =ramidsk= has, are the included =resume= hook, as well as password caching, when decrypting encrypted volumes, which means that because I use the same =LUKS= password for both my data storage =HDD=, as well as my =cryptroot=, I only have to input the password once for my =cryptroot= and my data storage =HDD= will get decrypted too, without the need to create =/etc/crypttab= entries, etc.
+
+To switch to a =systemd= based =ramdisk=, you will normally need to substitute the =busybox= specific hooks for =systemd= ones. You will also need to use =systemd= hooks from now on, for example =sd-encrypt= instead of =encrypt=.
 
 - =base=
 
-  In my case, I left the =base= hook untouched, to get a =busybox=
-  recovery shell, if something goes wrong, although you wouldn't
-  technically need it, when using =systemd=.
+  In my case, I left the =base= hook untouched, to get a =busybox= recovery shell, if something goes wrong, although you wouldn't technically need it, when using =systemd=.
 
-  Don't remove this, when using =busybox=, unless you're absolutely
-  knowing what you're doing.
+  Don't remove this, when using =busybox=, unless you're absolutely knowing what you're doing.
 
 - =udev=
 
@@ -955,134 +1362,101 @@ instead of =encrypt=.
 
 - =keymap= and/or =fishfont=
 
-  These two, or one, if you didn't use one of them, need to be replaced
-  with =sd-vfish=. Everything else stays the same with these.
+  These two, or one, if you didn't use one of them, need to be replaced with =sd-vfish=. Everything else stays the same with these.
 
 - =encrypt=
 
-  Isn't used in the default =/etc/mkinitcpio.conf=, but could be
-  important later on, for example when using . You need to substitute
-  this with =sd-encrypt=.
+  Isn't used in the default =/etc/mkinitcpio.conf=, but could be important later on, for example when using . You need to substitute this with =sd-encrypt=.
 
 - =lvm2=
 
-  Same thing as with =encrypt= and needs to be substituted with
-  =sd-lvm2=.
+  Same thing as with =encrypt= and needs to be substituted with =sd-lvm2=.
 
-You can find all purposes of the individual hooks, as well as the
-=busybox= / =systemd= equivalent of each one in the .
+You can find all purposes of the individual hooks, as well as the =busybox= / =systemd= equivalent of each one in the .
 
-** Hibernation
-In order to use the hibernation feature, you should make sure that your
-=swap= partition/file is at least the size of your RAM.
-
-If you use a =busybox= based =ramdisk=, you need to
-
-1. add the =resume= hook to =/etc/mkinitcpio.conf=, before =fsck= and
-   definetely after =block=
-
-   #+begin_src fish
-   HOOKS=(base udev autodetect modconf block filesystems keyboard resume fsck)
-   #+end_src
-
-2. run
-
-   #+begin_src fish
-   root in /
-   > mkinitcpio -p linux
-   #+end_src
-
-When using =EFISTUB= without =sbupdate=, your motherboard has to support
-kernel parameters for boot entries. If your motherboard doesn't support
-this, you would need to use .
 
 ** Secure Boot
-*** =shim=
+*** =PreLoader=
+#+ATTR_LATEX: :environment pkgtable
+|      / | <>                 |
+|    <r> | <l>                |
+| *repo* | *packages*         |
+|--------+--------------------|
+|  =AUR= | =preloader-signed= |
 
-=AUR= & =shim-signed=\\
+This is a way of handling secure boot that aims at just making everything work!
+It is not the way Secure Boot was intended to be used and you might as well disable it.
 
-This is a way of handling secure boot that aims at just making
-everything work!
+If you need Secure Boot to be enabled, e.g. for Windows, but you couldn't care less for the security it could bring to your device, or if you want to use this installation on multiple systems, where Secure Boot could be enabled, use this method.
 
-It is not the way Secure Boot was intended to be used and you might as
-well disable it.
-
-If you need Secure Boot to be enabled, e.g. for Windows, but you
-couldn't care less for the security it could bring to your device, use
-this method.
-
-If you want to actually make use of the Secure Boot feature, read .
+If you want to actually make use of the Secure Boot feature, read [[*The manual way]].
 
 I know I told you that you're now good to boot into your new system.
 That is only correct, if you're /not/ using Secure Boot.
+You can either proceed by disabling Secure Boot in your firmware settings, or by using =PreLoader= as kind of a pre-bootloader.
 
-You can either proceed by disabling Secure Boot in your firmware
-settings, or by using =shim= as kind of a pre-bootloader, as well as
-signing your bootloader (=grub=) and your kernel.
-
-If you decided on using Secure Boot, you will first have to install the
-package.
-
-Now we just need to copy =shimx64.efi=, as well as =mmx64.efi= to our
-EFI System partition
+If you decided on using Secure Boot, you will first have to install the package.
+Now we just need to copy the =PreLoader= and the =HashTool=, which gets launched if the hash of the binary that is to be loaded (~loader.efi~) is not registered in the firmware yet, to our =EFI System Partition=
 
 #+begin_src fish
 root in /
-> cp /usr/share/shim-signed/shimx64.efi /boot/EFI/grub/
+> cp /usr/share/preloader-signed/PreLoader.efi /boot/EFI/BOOT/BOOTX64.EFI
 
 root in /
-> cp /usr/share/shim-signed/mmx64.efi /boot/EFI/grub/
+> cp /usr/share/preloader-signed/HashTool.efi /boot/EFI/BOOT/
 #+end_src
 
-If you have to use =bcdedit= from within Windows, as explained in
-section , you need to adapt the command accordingly
+#+begin_NOTE
+If you have to use =bcdedit= from within Windows, as explained in section [[*=grub= -> =UEFI=]], you need to adapt the command accordingly
 
 #+begin_src fish
-bcdedit /set {bootmgr} path \EFI\grub\shimx64.efi
+root in /
+> cp /usr/share/preloader-signed/PreLoader.efi /boot/EFI/BOOT/PreLoader.efi
+
+root in /
+> cp /usr/share/preloader-signed/HashTool.efi /boot/EFI/BOOT/
 #+end_src
 
-Now you will be greeted by =MokManager= everytime you update your
-bootloader or kernel.
+and under Windows
 
-Just choose "Enroll hash from disk" and enroll your bootloader binary
-(=grubx64.efi=) and kernel (=vmlinuz-linux=).
+#+begin_src fish
+bcdedit /set {bootmgr} path \EFI\BOOT\PreLoader.efi
+#+end_src
+#+end_NOTE
+
+Now you will be greeted by =HashTool= everytime you update your bootloader or kernel.
+
+Just choose "Enroll Hash", choose the appropriate ~loader.efi~, and also enroll the kernel (~vmlinuz-linux~).
 
 Reboot and your system should fire up just fine.
 
 *** The manual way
 
-As this is a very tedious and time consuming process, it only makes
-sense when also utilizing some sort of disk encryption, which is, why I
-would advise you to read first.
+As this is a very tedious and time consuming process, it only makes sense when also utilizing some sort of disk encryption, which is, why I would advise you to read first.
 
 **** File formats
-In the following subsections, we will be dealing with some different
-file formats.
+In the following subsections, we will be dealing with some different file formats.
 
-=.key= =PEM= format private keys for =EFI= binary and =EFI= signature
-list signing.
+- =.key= =PEM= format private keys for =EFI= binary and =EFI= signature list signing.
 
-=.crt= =PEM= format certificates for =sbsign=.
+- =.crt= =PEM= format certificates for =sbsign=.
 
-=.cer= =DER= format certigficates for firmware.
+- =.cer= =DER= format certigficates for firmware.
 
-=.esl= Certificates in =EFI= Signature List for =KeyTool= and/or
-firmware.
+- =.esl= Certificates in =EFI= Signature List for =KeyTool= and/or firmware.
 
-=.auth= Certificates in =EFI= Signature List with authentication header
-(i.e. a signed certificate update file) for =KeyTool= and/or firmware.
+- =.auth= Certificates in =EFI= Signature List with authentication header (i.e. a signed certificate update file) for =KeyTool= and/or firmware.
 
 **** Create the keys
 First off, we have to generate our Secure Boot keys.
 
-These will be used to sign any binary which will be executed by the
-firwmare.
+These will be used to sign any binary which will be executed by the firwmare.
 
 ***** =GUID=
 Let's create a =GUID= first to use with the next commands.
 
 #+begin_src fish
-root in ~/sb
+dustvoice in ~/sb
 > uuidgen --random > GUID.txt
 #+end_src
 
@@ -1090,25 +1464,23 @@ root in ~/sb
 We can now generate our =PK= (Platform Key)
 
 #+begin_src fish
-root in ~/sb
+dustvoice in ~/sb
 > openssl req -newkey rsa:4096 -nodes -keyout PK.key -new -x509 -sha256 -subj "/CN=Platform Key for DustArch/" -out PK.crt
 
-root in ~/sb
+dustvoice in ~/sb
 > openssl x509 -outform DER -in PK.crt -out PK.cer
 
-root in ~/sb
+dustvoice in ~/sb
 > cert-to-efi-sig-list -g "$(< GUID.txt)" PK.crt PK.esl
 
-root in ~/sb
+dustvoice in ~/sb
 > sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt PK PK.esl PK.auth
 #+end_src
 
-In order to allow deletion of the =PK=, for firmwares which do not
-provide this functionality out of the box, we have to sign an empty
-file.
+In order to allow deletion of the =PK=, for firmwares which do not provide this functionality out of the box, we have to sign an empty file.
 
 #+begin_src fish
-root in ~/sb
+dustvoice in ~/sb
 > sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt PK /dev/null rm_PK.auth
 #+end_src
 
@@ -1116,16 +1488,16 @@ root in ~/sb
 We proced in a similar fashion with the =KEK= (Key Exchange Key)
 
 #+begin_src fish
-root in ~/sb
+dustvoice in ~/sb
 > openssl req -newkey rsa:4096 -nodes -keyout KEK.key -new -x509 -sha256 -subj "/CN=Key Exchange Key for DustArch/" -out KEK.crt
 
-root in ~/sb
+dustvoice in ~/sb
 > openssl x509 -outform DER -in KEK.crt -out KEK.cer
 
-root in ~/sb
+dustvoice in ~/sb
 > cert-to-efi-sig-list -g "$(< GUID.txt)" KEK.crt KEK.esl
 
-root in ~/sb
+dustvoice in ~/sb
 > sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt KEK KEK.esl KEK.auth
 #+end_src
 
@@ -1133,30 +1505,27 @@ root in ~/sb
 And finally the =DB= (Signature Database) key.
 
 #+begin_src fish
-root in ~/sb
+dustvoice in ~/sb
 > openssl req -newkey rsa:4096 -nodes -keyout db.key -new -x509 -sha256 -subj "/CN=Signature Database key for DustArch" -out db.crt
 
-root in ~/sb
+dustvoice in ~/sb
 > openssl x509 -outform DER -in db.crt -out db.cer
 
-root in ~/sb
+dustvoice in ~/sb
 > cert-to-efi-sig-list -g "$(< GUID.txt)" db.crt db.esl
 
-root in ~/sb
+dustvoice in ~/sb
 > sign-efi-sig-list -g "$(< GUID.txt)" -k KEK.key -c KEK.crt db db.esl db.auth
 #+end_src
 
 **** Windows stuff
-As your plan is to be able to control, which things do boot on your
-system and which don't, you're going through all this hassle to create
-and enroll custom keys, so only =EFI= binaries signed with said keys can
-be executed.
+As your plan is to be able to control, which things do boot on your system and which don't, you're going through all this hassle to create and enroll custom keys, so only =EFI= binaries signed with said keys can be executed.
 
 But what if you have a Windows dual boot setup?
 
-Well the procedure is actually pretty straight forward. You just grab
-Microsoft's certificates, convert them into a usable format, sign them
-and enroll them. No need to sign the Windows boot loader.
+Well the procedure is actually pretty straight forward.
+You just grab Microsoft's certificates, convert them into a usable format, sign them and enroll them.
+No need to sign the Windows boot loader.
 
 #+begin_src fish
 root in ~/sb
@@ -1173,63 +1542,45 @@ root in ~/sb
 #+end_src
 
 **** Move the kernel & keys
-In order to ensure a smooth operation, with actual security, we need to
-move some stuff around.
+In order to ensure a smooth operation, with actual security, we need to move some stuff around.
 
 ***** Kernel, =initramfs=, microcode
-=pacman= will put its unsigned and unencrypted kernel, =initramfs= and
-microcode images into =/boot=, which is, why it will be no longer a good
-idea, to leave your EFI System partition mounted there. Instead we will
-create a new mountpoint under =/efi= and modify our =fstab= accordingly.
+=pacman= will put its unsigned and unencrypted kernel, =initramfs= and microcode images into =/boot=, which is, why it will be no longer a good idea, to leave your =EFI System Partition= mounted there.
+Instead we will create a new mountpoint under =/efi= and modify our =fstab= accordingly.
 
 ***** Keys
-As you probably want to automate signing sooner or later and only use
-the ultimately necessary keys for this process, as well as store the
-other more important keys somewhere more safe and secure than your
-=root= home directory, we will move the necessary keys.
+As you probably want to automate signing sooner or later and only use the ultimately necessary keys for this process, as well as store the other more important keys somewhere more safe and secure than your =root= home directory, we will move the necessary keys.
 
-I personally like to create a =/etc/efi-keys= directory, =chmod=ded to
-=700= and place my =db.crt= and =db.key= there. All the keys will get
-packed into a =tar= archive and encrypted with a strong symmetric pass
-phrase and stored somewhere secure and safe.
+I personally like to create a =/etc/efi-keys= directory, =chmod=ded to =700= and place my =db.crt= and =db.key= there. All the keys will get packed into a =tar= archive and encrypted with a strong symmetric pass phrase and stored somewhere secure and safe.
 
 **** Signing
-Signing is the process of, well, signing your =EFI= binaries, in order
-for them to be allowed to be executed, by the motherboard firmware. At
-the end of the day, that's why you're doing all this, to prevent an
-attack by launching unknown code.
+Signing is the process of, well, signing your =EFI= binaries, in order for them to be allowed to be executed, by the motherboard firmware. At the end of the day, that's why you're doing all this, to prevent an attack by launching unknown code.
 
 ***** Manual signing
-Of course, you can sign images yourself manually. In my case, I used
-this, to sign the boot loader, kernel and =initramfs= of my USB
-installation of Arch Linux.
+Of course, you can sign images yourself manually. In my case, I used this, to sign the boot loader, kernel and =initramfs= of my USB installation of Arch Linux.
 
 As always, manual signing also comes with its caveats!
 
-If I update my kernel, boot loader, or create an updated =initramfs= on
-my Arch Linux USB installation, I have to sign those files again, in
-order to be able to boot it on my PC.
+If I update my kernel, boot loader, or create an updated =initramfs= on my Arch Linux USB installation, I have to sign those files again, in order to be able to boot it on my PC.
 
-Of course you can always script and automate stuff, but if you want
-something more easy for day to day use, I really recommend that you try
-out =sbupdate=, which I will explain in the next paragraph .
+Of course you can always script and automate stuff, but if you want something more easy for day to day use, I really recommend that you try out =sbupdate=, which I will explain in the next paragraph .
 
-For example, if I want to sign the kernel image of my USB installation,
-where I mounted the boot partition to =/mnt/dustarchusb/boot=, I would
-have to do the following
+For example, if I want to sign the kernel image of my USB installation, where I mounted the boot partition to =/mnt/DustPortable/boot=, I would have to do the following
 
 #+begin_src fish
 root in ~/sb
-> sbsign --key /etc/efi-keys/db.key --cert /etc/efi-keys/db.crt --output /boot/vmlinuz-linux /boot/vmlinuz-linux
+> sbsign --key /etc/efi-keys/db.key --cert /etc/efi-keys/db.crt --output /mnt/DustPortable/boot/vmlinuz-linux /mnt/DustPortable/boot/vmlinuz-linux
 #+end_src
 
 ***** =sbupdate=
+#+ATTR_LATEX: :environment pkgtable
+|      / | <>             |
+|    <r> | <l>            |
+| *repo* | *packages*     |
+|--------+----------------|
+|  =AUR= | =sbupdate-git= |
 
-=AUR= & =sbupdate-git=\\
-
-Of course, if you're using Secure Boot productively, you would want
-something more practical than manual signing, especially since you need
-to sign
+Of course, if you're using Secure Boot productively, you would want something more practical than manual signing, especially since you need to sign
 
 - the boot loader
 
@@ -1237,16 +1588,11 @@ to sign
 
 - the =initramfs=
 
-Fortunately there is an easy and uncomplicated tool out there, that does
-all that for you, called =sbupdate=.
+Fortunately there is an easy and uncomplicated tool out there, that does all that for you, called =sbupdate=.
 
-It not only signs everything and also foreign =EFI= binaries, if
-specified, but also combines your kernel and =initramfs= into a single
-executable =EFI= binary, so you don't even need a boot loader, if your
-motherboard implementation supports booting those.
+It not only signs everything and also foreign =EFI= binaries, if specified, but also combines your kernel and =initramfs= into a single executable =EFI= binary, so you don't even need a boot loader, if your motherboard implementation supports booting those.
 
-After installing =sbupdate=, we can edit the =/etc/sbupdate.conf= file,
-to set everything up.
+After installing =sbupdate=, we can edit the =/etc/sbupdate.conf= file, to set everything up.
 
 Everything in this config should be self-explanatory.
 
@@ -1256,7 +1602,7 @@ You will probably need to
 
 - add any other =EFI= binary you want to have signed to =EXTRA_SIGN=
 
-- add your kernel parameters, for example
+- add your kernel parameters, for example (=systemd=-based =initramfs=!)
 
   - =rd.luks.name=
 
@@ -1270,16 +1616,18 @@ You will probably need to
 
   to =CMDLINE_DEFAULT=
 
-After you've successfully configured =sbupdate=, you can run it as root,
-to create all the signed files.
+After you've successfully configured =sbupdate=, you can run it as root, to create all the signed files.
 
-=sbupdate= will be executed upon kernel updates by =pacman=, but not if
-you change your =initramfs= with something like =mkinitcpio=. In that
-case you will have to run =sbupdate= manually.
+=sbupdate= will be executed upon kernel updates by =pacman=, but not if you change your =initramfs= with something like =mkinitcpio=.
+In that case you will have to run =sbupdate= manually.
 
 **** Add =EFI= entries
-
-=core= & =efibootmgr=\\
+#+ATTR_LATEX: :environment pkgtable
+|      / | <>           |
+|    <r> | <l>          |
+| *repo* | *packages*   |
+|--------+--------------|
+| =core= | =efibootmgr= |
 
 Now the only thing left to do, if you want to stay boot loader free
 anyways, is to add the signed images to the boot list of your =NVRAM=.
@@ -1287,41 +1635,34 @@ You can do this with =efibootmgr=.
 
 #+begin_src fish
 root in ~/sb
-> efibootmgr -c -d /dev/nvme0n1 -p 1 -L "Arch Linux fallback" -l "EFI\Arch\linux-fallback-signed.efi
+> efibootmgr -c -d /dev/nvme0n1 -p 1 -L "Arch Linux fallback" -l "EFI\\Arch\\linux-fallback-signed.efi"
 
 root in ~/sb
-> efibootmgr -c -d /dev/nvme0n1 -p 1 -L "Arch Linux" -l "EFI\Arch\linux-signed.efi
+> efibootmgr -c -d /dev/nvme0n1 -p 1 -L "Arch Linux" -l "EFI\\Arch\\linux-signed.efi"
 #+end_src
 
 Of course you can extend this list, with whichever entries you need.
 
 **** Enrolling everything
-First off, copy all =.cer=, =.esl= and =.auth= files to a =FAT=
-formatted filesystem. I'm using my EFI System partition for this.
+First off, copy all =.cer=, =.esl= and =.auth= files to a =FAT= formatted filesystem.
+I'm using my =EFI System Partition= for this.
 
-After that reboot into the firmware setup of your motherboard, clear the
-existing Platform Key, to set the firmware into "Setup Mode" and enroll
-the =db=, =KEK= and =PK= certificates in sequence.
+After that reboot into the firmware setup of your motherboard, clear the existing Platform Key, to set the firmware into "Setup Mode" and enroll the =db=, =KEK= and =PK= certificates in sequence.
 
-Enroll the Platform Key last, as it sets most firmware's Secure Boot
-sections back into "User mode", exiting "Setup Mode".
+Enroll the Platform Key last, as it sets most firmware's Secure Boot sections back into "User mode", exiting "Setup Mode".
 
 * Inside the =DustArch=
-This section helps at setting up the customized system from within an
-installed system.
+This section helps at setting up the customized system from within an installed system.
 
-This section mainly provides aid with the basic set up tasks, like
-networking, dotfiles, etc.
+This section mainly provides aid with the basic set up tasks, like networking, dotfiles, etc.
 
 Not everything in this section is mandatory.
 
-This section is rather a guideline, because it is easy to forget some
-steps needed, for example =jack= for audio production, that only become
-apparent, when they're needed.
+This section is rather a guideline, because it is easy to forget some steps needed (for example =jack= for audio production), which only become apparent when they're needed or stuff fails.
 
-It is furthermore the responsibility of the reader to decide which steps
-to skip and which need further research. As I mentioned, this is only a
-guide and not the answer to everything.
+It is furthermore the responsibility of the reader to decide which steps to skip and which need further research.
+As I mentioned, this is only a guide and not the answer to everything.
+So reader discretion advised!
 
 ** Someone there?
 First we have to check if the network interfaces are set up properly.
