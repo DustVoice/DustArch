@@ -60,6 +60,7 @@
   thead {
     border-top-width: 0px;
     border-top-style: solid;
+    border-bottom-style: solid;
   }
 
   table {
@@ -89,10 +90,10 @@ If you encounter any problems along the way, you will either have to resolve the
 In the following document, I will denote a command execution in a shell with a preceding ~>~:\\
 (~> uname -a~).
 
-In a shell session block, you can infer the privilege the command was executed by looking at the prompt line above the command, where the username will be denoted, together with the current working directory.
+In a shell session block, you can infer the privilege the command was executed by looking at the prompt line above the command, where the =root= username will be denoted if it's an elevated shell, in any case together with the current working directory
 
 #+begin_src fish
-dustvoice in ~
+~
 > git init
 
 root in /boot
@@ -152,7 +153,7 @@ If you want to install a package from the [[https://aur.archlinux.org/][AUR]], I
 1. Clone the package with =git=
 
    #+begin_src fish
-   dustvoice in ~
+   ~
    > git clone https://aur.archlinux.org/paru.git
    #+end_src
 
@@ -161,14 +162,14 @@ If you want to install a package from the [[https://aur.archlinux.org/][AUR]], I
 2. Switch to the package directory
 
    #+begin_src fish
-   dustvoice in ~
+   ~
    > cd paru
    #+end_src
 
 3. Execute ~> makepkg~
 
    #+begin_src fish
-   dustvoice in ~/paru
+   ~/paru
    > makepkg -si
    #+end_src
 
@@ -176,10 +177,10 @@ If you want to install a package from the [[https://aur.archlinux.org/][AUR]], I
    =AUR= stuff.
 
    #+begin_src fish
-   dustvoice in ~/paru
+   ~/paru
    > cd ..
 
-   dustvoice in ~
+   ~
    > rm -rf paru
    #+end_src
 
@@ -212,23 +213,24 @@ For further clarification for specific packages (e.g. =UEFI= specific packages),
 Of course, as always, you can and *should* adapt everything according to your needs, as this guide is, again, /no tutorial, but a guide/.
 
 **** Example section
-#+ATTR_LATEX: :environment pkgtable
-|           / | <>                                                             |
-|         <r> | <l>                                                            |
-|      *repo* | *packages*                                                     |
-|-------------+----------------------------------------------------------------|
-|      =core= | =libutil-linux=                                                |
-|     =extra= | =git=                                                          |
-| =community= | =ardour cadence jsampler linuxsampler qsampler sample-package= |
-|       =AUR= | =sbupdate=                                                     |
+#+ATTR_LATEX: :environment pkgtblr
+|      <c>      |   <c>   |      <c>       |   <c>    |
+|    *core*     | *extra* |  *community*   |  *AUR*   |
+|---------------+---------+----------------+----------|
+| libutil-linux |   git   |     ardour     | sbupdate |
+|               |         |    cadence     |          |
+|               |         |    jsampler    |          |
+|               |         |  linuxsampler  |          |
+|               |         |    qsampler    |          |
+|               |         | sample-package |          |
 
-You have to configure =sample-package=, by editing =/etc/sample.conf=
+You have to configure =sample-package=, by editing ~/etc/sample.conf~
 
 #+begin_src txt
 Sample.text=useful
 #+end_src
 #+begin_center
-=/etc/sample.conf=
+~/etc/sample.conf~
 #+end_center
 
 ** Formatting the drive
@@ -285,12 +287,11 @@ After partitioning our disk, we now have to set everything up.
 
 **** EFI System partition
 
-#+ATTR_LATEX: :environment pkgtable
-|      / | <>           |
-|    <r> | <l>          |
-| *repo* | *packages*   |
-|--------+--------------|
-| =core= | =dosfstools= |
+#+ATTR_LATEX: :environment pkgtblr
+|    <c>     |   <c>   |     <c>     |  <c>  |
+|   *core*   | *extra* | *community* | *AUR* |
+|------------+---------+-------------+-------|
+| dosfstools |         |             |       |
 
 I won't setup my EFI System partition with =cryptsetup=, as it makes no sense in my case.
 
@@ -310,12 +311,11 @@ I will use =limine= though, so for me all of this isn't a consideration.
 
 **** =LUKS=
 
-#+ATTR_LATEX: :environment pkgtable
-|      / | <>           |
-|    <r> | <l>          |
-| *repo* | *packages*   |
-|--------+--------------|
-| =core= | =cryptsetup= |
+#+ATTR_LATEX: :environment pkgtblr
+|    <c>     |   <c>   |     <c>     |  <c>  |
+|   *core*   | *extra* | *community* | *AUR* |
+|------------+---------+-------------+-------|
+| cryptsetup |         |             |       |
 
 First off we have to create the =LUKS= volume
 
@@ -341,12 +341,11 @@ root in /
 The volume is now accessible under =/dev/mapper/DustPortable=.
 
 **** =btrfs=
-#+ATTR_LATEX: :environment pkgtable
-|      / | <>            |
-|    <r> | <l>           |
-| *repo* | *packages*    |
-|--------+---------------|
-| =core= | =btrfs-progs= |
+#+ATTR_LATEX: :environment pkgtblr
+|     <c>     |   <c>   |     <c>     |  <c>  |
+|   *core*    | *extra* | *community* | *AUR* |
+|-------------+---------+-------------+-------|
+| btrfs-progs |         |             |       |
 
 Fist off we need to create the filesystem
 
@@ -393,12 +392,14 @@ As a first step it might make sense to edit =/etc/pacman.d/mirrorlist= to move t
 Generally we need to =pacstrap= the /minimum packages/ needed.
 We will install all other packages later on.
 
-#+ATTR_LATEX: :environment pkgtable
-|      / | <>                                     |
-|    <r> | <l>                                    |
-| *repo* | *packages*                             |
-|--------+----------------------------------------|
-| =core= | =base base-devel linux linux-firmware= |
+#+ATTR_LATEX: :environment pkgtblr
+|      <c>       |   <c>   |     <c>     |  <c>  |
+|     *core*     | *extra* | *community* | *AUR* |
+|----------------+---------+-------------+-------|
+|      base      |         |             |       |
+|   base-devel   |         |             |       |
+|     linux      |         |             |       |
+| linux-firmware |         |             |       |
 
 This is the actual command used in my case
 
@@ -482,7 +483,7 @@ root in /
 #+end_src
 #+end_IMPORTANT
 
-The only thing left to do now is mounting the boot partition, namely my =EFI System Partition=
+The only thing left to do now is mounting the boot partition, namely my /EFI System Partition/
 
 #+begin_src fish
 root in /mnt/DustPortable
@@ -518,12 +519,11 @@ root in /
 > curl https://archlinux.org/mirrorlist/all > /etc/pacman.d/mirrorlist
 #+end_src
 
-#+ATTR_LATEX: :environment pkgtable
-|           / | <>          |
-|         <r> | <l>         |
-|      *repo* | *packages*  |
-|-------------+-------------|
-| =community= | =reflector= |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |   <c>   |     <c>     |  <c>  |
+| *core* | *extra* | *community* | *AUR* |
+|--------+---------+-------------+-------|
+|        |         |  reflector  |       |
 
 The best way to do this tho, is using a package from the official repositories named =reflector=.
 It comes with all sorts of options, for example sorting mirrors by speed, filtering by country, etc.
@@ -620,17 +620,16 @@ Defaults  env_keep += "HTTPS_PROXY"
 Defaults  env_keep += "FTP_PROXY"
 #+end_src
 #+begin_center
-=/etc/sudoers=
+~/etc/sudoers~
 #+end_center
 #+end_NOTE
 
 * Entering the =chroot=
-#+ATTR_LATEX: :environment pkgtable
-|       / | <>                     |
-|     <r> | <l>                    |
-|  *repo* | *packages*             |
-|---------+------------------------|
-| =extra= | =arch-install-scripts= |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |         <c>          |     <c>     |  <c>  |
+| *core* |       *extra*        | *community* | *AUR* |
+|--------+----------------------+-------------+-------|
+|        | arch-install-scripts |             |       |
 
 #+begin_NOTE
 As we want to set up our new system, we need to have access to the different partitions, the internet, etc. which we wouldn't get by solely using =chroot=.
@@ -646,15 +645,25 @@ root in /
 Et Voilà! You successfully =chroot=-ed inside your new system and you'll be greeted by a =bash= prompt, which is the default shell on fresh Arch Linux installations.
 
 ** Installing additional packages
-#+ATTR_LATEX: :environment pkgtable
-|           / | <>                                                                                                                                                         |
-|         <r> | <l>                                                                                                                                                        |
-|      *repo* | *packages*                                                                                                                                                 |
-|-------------+------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|      =core= | =amd-ucode base-devel btrfs-progs diffutils dmraid dnsmasq dosfstools efibootmgr emacs-nativecomp exfat-utils iputils linux-headers openssh sudo usbutils= |
-|     =extra= | =efitools git intel-ucode networkmanager networkmanager-openconnect networkmanager-openvpn parted polkit rsync zsh=                                        |
-| =community= | =fish neovim=                                                                                                                                              |
-|       =AUR= | =limine=                                                                                                                                                   |
+#+ATTR_LATEX: :environment pkgtblr
+|       <c>        |            <c>             |     <c>     |  <c>   |
+|      *core*      |          *extra*           | *community* | *AUR*  |
+|------------------+----------------------------+-------------+--------|
+|    amd-ucode     |          efitools          |    fish     | limine |
+|    base-devel    |            git             |   neovim    |        |
+|   btrfs-progs    |        intel-ucode         |             |        |
+|    diffutils     |       networkmanager       |             |        |
+|      dmraid      | networkmanager-openconnect |             |        |
+|     dnsmasq      |   networkmanager-openvpn   |             |        |
+|    dosfstools    |           parted           |             |        |
+|    efibootmgr    |           polkit           |             |        |
+| emacs-nativecomp |           rsync            |             |        |
+|   exfat-utils    |            zsh             |             |        |
+|     iputils      |                            |             |        |
+|  linux-headers   |                            |             |        |
+|     openssh      |                            |             |        |
+|       sudo       |                            |             |        |
+|     usbutils     |                            |             |        |
 
 There are many command line text editors available, like =nano=, =vi=,
 =vim=, =emacs=, etc.
@@ -678,35 +687,36 @@ polkit.addRule(function(action, subject) {
 });
 #+end_src
 #+begin_center
-=/etc/polkit-1/rules.d/50-org.freedesktop.NetworkManager.rules=
+~/etc/polkit-1/rules.d/50-org.freedesktop.NetworkManager.rules~
 #+end_center
 
 If you use =UEFI=, you'll also need the =efibootmgr=, in order to modify the =UEFI= entries.
 
 *** Additional kernels
-#+ATTR_LATEX: :environment pkgtable
-|       / | <>                                                        |
-|     <r> | <l>                                                       |
-|  *repo* | *packages*                                                |
-|---------+-----------------------------------------------------------|
-|  =core= | =linux-lts linux-lts-headers linux-zen linux-zen-headers= |
-| =extra= | =linux-hardened linux-hardened-headers=                   |
+#+ATTR_LATEX: :environment pkgtblr
+|        <c>        |          <c>           |     <c>     |  <c>  |
+|      *core*       |        *extra*         | *community* | *AUR* |
+|-------------------+------------------------+-------------+-------|
+|     linux-lts     |     linux-hardened     |             |       |
+| linux-lts-headers | linux-hardened-headers |             |       |
+|     linux-zen     |                        |             |       |
+| linux-zen-headers |                        |             |       |
 
 In addition to the standard =linux= kernel, there are a couple of different options out there.
 Just to name a few, there is =linux-lts=, =linux-zen= and =linux-hardened=.
 
 You can simply install them and then add the corresponding =initramfs= and kernel image to your bootloader entries.
 
-Make sure you have allocated enough space on your =EFI System Partition= though.
+Make sure you have allocated enough space on your /EFI System Partition/ though.
 
 ** Master of time
 After that, you have to set your timezone and update the system clock.
 
-Generally speaking, you can find all the different timezones under =/usr/share/zoneinfo=.
+Generally speaking, you can find all the different timezones under ~/usr/share/zoneinfo~.
 
-In my case, my timezone file resides under =/usr/share/zoneinfo/Europe/Berlin=.
+In my case, my timezone file resides under ~/usr/share/zoneinfo/Europe/Berlin~.
 
-To achieve the desired result, I will want to symlink this to =/etc/localtime= and set the hardware clock.
+To achieve the desired result, I will want to symlink this to ~/etc/localtime~ and set the hardware clock.
 
 #+begin_src fish
 root in /
@@ -803,12 +813,12 @@ root in /
 and choose a new password.
 
 *** Create a personal user
-#+ATTR_LATEX: :environment pkgtable
-|      / | <>          |
-|    <r> | <l>         |
-| *repo* | *packages*  |
-|--------+-------------|
-| =core= | =sudo bash= |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |   <c>   |     <c>     |  <c>  |
+| *core* | *extra* | *community* | *AUR* |
+|--------+---------+-------------+-------|
+|  sudo  |         |             |       |
+|  bash  |         |             |       |
 
 We are going to create a new user and set the password, groups and shell for this user
 
@@ -847,12 +857,11 @@ In this section different boot managers / boot methods are explained.
 
 *** =EFISTUB=
 
-#+ATTR_LATEX: :environment pkgtable
-|      / | <>           |
-|    <r> | <l>          |
-| *repo* | *packages*   |
-|--------+--------------|
-| =core= | =efibootmgr= |
+#+ATTR_LATEX: :environment pkgtblr
+|    <c>     |   <c>   |     <c>     |  <c>  |
+|   *core*   | *extra* | *community* | *AUR* |
+|------------+---------+-------------+-------|
+| efibootmgr |         |             |       |
 
 You can directly boot the system, by making use of the =EFISTUB= contained in the kernel image. To utilize this, we can use =efibootmgr= to create an entry in the =UEFI=
 
@@ -864,14 +873,13 @@ root in /
 This only makes sense of course, if you're using =UEFI= instead of a legacy =BIOS=. In this case it doesn't matter of course, if your machine /theoretically supports/ =UEFI=, but rather if it is the /enabled mode/!
 
 *** =grub=
-#+ATTR_LATEX: :environment pkgtable
-|           / | <>                           |
-|         <r> | <l>                          |
-|      *repo* | *packages*                   |
-|-------------+------------------------------|
-|      =core= | =dosfstools efibootmgr grub= |
-|     =extra= | =mtools=                     |
-| =community= | =os-prober=                  |
+#+ATTR_LATEX: :environment pkgtblr
+|    <c>     |   <c>   |     <c>     |  <c>  |
+|   *core*   | *extra* | *community* | *AUR* |
+|------------+---------+-------------+-------|
+| dosfstools | mtools  |  os-prober  |       |
+| efibootmgr |         |             |       |
+|    grub    |         |             |       |
 
 Of course you can also use a boot manager to boot the system, as the name implies.
 
@@ -881,14 +889,14 @@ If I can't use =EFISTUB=, e.g. either because the system has no =UEFI= support, 
 Currently, I mainly use =limine= as a boot manager *especially* on my portable setup, as =grub= is *such a huge pain in the butt!*
 
 =limine= is insanely easy to setup and configure, without all the =BIOS Boot partition= crap that I find myself mainly using this.
-Refer to the [[*=limine=]] section for further information.
+Refer to [[*=limine=]] for further information.
 #+end_TIP
 
 #+begin_NOTE
 You'll probably only need the =efibootmgr= package, if you plan to utilize =UEFI=.
 #+end_NOTE
 
-**** =grub= -> =BIOS=
+**** =grub= - =BIOS=
 If you chose the =BIOS - MBR= variation, you'll have to /do nothing special/.
 
 If you chose the =BIOS - GPT= variation, you'll have to /have a =+1M= boot partition/ created with the partition type set to =BIOS boot=.
@@ -902,7 +910,7 @@ root in /
 
 It should obvious that you would need to replace =/dev/sdb= with the disk you actually want to use. Note however that you have to specify a /disk/ and /not a partition/, so /no number/.
 
-**** =grub= -> =UEFI=
+**** =grub= - =UEFI=
 If you chose the =UEFI - GPT= variation, you'll have to /have the EFI System partition mounted/ at =/boot= (where =/dev/sda2= is the partition holding said EFI System partition in my particular setup)
 
 Now /install =grub= to the EFI System partition/
@@ -941,7 +949,7 @@ First of all, I want my =grub= menu to wait indefinitely for my command to boot 
 GRUB_TIMEOUT=-1
 #+end_src
 #+begin_center
-=/etc/default/grub=
+~/etc/default/grub~
 #+end_center
 
 I decided on this, because I'm dual booting with Windows and after Windows updates itself, I don't want to accidentally boot into my Arch Linux, just because I wasn't quick enough to select the Windows Boot Loader from the =grub= menu.
@@ -956,7 +964,7 @@ GRUB_DEFAULT=saved
 GRUB_SAVEDEFAULT="true"
 #+end_src
 #+begin_center
-=/etc/default/grub=
+~/etc/default/grub~
 #+end_center
 
 ***** Enable the recovery
@@ -966,7 +974,7 @@ After that I also want the recovery option showing up, which means that besides 
 GRUB_DISABLE_RECOVERY=false
 #+end_src
 #+begin_center
-=/etc/default/grub=
+~/etc/default/grub~
 #+end_center
 
 ***** NVIDIA fix
@@ -976,7 +984,7 @@ Now, as I'm using the binary NVIDIA driver for my graphics card, I also want to 
 GRUB_GFXPAYLOAD_LINUX=text
 #+end_src
 #+begin_center
-=/etc/default/grub=
+~/etc/default/grub~
 #+end_center
 
 ***** Add power options
@@ -996,22 +1004,20 @@ menuentry '=> Reboot' {
 As I want all possible options to possibly troubleshoot my PC right there in my =grub= menu, without the need to boot into a live OS, I also want to have a memory tester there.
 
 ****** =BIOS=
-#+ATTR_LATEX: :environment pkgtable
-|       / | <>           |
-|     <r> | <l>          |
-|  *repo* | *packages*   |
-|---------+--------------|
-| =extra= | =memtest86+= |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |    <c>     |     <c>     |  <c>  |
+| *core* |  *extra*   | *community* | *AUR* |
+|--------+------------+-------------+-------|
+|        | memtest86+ |             |       |
 
 For a =BIOS= setup, you'll simply need to install the =memtest86+= package, with no further configuration.
 
 ****** =UEFI=
-#+ATTR_LATEX: :environment pkgtable
-|      / | <>              |
-|    <r> | <l>             |
-| *repo* | *packages*      |
-|--------+-----------------|
-|  =AUR= | =memtest86-efi= |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |   <c>   |     <c>     |      <c>      |
+| *core* | *extra* | *community* |     *AUR*     |
+|--------+---------+-------------+---------------|
+|        |         |             | memtest86-efi |
 
 For a =UEFI= setup, you'll first need to install the package and then tell =memtest86-efi= ^{=AUR=} how to install itself
 
@@ -1029,7 +1035,7 @@ We need to add the =resume= kernel parameter to =/etc/default/grub=, containing 
 GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet resume=UUID=097c6f11-f246-40eb-a702-ba83c92654f2"
 #+end_src
 #+begin_center
-=/etc/default/grub=
+~/etc/default/grub~
 #+end_center
 
 If you have to change anything, like the =swap= partition =UUID=, inside the =grub= configuration files, you'll always have to rerun ~> grub-mkconfig~ as explained in the paragraph of the section .
@@ -1041,7 +1047,7 @@ Sometimes it makes sense to disable the =os-prober= functionality of grub, even 
 GRUB_DISABLE_OS_PROBER=true
 #+end_src
 #+begin_center
-=/etc/default/grub=
+~/etc/default/grub~
 #+end_center
 
 ***** Generating the =grub= config
@@ -1054,38 +1060,35 @@ root in /
 
 Now you're good to boot into your new system.
 *** =limine=
-#+ATTR_LATEX: :environment pkgtable
-|      / | <>         |
-|    <r> | <l>        |
-| *repo* | *packages* |
-|--------+------------|
-|  =AUR= | =limine=   |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |   <c>   |     <c>     |  <c>   |
+| *core* | *extra* | *community* | *AUR*  |
+|--------+---------+-------------+--------|
+|        |         |             | limine |
 
 #+begin_TIP
 You will have to switch to your normal user to install the =AUR= package.
 
 If you're at it though, you could also already install =paru=, to make things easier.
 
-#+ATTR_LATEX: :environment pkgtable
-|           / | <>             |
-|         <r> | <l>            |
-|      *repo* | *packages*     |
-|-------------+----------------|
-|     =extra= | =asp devtools= |
-| =community= | =bat=          |
-|       =AUR= | =paru-bin=     |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |   <c>    |     <c>     |   <c>    |
+| *core* | *extra*  | *community* |  *AUR*   |
+|--------+----------+-------------+----------|
+|        |   asp    |     bat     | paru-bin |
+|        | devtools |             |          |
 
 #+begin_src fish
 root in /
 > su dustvoice
 
-dustvoice in ~
+~
 > git clone https://aur.archlinux.org/paru-bin.git
 
-dustvoice in ~/paru-bin
+~/paru-bin
 > makepkg -si
 
-dustvoice in ~
+~
 > rm -rf paru-bin
 #+end_src
 #+end_TIP
@@ -1113,7 +1116,7 @@ Don't specify any partition number when using the =limine-deploy=!
 #+end_NOTE
 
 **** =UEFI=
-Simply copy ~/usr/share/limine/BOOTX64.EFI~ to the appropriate location on your =EFI System Partition=
+Simply copy ~/usr/share/limine/BOOTX64.EFI~ to the appropriate location on your /EFI System Partition/
 
 #+begin_src fish
 root in /
@@ -1124,7 +1127,7 @@ root in /
 #+end_src
 
 #+begin_NOTE
-In case you're using the [[*Secure Boot]] method described under [[*=PreLoader=]], you would need to name it ~loader.efi~, as the =PreLoader= takes the place of the =BOOTX64.EFI= which gets auto started by most =UEFI= systems.
+In case you're using the [[*Secure Boot][Secure Boot]] method described in [[*=PreLoader=]], you would need to name it ~loader.efi~, as the =PreLoader= takes the place of the =BOOTX64.EFI= which gets auto started by most =UEFI= systems.
 #+end_NOTE
 
 **** config
@@ -1156,7 +1159,7 @@ For =[2]=, getting the =UUID= of the =LUKS= volume is achieved by using =blkid=.
 ${root_device}=root=/dev/mapper/DustPortable rw rootflags=subvol=@ resume=/dev/mapper/DustPortable resume_offset=[1] cryptdevice=UUID=[2]:DustPortable
 #+end_src
 #+begin_center
-=/boot/limine.cfg=
+~/boot/limine.cfg~
 #+end_center
 
 ***** =limine= options
@@ -1167,7 +1170,7 @@ TIMEOUT=no
 INTERFACE_BRANDING=DustPortable
 #+end_src
 #+begin_center
-=/boot/limine.cfg=
+~/boot/limine.cfg~
 #+end_center
 
 ***** Boot entries
@@ -1249,7 +1252,7 @@ MODULE_PATH=boot:///amd-ucode.img
 MODULE_PATH=boot:///initramfs-linux-hardened-fallback.img
 #+end_src
 #+begin_center
-=/boot/limine.cfg=
+~/boot/limine.cfg~
 #+end_center
 
 ** Configure the =initramfs=
@@ -1273,7 +1276,7 @@ First off, we some binaries to be present in the image, so that if we drop into 
 BINARIES=(btrfs nvim zsh fish)
 #+end_src
 #+begin_center
-=/etc/mkinitcpio.conf=
+~/etc/mkinitcpio.conf~
 #+end_center
 
 *** Hibernation
@@ -1293,17 +1296,15 @@ Mentionworthy additions to the default set are the hooks =colors=, =encrypt=, =b
 HOOKS=(base udev colors block keyboard keymap consolefont autodetect kms modconf encrypt btrfs resume filesystems fsck)
 #+end_src
 #+begin_center
-=/etc/mkinitcpio.conf=
+~/etc/mkinitcpio.conf~
 #+end_center
 
 *** =colors=
-#+ATTR_LATEX: :environment pkgtable
-|           / | <>                      |
-|         <r> | <l>                     |
-|      *repo* | *packages*              |
-|-------------+-------------------------|
-| =community= | =terminus-font=         |
-|       =AUR= | =mkinitcpio-colors-git= |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |   <c>   |      <c>      |          <c>          |
+| *core* | *extra* |  *community*  |         *AUR*         |
+|--------+---------+---------------+-----------------------|
+|        |         | terminus-font | mkinitcpio-colors-git |
 
 By creating a file ~/etc/vconsole.conf~ we can specify a custom font and colorscheme to use
 
@@ -1328,7 +1329,7 @@ COLOR_14=bbe9fd
 COLOR_15=f8f8f2
 #+end_src
 #+begin_center
-=/etc/vconsole.conf=
+~/etc/vconsole.conf~
 #+end_center
 
 ** Switch to a =systemd= based =ramdisk=
@@ -1376,12 +1377,11 @@ You can find all purposes of the individual hooks, as well as the =busybox= / =s
 
 ** Secure Boot
 *** =PreLoader=
-#+ATTR_LATEX: :environment pkgtable
-|      / | <>                 |
-|    <r> | <l>                |
-| *repo* | *packages*         |
-|--------+--------------------|
-|  =AUR= | =preloader-signed= |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |   <c>   |     <c>     |       <c>        |
+| *core* | *extra* | *community* |      *AUR*       |
+|--------+---------+-------------+------------------|
+|        |         |             | preloader-signed |
 
 This is a way of handling secure boot that aims at just making everything work!
 It is not the way Secure Boot was intended to be used and you might as well disable it.
@@ -1395,7 +1395,7 @@ That is only correct, if you're /not/ using Secure Boot.
 You can either proceed by disabling Secure Boot in your firmware settings, or by using =PreLoader= as kind of a pre-bootloader.
 
 If you decided on using Secure Boot, you will first have to install the package.
-Now we just need to copy the =PreLoader= and the =HashTool=, which gets launched if the hash of the binary that is to be loaded (~loader.efi~) is not registered in the firmware yet, to our =EFI System Partition=
+Now we just need to copy the =PreLoader= and the =HashTool=, which gets launched if the hash of the binary that is to be loaded (~loader.efi~) is not registered in the firmware yet, to our /EFI System Partition/
 
 #+begin_src fish
 root in /
@@ -1406,7 +1406,7 @@ root in /
 #+end_src
 
 #+begin_NOTE
-If you have to use =bcdedit= from within Windows, as explained in section [[*=grub= -> =UEFI=]], you need to adapt the command accordingly
+If you have to use =bcdedit= from within Windows, as explained in section [[*=grub= - =UEFI=]], you need to adapt the command accordingly
 
 #+begin_src fish
 root in /
@@ -1455,7 +1455,7 @@ These will be used to sign any binary which will be executed by the firwmare.
 Let's create a =GUID= first to use with the next commands.
 
 #+begin_src fish
-dustvoice in ~/sb
+~/sb
 > uuidgen --random > GUID.txt
 #+end_src
 
@@ -1463,23 +1463,23 @@ dustvoice in ~/sb
 We can now generate our =PK= (Platform Key)
 
 #+begin_src fish
-dustvoice in ~/sb
+~/sb
 > openssl req -newkey rsa:4096 -nodes -keyout PK.key -new -x509 -sha256 -subj "/CN=Platform Key for DustArch/" -out PK.crt
 
-dustvoice in ~/sb
+~/sb
 > openssl x509 -outform DER -in PK.crt -out PK.cer
 
-dustvoice in ~/sb
+~/sb
 > cert-to-efi-sig-list -g "$(< GUID.txt)" PK.crt PK.esl
 
-dustvoice in ~/sb
+~/sb
 > sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt PK PK.esl PK.auth
 #+end_src
 
 In order to allow deletion of the =PK=, for firmwares which do not provide this functionality out of the box, we have to sign an empty file.
 
 #+begin_src fish
-dustvoice in ~/sb
+~/sb
 > sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt PK /dev/null rm_PK.auth
 #+end_src
 
@@ -1487,16 +1487,16 @@ dustvoice in ~/sb
 We proced in a similar fashion with the =KEK= (Key Exchange Key)
 
 #+begin_src fish
-dustvoice in ~/sb
+~/sb
 > openssl req -newkey rsa:4096 -nodes -keyout KEK.key -new -x509 -sha256 -subj "/CN=Key Exchange Key for DustArch/" -out KEK.crt
 
-dustvoice in ~/sb
+~/sb
 > openssl x509 -outform DER -in KEK.crt -out KEK.cer
 
-dustvoice in ~/sb
+~/sb
 > cert-to-efi-sig-list -g "$(< GUID.txt)" KEK.crt KEK.esl
 
-dustvoice in ~/sb
+~/sb
 > sign-efi-sig-list -g "$(< GUID.txt)" -k PK.key -c PK.crt KEK KEK.esl KEK.auth
 #+end_src
 
@@ -1504,16 +1504,16 @@ dustvoice in ~/sb
 And finally the =DB= (Signature Database) key.
 
 #+begin_src fish
-dustvoice in ~/sb
+~/sb
 > openssl req -newkey rsa:4096 -nodes -keyout db.key -new -x509 -sha256 -subj "/CN=Signature Database key for DustArch" -out db.crt
 
-dustvoice in ~/sb
+~/sb
 > openssl x509 -outform DER -in db.crt -out db.cer
 
-dustvoice in ~/sb
+~/sb
 > cert-to-efi-sig-list -g "$(< GUID.txt)" db.crt db.esl
 
-dustvoice in ~/sb
+~/sb
 > sign-efi-sig-list -g "$(< GUID.txt)" -k KEK.key -c KEK.crt db db.esl db.auth
 #+end_src
 
@@ -1523,13 +1523,10 @@ As your plan is to be able to control, which things do boot on your system and w
 But what if you have a Windows dual boot setup?
 
 Well the procedure is actually pretty straight forward.
-You just grab Microsoft's certificates, convert them into a usable format, sign them and enroll them.
+You just grab [[https://www.microsoft.com/pkiops/certs/MicWinProPCA2011_2011-10-19.crt][Microsoft's certificates]], convert them into a usable format, sign them and enroll them.
 No need to sign the Windows boot loader.
 
 #+begin_src fish
-root in ~/sb
-> curl -fLo WinCert.crt https://www.microsoft.com/pkiops/certs/MicWinProPCA2011_2011-10-19.crt
-
 root in ~/sb
 > openssl x509 -inform DER -outform PEM -in MicWinCert.crt -out MicWinCert.pem
 
@@ -1544,7 +1541,7 @@ root in ~/sb
 In order to ensure a smooth operation, with actual security, we need to move some stuff around.
 
 ***** Kernel, =initramfs=, microcode
-=pacman= will put its unsigned and unencrypted kernel, =initramfs= and microcode images into =/boot=, which is, why it will be no longer a good idea, to leave your =EFI System Partition= mounted there.
+=pacman= will put its unsigned and unencrypted kernel, =initramfs= and microcode images into =/boot=, which is, why it will be no longer a good idea, to leave your /EFI System Partition/ mounted there.
 Instead we will create a new mountpoint under =/efi= and modify our =fstab= accordingly.
 
 ***** Keys
@@ -1572,12 +1569,11 @@ root in ~/sb
 #+end_src
 
 ***** =sbupdate=
-#+ATTR_LATEX: :environment pkgtable
-|      / | <>             |
-|    <r> | <l>            |
-| *repo* | *packages*     |
-|--------+----------------|
-|  =AUR= | =sbupdate-git= |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |   <c>   |     <c>     |     <c>      |
+| *core* | *extra* | *community* |    *AUR*     |
+|--------+---------+-------------+--------------|
+|        |         |             | sbupdate-git |
 
 Of course, if you're using Secure Boot productively, you would want something more practical than manual signing, especially since you need to sign
 
@@ -1601,7 +1597,7 @@ You will probably need to
 
 - add any other =EFI= binary you want to have signed to =EXTRA_SIGN=
 
-- add your kernel parameters, for example (=systemd=-based =initramfs=!)
+- add your kernel parameters, for example
 
   - =rd.luks.name=
 
@@ -1621,12 +1617,11 @@ After you've successfully configured =sbupdate=, you can run it as root, to crea
 In that case you will have to run =sbupdate= manually.
 
 **** Add =EFI= entries
-#+ATTR_LATEX: :environment pkgtable
-|      / | <>           |
-|    <r> | <l>          |
-| *repo* | *packages*   |
-|--------+--------------|
-| =core= | =efibootmgr= |
+#+ATTR_LATEX: :environment pkgtblr
+|    <c>     |   <c>   |     <c>     |  <c>  |
+|   *core*   | *extra* | *community* | *AUR* |
+|------------+---------+-------------+-------|
+| efibootmgr |         |             |       |
 
 Now the only thing left to do, if you want to stay boot loader free
 anyways, is to add the signed images to the boot list of your =NVRAM=.
@@ -1644,7 +1639,7 @@ Of course you can extend this list, with whichever entries you need.
 
 **** Enrolling everything
 First off, copy all =.cer=, =.esl= and =.auth= files to a =FAT= formatted filesystem.
-I'm using my =EFI System Partition= for this.
+I'm using my /EFI System Partition/ for this.
 
 After that reboot into the firmware setup of your motherboard, clear the existing Platform Key, to set the firmware into "Setup Mode" and enroll the =db=, =KEK= and =PK= certificates in sequence.
 
@@ -1669,14 +1664,14 @@ First we have to check if the network interfaces are set up properly.
 To view the network interfaces with all their properties, we can issue
 
 #+begin_src fish
-dustvoice in ~
+~
 > ip link
 #+end_src
 
 To make sure that you have a working /Internet/ connection, issue
 
 #+begin_src fish
-dustvoice in ~
+~
 > ping archlinux.org
 #+end_src
 
@@ -1686,7 +1681,7 @@ If there is no connection and you're indeed using a wired connection,
 try restarting the =NetworkManager= service
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo systemctl restart NetworkManager.service
 #+end_src
 
@@ -1701,42 +1696,42 @@ I never got =nmtui= to behave like I wanted it to, in my particular case at leas
 First make sure, the scanning of nearby Wi-Fi networks is enabled for your Wi-Fi device
 
 #+begin_src fish
-dustvoice in ~
+~
 > nmcli radio
 #+end_src
 
 and if not, enable it
 
 #+begin_src fish
-dustvoice in ~
+~
 > nmcli radio wifi on
 #+end_src
 
 Now make sure your Wi-Fi interface appears under
 
 #+begin_src fish
-dustvoice in ~
+~
 > nmcli device
 #+end_src
 
 Rescan for available networks
 
 #+begin_src fish
-dustvoice in ~
+~
 > nmcli device wifi rescan
 #+end_src
 
 and list all found networks
 
 #+begin_src fish
-dustvoice in ~
+~
 > nmcli device wifi list
 #+end_src
 
 After that connect to the network
 
 #+begin_src fish
-dustvoice in ~
+~
 > nmcli device wifi connect --ask
 #+end_src
 
@@ -1746,7 +1741,7 @@ Now try ~> ping~-ing again.
 After making sure that you have a working Internet connection, you can then proceed to update and upgrade all installed packages by issuing
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo pacman -Syu
 #+end_src
 
@@ -1762,7 +1757,7 @@ Include = /etc/pacman.d/mirrorlist
 and update =pacman='s package repositories afterwards
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo pacman -Syu
 #+end_src
 
@@ -1789,39 +1784,38 @@ then
 fi
 #+end_src
 #+begin_center
-=~/.bashrc=
+~~/.bashrc~
 #+end_center
 
 Don't worry about the looks by the way, we're gonna change all that in just a second.
 
 ** =git=
-#+ATTR_LATEX: :environment pkgtable
-|       / | <>         |
-|     <r> | <l>        |
-|  *repo* | *packages* |
-|---------+------------|
-| =extra= | =git=      |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |   <c>   |     <c>     |  <c>  |
+| *core* | *extra* | *community* | *AUR* |
+|--------+---------+-------------+-------|
+|        |   git   |             |       |
 
 Install the package and you're good to go for now, as we'll care about the =.gitconfig= in just a second.
 
 ** Security is important
-#+ATTR_LATEX: :environment pkgtable
-|           / | <>         |
-|         <r> | <l>        |
-|      *repo* | *packages* |
-|-------------+------------|
-|      =core= | =gnupg=    |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |   <c>   |     <c>     |  <c>  |
+| *core* | *extra* | *community* | *AUR* |
+|--------+---------+-------------+-------|
+| gnupg  |         |             |       |
 
 If you've followed the tutorial using a recent version of the archiso, you'll probably already have the most recent version of =gnupg= installed by default.
 
 *** Smartcard shenanigans
-#+ATTR_LATEX: :environment pkgtable
-|           / | <>                           |
-|         <r> | <l>                          |
-|      *repo* | *packages*                   |
-|-------------+------------------------------|
-|     =extra= | =libusb-compat=              |
-| =community= | =ccid opensc pcsclite usbip= |
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |      <c>      |     <c>     |  <c>  |
+| *core* |    *extra*    | *community* | *AUR* |
+|--------+---------------+-------------+-------|
+|        | libusb-compat |    ccid     |       |
+|        |               |   opensc    |       |
+|        |               |  pcsclite   |       |
+|        |               |    usbip    |       |
 
 After that you'll still have to setup =gnupg= correctly.
 In my case I have my private keys stored on a smartcard.
@@ -1829,31 +1823,33 @@ In my case I have my private keys stored on a smartcard.
 To use it, I'll have to install the listed packages and then enable and start the =pcscd.service= service
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo systemctl enable pcscd.service
 
-dustvoice in ~
+~
 > sudo systemctl start pcscd.service
 #+end_src
 
 After that, you should be able to see your smartcard being detected
 
 #+begin_src fish
-dustvoice in ~
+~
 > gpg --card-status
 #+end_src
 
 If your smartcard still isn't detected, try logging off completely or even restarting, as that sometimes is the solution to the problem.
 
 ** Additional required tools
-#+ATTR_LATEX: :environment pkgtable
-|           / | <>                               |
-|         <r> | <l>                              |
-|      *repo* | *packages*                       |
-|-------------+----------------------------------|
-|      =core= | =make openssh=                   |
-|     =extra= | =clang cmake jdk-openjdk python= |
-| =community= | =pass python-pynvim=             |
+#+ATTR_LATEX: :environment pkgtblr
+|   <c>   |     <c>     |      <c>      |  <c>  |
+| *core*  |   *extra*   |  *community*  | *AUR* |
+|---------+-------------+---------------+-------|
+|  make   |    clang    |      bat      |       |
+| openssh |    cmake    |      exa      |       |
+|         | jdk-openjdk |     pass      |       |
+|         |   python    | python-pynvim |       |
+|         |             |   starship    |       |
+|         |             |    zoxide     |       |
 
 To minimize the effort required by the following steps, we'll install most of the required packages beforehand
 
@@ -1881,24 +1877,24 @@ This means I will have to get along with using the =https= URL of the repository
 To provide myself with a base configuration, which I can then extend, I maintain a =dotfiles= repository, which contains all kinds of configurations.
 
 The special thing about this =dotfiles= repository is that it /is/ my home folder.
-By using a curated =.gitignore= file, I'm able to only include the configuration files I want to keep between installs into the repository and ignore everything else.
+By using a curated ~.gitignore~ file, I'm able to only include the configuration files I want to keep between installs into the repository and ignore everything else.
 
 To achieve this very specific setup, I have to turn my home directory into said =dotfiles= repository first
 
 #+begin_src fish
-dustvoice in ~
+~
 > git init
 
-dustvoice in ~
+~
 > git remote add origin https://git.dustvoice.de/DustVoice/dotfiles.git
 
-dustvoice in ~
+~
 > git fetch
 
-dustvoice in ~
+~
 > git reset origin/master --hard
 
-dustvoice in ~
+~
 > git branch --set-upstream-to=origin/master master
 #+end_src
 
@@ -1912,13 +1908,13 @@ I am also using the =Pass= repository on my Android phone and Windows PC, where 
 Before we'll be able to update the =submodule=​s (=nvim= config files and =pass=) though, we will have to setup our =gpg= key as an =ssh= key, as I use it to authenticate
 
 #+begin_src fish
-dustvoice in ~
+~
 > chmod 700 .gnupg
 
-dustvoice in ~
+~
 > gpg --card-status
 
-dustvoice in ~
+~
 > gpg --card-edit
 #+end_src
 
@@ -1928,16 +1924,29 @@ dustvoice in ~
 #+end_src
 
 #+begin_src fish
-dustvoice in ~
+~
 > gpg-connect-agent updatestartuptty /bye
 #+end_src
 
 You would have to adapt the =keygrip= present in the ~~/.gnupg/sshcontrol~ file to your specific =keygrip=, retrieved with ~> gpg -K --with-keygrip~.
 
+#+begin_IMPORTANT
+If you're inside a VM, you of course need to somehow pass the smartcard to said VM.
+
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |   <c>   |     <c>     |  <c>  |
+| *core* | *extra* | *community* | *AUR* |
+|--------+---------+-------------+-------|
+|        |         |    usbip    |       |
+
+If you're inside a =Hyper-V= VM, you need to utilize =usbip=.
+If you're using =fish=, there's a script under ~~/.config/fish/usbip-man.fish~
+#+end_IMPORTANT
+
 Now, as mentioned before, I'll switch to using =ssh= for authentication, rather than =https=
 
 #+begin_src fish
-dustvoice in ~
+~
 > git remote set-url origin git@git.dustvoice.de:DustVoice/dotfiles.git
 #+end_src
 
@@ -1945,7 +1954,7 @@ As the best method to both make =fish= recognize all the configuration changes, 
 We'll do just that
 
 #+begin_src fish
-dustvoice in ~
+~
 > exit
 #+end_src
 
@@ -1958,48 +1967,46 @@ You may need to restart the machine entirely.
 Now log back in and continue
 
 #+begin_src fish
-dustvoice in ~
+~
 > git submodule update --recursive --init
+#+end_src
 
-dustvoice in ~
-> source .zshrc
+**** Setup =nvim=
+If you plan on utilizing =nvim= with my config, you need to setup things first
 
-dustvoice in ~
+#+begin_src fish
+~
 > cd .config/nvim
 
-dustvoice in ~/.config/nvim
+~/.config/nvim
 > echo 'let g:platform = "linux"' >> platform.vim
 
-dustvoice in ~/.config/nvim
+~/.config/nvim
 > echo 'let g:use_autocomplete = 3' >> custom.vim
 
-dustvoice in ~/.config/nvim
+~/.config/nvim
 > echo 'let g:use_clang_format = 1' >> custom.vim
 
-dustvoice in ~/.config/nvim
+~/.config/nvim
 > echo 'let g:use_font = 0' >> custom.vim
 
-dustvoice in ~/.config/nvim
+~/.config/nvim
 > nvim --headless +PlugInstall +qa
 
-dustvoice in ~/.config/nvim
+~/.config/nvim
 > cd plugged/YouCompleteMe
 
-dustvoice in ~/.config/nvim/plugged/YouCompleteMe
+~/.config/nvim/plugged/YouCompleteMe
 > python3 install.py --clang-completer --java-completer
 
-dustvoice in ~/.config/nvim/plugged/YouCompleteMe
+~/.config/nvim/plugged/YouCompleteMe
 > cd ~
 #+end_src
 
 *** =gpg-agent= forwarding
-Now there is only one thing left to do, in order to make the =gpg= setup
-complete: =gpg-agent= forwarding over =ssh=. This is very important for
-me, as I want to use my smartcard on my development server too, which
-requires me, to forward/tunnel my =gpg-agent= to my remote machine.
+Now there is only one thing left to do, in order to make the =gpg= setup complete: =gpg-agent= forwarding over =ssh=. This is very important for me, as I want to use my smartcard on my development server too, which requires me, to forward/tunnel my =gpg-agent= to my remote machine.
 
-First of all, I want to setup a config file for =ssh=, as I don't want
-to pass all parameters manually to ssh every time.
+First of all, I want to setup a config file for =ssh=, as I don't want to pass all parameters manually to ssh every time.
 
 #+begin_src fish
 Host <connection name>
@@ -2010,13 +2017,12 @@ Host <connection name>
     RemoteForward <remote agent-ssh-socket> <local agent-ssh-socket>
 #+end_src
 
-You would of course, need to adapt the content in between the =<= and
-=>= brackets.
+You would of course, need to adapt the content in between the =<= and =>= brackets.
 
 To get the paths needed as parameters for =RemoteForward=, issue
 
 #+begin_src fish
-dustvoice in ~
+~
 > gpgconf --list-dirs
 #+end_src
 
@@ -2041,70 +2047,68 @@ X11Forwarding yes
 
 Now just restart your remote machines and you're ready to go.
 
-If you use =alacritty=, to connect to your remote machine over =ssh=,
-you will need to install the =alacritty= on the remote machine too, as
-=alacritty= uses its own =$TERM=.
+If you use =alacritty=, to connect to your remote machine over =ssh=, you will need to install the =alacritty= package on the remote machine too, as =alacritty= uses its own =$TERM=.
 
 Another option would be changing that variable for the =ssh= command
 
 #+begin_src fish
-dustvoice in ~
+~
 > TERM=xterm-256colors ssh remote-machine
 #+end_src
 
-*** Back to your =root=s
-As mentioned before, you would now switch to the =root= user, either by
-logging in as =root=, or by using
+*** Back to your =root=​s
+As mentioned before, you would now switch to the =root= user, either by logging in as =root=, or by using
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo -iu root
 #+end_src
 
 Now go back to to repeat all commands for the =root= user.
 
-A native login would be better compared to ~> sudo -iu root~, as there
-could be some complications, like already running =gpg-agent= instances,
-etc., which you would need to manually resolve, when using
-~> sudo -iu root~.
+A native login would be better compared to ~> sudo -iu root~, as there could be some complications, like already running =gpg-agent= instances, etc., which you would need to manually resolve, when using ~> sudo -iu root~.
 
 ** Audio
 Well, why wouldn't you want audio ...
 
 *** =alsa=
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |    <c>     |     <c>     |  <c>  |
+| *core* |  *extra*   | *community* | *AUR* |
+|--------+------------+-------------+-------|
+|        | alsa-utils |             |       |
 
-=extra= & =alsa-utils=\\
-
-You're probably better off using =pulseaudio= and/or =jack=.
+#+begin_NOTE
+You're probably better off using [[*=pulseaudio=][=pulseaudio=]], [[*=jack=][=jack=]] and/or [[*=pipewire=][=pipewire=]].
+#+end_NOTE
 
 Now choose the sound card you want to use
 
 #+begin_src fish
-dustvoice in ~
+~
 > cat /proc/asound/cards
 #+end_src
 
-and then create =/etc/asound.conf=
+and then create ~/etc/asound.conf~
 
 #+begin_src fish
 defaults.pcm.card 2
 defaults.ctl.card 2
 #+end_src
 
-It should be apparent, that you would have to switch out =2= with the
-number corresponding to the sound card you want to use.
+It should be clear, that you would have to switch out =2= with the number corresponding to the sound card you want to use.
 
 *** =pulseaudio=
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |     <c>     |     <c>     |  <c>  |
+| *core* |   *extra*   | *community* | *AUR* |
+|--------+-------------+-------------+-------|
+|        | pavucontrol | pulsemixer  |       |
+|        | pulseaudio  |             |       |
 
-=extra= & =pavucontrol pulseaudio=\\
-=community= & =pulsemixer=\\
+Some applications require =pulseaudio=, or work better with it, for example =discord=, so it might make sense to use =pulseaudio= (although [[*=pipewire=][=pipewire=]] could replace it).
 
-Some applications require =pulseaudio=, or work better with it, for
-example =discord=, so it might make sense to use =pulseaudio=
-
-For enabling real-time priority for =pulseaudio= on Arch Linux, please
-make sure your user is part of the =audio= group and edit the file
-=/etc/pulse/daemon.conf=, so that you uncomment the lines
+For enabling real-time priority for =pulseaudio= on Arch Linux, please make sure your user is part of the =audio= group and edit the file ~/etc/pulse/daemon.conf~, so that you uncomment the lines
 
 #+begin_src fish
 high-priority = yes
@@ -2114,47 +2118,82 @@ realtime-scheduling = yes
 realtime-priority = 5
 #+end_src
 
-If your system can handle the load, you can also increase the remixing
-quality, by changing the =resample-method=
+If your system can handle the load, you can also increase the remixing quality, by changing the =resample-method=
 
 #+begin_src fish
 resample-method = speex-float-10
 #+end_src
 
-Of course a restart of the =pulseaudio= daemon is necessary to reflect
-the changes you just made
+Of course a restart of the =pulseaudio= daemon is necessary to reflect the changes you just made
 
 #+begin_src fish
-dustvoice in ~
+~
 > pulseaudio --kill
 
-dustvoice in ~
+~
 > pulseaudio --start
 #+end_src
 
 *** =jack=
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |       <c>       |     <c>     |  <c>  |
+| *core* |     *extra*     | *community* | *AUR* |
+|--------+-----------------+-------------+-------|
+|        | pulseaudio-jack |   cadence   |       |
+|        |                 |    jack2    |       |
 
-=extra= & =pulseaudio-jack=\\
-=community= & =cadence jack2=\\
+If you either want to manually control audio routing, or if you use some kind of audio application like =ardour=, you'll probably want to use =jack= and then =cadence= as a GUI to control it, as it has native support for bridging =pulseaudio= to =jack=.
 
-If you either want to manually control audio routing, or if you use some
-kind of audio application like =ardour=, you'll probably want to use
-=jack= and =cadence= as a GUI to control it, as it has native support
-for bridging =pulseaudio= to =jack=.
+*** =pipewire=
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |      <c>       |     <c>     |  <c>  |
+| *core* |    *extra*     | *community* | *AUR* |
+|--------+----------------+-------------+-------|
+|        |    pipewire    |  qpwgraph   |       |
+|        | pipewire-alsa  |             |       |
+|        | pipewire-audio |             |       |
+|        | pipewire-jack  |             |       |
+|        | pipewire-pulse |             |       |
+|        |  wireplumber   |             |       |
 
-*** Audio handling
-
-=extra= & =libao libid3tag libmad libpulse opus wavpack=\\
-=community= & =sox twolame=\\
-
-To also play audio, we need to install the mentioned packages and then
-simply do
+#+begin_TIP
+If you don't want to reboot, you need to stop =pulseaudio.service= and start =pipewire-pulse.service=
 
 #+begin_src fish
-dustvoice in ~
+root in /
+> systemctl stop pulseaudio.service
+
+root in /
+> systemctl start pipewire-pulse.service
+#+end_src
+
+You can check if =pipewire-pulse= is working correctly with
+
+#+begin_src fish
+~
+> pactl info
+#+end_src
+#+end_TIP
+
+*** Audio handling
+#+ATTR_LATEX: :environment pkgtblr
+|  <c>   |    <c>    |     <c>     |  <c>  |
+| *core* |  *extra*  | *community* | *AUR* |
+|--------+-----------+-------------+-------|
+|        |   libao   |     sox     |       |
+|        | libid3tag |   twolame   |       |
+|        |  libmad   |             |       |
+|        | libpulse  |             |       |
+|        |   opus    |             |       |
+|        |  wavpack  |             |       |
+
+To also play audio, we need to install the mentioned packages and then simply do
+
+#+begin_src fish
+~
 > play audio.wav
 
-dustvoice in ~
+~
 > play audio.mp3
 #+end_src
 
@@ -2172,17 +2211,17 @@ to configure connections
 Now we need to check if the =btusb= kernel module was already loaded
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo lsmod | grep btusb
 #+end_src
 
 After that we can enable and start the =bluetooth.service= service
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo systemctl enable bluetooth.service
 
-dustvoice in ~
+~
 > sudo systemctl start bluetooth.service
 #+end_src
 
@@ -2192,7 +2231,7 @@ your user needs to be a member of the =lp= group.
 Now simply enter =bluetoothctl=
 
 #+begin_src fish
-dustvoice in ~
+~
 > bluetoothctl
 #+end_src
 
@@ -2268,10 +2307,10 @@ load-module module-bluetooth-discover
 and restart =pulseaudio=
 
 #+begin_src fish
-dustvoice in ~
+~
 > pulseaudo --kill
 
-dustvoice in ~
+~
 > pulseaudo --start
 #+end_src
 
@@ -2302,7 +2341,7 @@ proprietary driver.
 To configure the =X= server correctly, one can use =nvidia-xconfig=
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo nvidia-xconfig
 #+end_src
 
@@ -2310,25 +2349,24 @@ If you want to further tweak all settings available, you can use
 =nvidia-settings=.
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo nvidia-settings
 #+end_src
 
-will enable you to /"Save to X Configuration File"/, witch merges your
+will enable you to /"Save to X Configuration File"/, which merges your
 changes with =/etc/X11/xorg.conf=.
 
 With
 
 #+begin_src fish
-dustvoice in ~
+~
 > nvidia-settings
 #+end_src
 
-you'll only be able to save the current configuration to
-=~/.nvidia-settings-rc=, witch you have to source after =X= startup with
+you'll only be able to save the current configuration to =~/.nvidia-settings-rc=, which you have to source after =X= startup with
 
 #+begin_src fish
-dustvoice in ~
+~
 > nvidia-settings --load-config-only
 #+end_src
 
@@ -2386,14 +2424,14 @@ blacklist nouveau
 With this config in place,
 
 #+begin_src fish
-dustvoice in ~
+~
 > lsmod | grep nvidia
 #+end_src
 
 and
 
 #+begin_src fish
-dustvoice in ~
+~
 > lsmod | grep nouveau
 #+end_src
 
@@ -2445,7 +2483,7 @@ and even a =vim= mode, by using a plugin
 To configure everything, open =weechat=
 
 #+begin_src fish
-dustvoice in ~
+~
 > weechat
 #+end_src
 
@@ -2461,15 +2499,15 @@ Now add =mode_indicator+= in front of and =,[vi_buffer]= to the end of
 =weechat.bar.input.items=, in my case
 
 #+begin_src fish
-/set weechat.bar.input.items "mode_indicator+[input_prompt]+(away),[input_search],[input_paste],input_text,[vi_buffer]"
+/set weechat.bar.input.items "mode_indicator+[input_prompt]+(away), [input_search], [input_paste], input_text, [vi_buffer]"
 #+end_src
 
 Now add =,cmd_completion= to the end of =weechat.bar.status.items=, in
 my case
 
 #+begin_src fish
-/set weechat.bar.status.items "[time],[buffer_last_number],[buffer_plugin],buffer_number+:+buffer_name+(buffer_modes)+{buffer_nicklist_count}+buffer_zoom+buffer_filter,scroll,[lag],[hotlist],completion,cmd_completion"
-#+end_src
+;/set weechat.bar.status.items "[time], [buffer_last_number], [buffer_plugin], buffer_number+:+buffer_name+(buffer_modes)+{buffer_nicklist_count}+buffer_zoom+buffer_filter, scroll, [lag], [hotlist], completion, cmd_completion"
+;#+end_src
 
 Now enable =vimode= searching
 
@@ -2524,7 +2562,7 @@ To view this PDF document (=Documentation.pdf=) for example, you would
 run
 
 #+begin_src fish
-dustvoice in ~
+~
 > fbgs Documentation.pdf
 #+end_src
 
@@ -2560,19 +2598,18 @@ For me there are mainly two options
 - =pygments.rb=, which requires python to be installed
 
   #+begin_src fish
-  dustvoice in ~
+  ~
   > gem install pygments.rb
   #+end_src
 
 - =rouge= which is a native =ruby= gem
 
   #+begin_src fish
-  dustvoice in ~
+  ~
   > gem install rouge
   #+end_src
 
-Now the only thing left, in my case at least, is adding
-=~/.gem/ruby/2.7.0/bin= to your path.
+Now the only thing left, in my case at least, is adding ~~/.gem/ruby/2.7.0/bin~ to your path.
 
 Please note that if you run a ruby version different from =2.7.0=, or if
 you upgrade your ruby version, you have to use the =bin= path for that
@@ -2591,7 +2628,7 @@ You might have to re-=> source= the =.zshenv= file to make the changes
 take effect immediately
 
 #+begin_src fish
-dustvoice in ~
+~
 > source .zshenv
 #+end_src
 
@@ -2619,19 +2656,19 @@ The information in this guide should be updated ASAP, if it is apparent
 that =FRUT= has now become obsolete.
 
 #+begin_src fish
-dustvoice in ~
+~
 > git clone https://github.com/WeAreROLI/JUCE.git
 
-dustvoice in ~
+~
 > cd JUCE
 
-dustvoice in ~/JUCE
+~/JUCE
 > git checkout develop
 
-dustvoice in ~/JUCE
+~/JUCE
 > cd ..
 
-dustvoice in ~
+~
 > git clone https://github.com/McMartin/FRUT.git
 #+end_src
 
@@ -2693,23 +2730,23 @@ user_allow_other
 and mount the android device
 
 #+begin_src fish
-dustvoice in ~
+~
 > simple-mtpfs -l
 
-dustvoice in ~
+~
 > mkdir ~/mnt
 
-dustvoice in ~
+~
 > simple-mtpfs --device <number> ~/mnt -allow_other
 #+end_src
 
 and respectively unmount it
 
 #+begin_src fish
-dustvoice in ~
+~
 > fusermount -u mnt
 
-dustvoice in ~
+~
 > rmdir mnt
 #+end_src
 
@@ -2720,7 +2757,7 @@ dustvoice in ~
 Kill the =adb= server, if it is running
 
 #+begin_src fish
-dustvoice in ~
+~
 > adb kill-server
 #+end_src
 
@@ -2730,7 +2767,7 @@ with a =Connection refused= message.
 Now connect your phone, unlock it and start the =adb= server
 
 #+begin_src fish
-dustvoice in ~
+~
 > adb start-server
 #+end_src
 
@@ -2738,20 +2775,20 @@ If the PC is unknown to the android device, it will display a
 confirmation dialog. Accept it and ensure that the device was recognized
 
 #+begin_src fish
-dustvoice in ~
+~
 > adb devices
 #+end_src
 
 Now you can =push=/=pull= files.
 
 #+begin_src fish
-dustvoice in ~
+~
 > adb pull /storage/emulated/0/DCIM/Camera/IMG.jpg .
 
-dustvoice in ~
+~
 > adb push IMG.jpg /storage/emulated/0/DCIM/Camera/IMG2.jpg
 
-dustvoice in ~
+~
 > adb kill-server
 #+end_src
 
@@ -2820,7 +2857,7 @@ You need to make sure this command gets executed upon start of the
 file called by your desktop environment
 
 #+begin_src fish
-dustvoice in ~
+~
 > xss-lock -l -- xsecurelock &
 #+end_src
 
@@ -2860,17 +2897,17 @@ In order for =obs=' screen capture to work correctly, you need to kill
 =picom= completely before using =obs=.
 
 #+begin_src fish
-dustvoice in ~
+~
 > killall picom
 #+end_src
 
 or
 
 #+begin_src fish
-dustvoice in ~
+~
 > ps aux | grep picom
 
-dustvoice in ~
+~
 > kill -9 <pid>
 #+end_src
 
@@ -2885,7 +2922,7 @@ have to install the =network-manager-applet= package
 Now you can start the applet with
 
 #+begin_src fish
-dustvoice in ~
+~
 > nm-applet &
 #+end_src
 
@@ -2929,7 +2966,7 @@ For this functionality, especially in combination with =rofi=, use
 Now that we can create screen shots, we might also want to view those
 
 #+begin_src fish
-dustvoice in ~
+~
 > ristretto filename.png
 #+end_src
 
@@ -2968,13 +3005,13 @@ regard to privacy, while browsing the web.
 We still have to setup =browserpass=, after installing all of this
 
 #+begin_src fish
-dustvoice in ~
+~
 > cd /usr/lib/browserpass
 
-dustvoice in /usr/lib/browserpass
+/usr/lib/browserpass
 > make hosts-firefox-user
 
-dustvoice in /usr/lib/browserpass
+/usr/lib/browserpass
 > cd ~
 #+end_src
 
@@ -3005,10 +3042,10 @@ In order to be able to print from the =gtk= print dialog, we'll also
 need =system-config-printer= and =print-manager=.
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo systemctl enable avahi-daemon.service
 
-dustvoice in ~
+~
 > sudo systemctl start avahi-daemon.service
 #+end_src
 
@@ -3022,13 +3059,13 @@ hosts: files mymachines myhostname mdns4_minimal [NOTFOUND=return] resolve [!UNA
 Now continue with this
 
 #+begin_src fish
-dustvoice in ~
+~
 > avahi-browse --all --ignore-local --resolve --terminate
 
-dustvoice in ~
+~
 > sudo systemctl enable org.cups.cupsd.service
 
-dustvoice in ~
+~
 > sudo systemctl start org.cups.cupsd.service
 #+end_src
 
@@ -3135,7 +3172,7 @@ they have problems with =wav= files, for example, you can just use
 and after that we're going to convert =in.wav= to =out.mp3=
 
 #+begin_src fish
-dustvoice in ~
+~
 > ffmpeg -i in.wav -acodec mp3 out.mp3
 #+end_src
 
@@ -3158,7 +3195,7 @@ e.g. for development/testing purposes. For that you can use
 Now when you want to use =virtualbox= just load the kernel module
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo modprobe vboxdrv
 #+end_src
 
@@ -3166,14 +3203,14 @@ and add the user which is supposed to run ~> virtualbox~ to the
 =vboxusers= group
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo usermod -a G vboxusers $USER
 #+end_src
 
 and if you want to use =rawdisk= functionality, also to the =disk= group
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo usermod -a G disk $USER
 #+end_src
 
@@ -3220,7 +3257,7 @@ You're probably wondering why this gets a dedicated section.
 You'll probably think that it would be just a matter of issuing
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo pacman -Syu
 #+end_src
 
@@ -3280,9 +3317,7 @@ root in ~
 > cd /var/cache/pacman/pkg
 #+end_src
 
-There should be a file located named something like
-=linux-<version>.pkg.tar.xz=, where =<version>= would be somewhat
-equivalent to the previously noted version number
+There should be a file located named something like =linux-<version>.pkg.tar.xz=, where =<version>= would be somewhat equivalent to the previously noted version number
 
 Now downgrade the =linux= package
 
@@ -3307,7 +3342,7 @@ partition.
 Now simply rerun
 
 #+begin_src fish
-dustvoice in ~
+~
 > sudo pacman -Syu
 #+end_src
 

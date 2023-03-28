@@ -6,6 +6,8 @@
 
 \LoadClass{report}
 
+\RequirePackage[document]{ragged2e}
+
 \RequirePackage[a5paper,margin=15mm]{geometry}
 
 \RequirePackage{color}
@@ -34,9 +36,11 @@
 
 \RequirePackage{float}
 \RequirePackage[newfloat]{minted}
+\RequirePackage{fancyvrb}
+\RequirePackage{fvextra}
 
 \RequirePackage{microtype}
-\RequirePackage{hyphenat}
+\RequirePackage[htt]{hyphenat}
 \RequirePackage{seqsplit}
 
 \RequirePackage{titling}
@@ -71,8 +75,11 @@
 }
 \makeatother
 
-\setminted{breaklines=true,breakanywhere=true,breakbytoken=false,breakbytokenanywhere=false,tabsize=4,frame=single,framesep=.5em,samepage=false}
-\setmintedinline{breaklines=true,breakanywhere=true,breakbytoken=false,breakbytokenanywhere=false}
+\setminted{breaklines=true,breakanywhere=true,breakbytoken=true,breakbytokenanywhere=true,tabsize=4,frame=single,framesep=.5em,samepage=false}
+\setmintedinline{breaklines=true,breakanywhere=true,breakbytoken=true,breakbytokenanywhere=true}
+
+\fvset{breaklines=true,breakanywhere=true,breakbytoken=true,breakbytokenanywhere=true,tabsize=4,frame=single,framesep=.5em,samepage=false}
+\DefineVerbatimEnvironment{verbatim}{Verbatim}{}
 
 \newcommand{\admonition}[2]{\textbf{#1}: {#2}}
 \newcommand{\rolered}[1]{ \textcolor{red}{#1} }
@@ -130,6 +137,10 @@
 
 \newenvironment{pkgtable}[1]
 {\begin{longtblr}[b, theme=packagetable]{colspec={X[1,r]|X[1,l]}, width=\textwidth}}
+{\end{longtblr}}
+
+\newenvironment{pkgtblr}[1]
+{\begin{longtblr}[b, theme=packagetable]{colspec={X[c]|X[c]|X[c]|X[c]}}}
 {\end{longtblr}}
 
 \newenvironment{mintedlisting}{%
