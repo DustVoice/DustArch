@@ -1,32 +1,66 @@
+#let border_block(color, content) = block(
+  align(left, content),
+  stroke: .25em + rgb(color),
+  inset: 1em,
+  radius: .5em,
+  width: 100%
+)
+#let fill_block(color, content) = block(
+  align(left, content),
+  fill: rgb(color),
+  inset: 1em,
+  radius: .5em,
+  width: 100%
+)
+
+#let border_box(color, content) = box(
+  content,
+  stroke: .25em + rgb(color),
+  inset: .25em,
+  radius: .25em
+)
+#let fill_box(color, content) = box(
+  content,
+  fill: rgb(color),
+  inset: .25em,
+  radius: .25em
+)
+
+#set text(font: "DejaVu Sans", size: 12pt)
+
+#set document(
+  title: "DustArch",
+  author: "DustVoice"
+)
+
 #set page(
   paper: "a5",
-  header: align(center)[
-    #smallcaps(text(1.5em)[DustArch])
-  ],
+  header: align(
+    center,
+    block(spacing: 0pt)[
+      #text(1.5em, fill: rgb("#ff79c6"))[DustArch]\
+      #text(0.5em, fill: rgb("#bd93f9"))[DustVoice's Arch Linux from scratch]
+    ]
+  ),
   numbering: none
 )
+
 #set par(justify: true)
-#set heading(numbering: "1.1.")
+
 #set figure(numbering: none)
-#set text(font: "DejaVu Sans")
 
-#show heading: heading => {
-  pagebreak()
-  text(1.25em, heading)
-}
+#set heading(numbering: "1.1.")
 
-#show raw: raw_content => {box(raw_content, fill: luma(225), outset: .25em, radius: .25em)}
+#let code(lang: "", content) = raw(lang: lang, block: false, content)
+#let cmd(content) = code(lang: "fish", content)
 
-#outline(indent: true)
+#let _path(content) = fill_box("#8be9fd", content)
+#let path(content) = _path(raw(content))
 
-#let filesrc(caption, content) = figure(caption: caption)[
-  #block(
-    align(left, content),
-    fill: luma(225),
-    inset: .25em,
-    radius: 5pt
-  )
-]
+#let filesrc(filename, content) = figure(
+  caption: path(filename),
+  border_block("#8be9fd", content)
+)
 
 #let pkgtable(core, extra, community, aur) = figure(
   table(
@@ -37,56 +71,50 @@
   )
 )
 
-#let path(content) = text(raw(content), rgb("#ff79c6"))
-
-#let _block(color, content) = block(
-  align(left, content),
-  stroke: .25em + rgb(color),
-  inset: .5em,
-  radius: .5em
-)
-
 #let NOTE(content) = figure()[
-  #_block("#6272a4", content)
+  #border_block("#6272a4", content)
 ]
 #let TIP(content) = figure()[
-  #_block("#f1fa8c", content)
+  #border_block("#f1fa8c", content)
 ]
 #let IMPORTANT(content) = figure()[
-  #_block("#ff5555", content)
+  #border_block("#ff5555", content)
 ]
 #let WARNING(content) = figure()[
-  #_block("#ffb86c", content)
+  #border_block("#ffb86c", content)
 ]
 #let CAUTION(content) = figure()[
-  #_block("#ff79c6", content)
+  #border_block("#ff79c6", content)
 ]
 
-#pagebreak()
+// CONTENT START
+
+#outline(indent: true)
+
+#show heading: heading => {
+  pagebreak()
+  text(1.25em, heading)
+}
+
 = Inside the `archiso`
-This chapter is aimed at assisting with the general setup of a customized Arch Linux installation, using an official Arch Linux image
-(`archiso`).
+
+This chapter is aimed at assisting with the general setup of a customized Arch Linux installation, using an official Arch Linux image (`archiso`).
 
 #NOTE[
   As Arch Linux is a rolling release GNU/Linux distribution, it is advised, to have a working internet connection, in order to get the latest package upgrades and to install additional software, as the `archiso` doesn't have all packages available from cache, especially the ones that need to be installed from the `AUR`.
+
+  / AUR (Arch User Repository):
+    A huge collection of packages, contributed and maintained by the community, which in order to install you need to download and build.\
+    Accessable and browsable under #link("https://aur.archlinux.org/")[aur.archlinux.org].
 
   Furthermore, one should bear in mind that depending on the version, or rather modification date, of this guide, the exact steps taken may already be outdated.
   If you encounter any problems along the way, you will either have to resolve the issue yourself, or utilize the great #link("https://wiki.archlinux.org/")[ArchWiki], or the #link("https://bbs.archlinux.org/")[Arch Linux forums].
 ]
 
-In the following document, I will denote a command execution in a shell with a preceding `>`: (`> uname -a`).
-
-In a shell session block, you can infer the privilege the command was executed by looking at the prompt line above the command, where the `root` username will be denoted if it's an elevated shell, in any case together with the current working directory
-
-```fish
-~
-> git init
-
-root in /boot
-> ls -la
-```
+To get some explanation on how this document is formatted, look into the @glossary
 
 == Syncing up `pacman`
+
 
 First of all we need to sync up `pacman`'s package repository, in order to be able to install the latest, as well as new packages to the `archiso` and our new system.
 
@@ -95,14 +123,15 @@ First of all we need to sync up `pacman`'s package repository, in order to be ab
 ```
 
 #WARNING[
-  Using `> pacman -Sy` should be sufficient, in order to be able to search for packages from within the `archiso`, without upgrading the system, but might break your system, if you use this command on an existing installation!
+  Using #cmd("> pacman -Sy") should be sufficient, in order to be able to search for packages from within the `archiso`, without upgrading the system, but might break your system, if you use this command on an existing installation!
 
-  To be on the safe side, it is advised to always use `> pacman -Syu` instead!
+  To be on the safe side, it is advised to always use #cmd("> pacman -Syu") instead!
 
   `pacstrap` uses the latest packages anyways.
 ]
 
 === Official repositories
+
 After doing that, we can now install any software from the official repositories by issuing
 
 ```fish
@@ -134,6 +163,7 @@ root in /
 ```
 
 === `AUR`
+
 If you want to install a package from the #link("https://aur.archlinux.org/")[AUR], I would advise proceeding in the following manner, in order to install the `AUR`-helper #link("https://aur.archlinux.org/packages/paru")[paru].
 
 #enum[
@@ -155,7 +185,7 @@ If you want to install a package from the #link("https://aur.archlinux.org/")[AU
 
 ```
  ][
-   Execute `> makepkg`
+   Execute #cmd("> makepkg")
 
 ```fish
 ~/paru
@@ -181,15 +211,17 @@ If you only install `AUR` packages the manual way, you might have to resolve som
 In order to install a desired `AUR` package, you _must_ switch to your normal, non-`root` user, because `makepkg` doesn't run as `root`.
 
 === Software categories
+
 In this guide, software is categorized in three different categories
 
-- `Console` software is intended to be used with either the native linux console, or with a terminal emulator
+/ `console`: Intended to be used with either the native linux console, or with a terminal emulator
 
-- `GUI` software is intended to be used within a graphical desktop environment
+/ `GUI`: Intended to be used within a graphical desktop environment
 
-- `Hybrid` software can either be used within both a console and a graphical desktop environment (e.g. `networkmanager`), or there are packages available for both a console and a graphical desktop environment (e.g. `pulseaudio` with `pulsemixer` for `Console` and `pavucontrol` for `GUI`)
+/ `hybrid`: To be used either within both a console and a graphical desktop environment (e.g. `networkmanager`), or there are packages available for both a console and a graphical desktop environment (e.g. `pulseaudio` with `pulsemixer` for `Console` and `pavucontrol` for `GUI`)
 
 === Software installation
+
 In this guide, I'll be explicitly listing the packages installed in a specific section at the beginning of the individual sections.
 
 This allows you to
@@ -205,31 +237,31 @@ For further clarification for specific packages (e.g. `UEFI` specific packages),
 Of course, as always, you can and *should* adapt everything according to your needs, as this guide is, again, _no tutorial, but a guide_.
 
 ==== Example section
-#pkgtable[
-  libutil-linux
-][
-  git
-][
-  ardour\
-  cadence\
-  jsampler\
-  linuxsampler\
-  qsampler\
-  sample-package\
-][
-  sbupdate
-]
 
+#pkgtable(
+  "libutil-linux",
+
+  "git",
+
+  "ardour
+  cadence
+  jsampler
+  linuxsampler
+  qsampler
+  sample-package",
+
+  "sbupdate"
+)
 You have to configure `sample-package`, by editing #path("/etc/sample.conf")
 
+#filesrc("/etc/sample.conf")[
 ```
 Sample.text=useful
 ```
-// #+begin_center
-`/etc/sample.conf`
-// #+end_center
+]
 
 == Formatting the drive
+
 First, you probably want to get a list of all available drives, together with their corresponding device name, by issuing
 
 ```fish
@@ -237,61 +269,60 @@ root in /
 > fdisk -l
 ```
 
-The output of `> fdisk -l` is dependent on your system configuration and many other factors, like `BIOS` initialization order, etc.
+The output of #cmd("> fdisk -l") is dependent on your system configuration and many other factors, like `BIOS` initialization order, etc.
 
-// #+begin_CAUTION
-Don't assume the same path of a device between reboots!
+#CAUTION[
+  Don't assume the same path of a device between reboots!
 
-Always double check!
+  Always double check!
 
-There is nothing worse than formatting a drive you didn't mean to format!
-// #+end_CAUTION
+  There is nothing worse than formatting a drive you didn't mean to format!
+]
 
 === The standard way
+
 In my case, the partition I want to install the root file system on will be `/dev/mapper/DustPortable`, which is an unlocked `luks2` volume which will be located on `/dev/sda2`. For my `swap`, I will use a swapfile.
 
-// #+begin_NOTE
-A `swap` size twice the size of your RAM is recommended by a lot of people.
+#NOTE[
+  A `swap` size twice the size of your RAM is recommended by a lot of people.
 
-To be exact, every distribution has different recommendations for `swap` sizes. Also `swap` size heavily depends on whether you want to be able to hibernate, etc.
-// #+end_NOTE
+  To be exact, every distribution has different recommendations for `swap` sizes. Also `swap` size heavily depends on whether you want to be able to hibernate, etc.
+]
 
 ==== In my opinion
+
 You should make the `swap` size at least your RAM size and for RAM sizes over `4GB` with the intention to hibernate, at least one and a half times your RAM size.
 
 If you haven't yet partitioned your disk, please refer to the #link("https://wiki.archlinux.org/index.php/Partitioning")[general partitioning tutorial] in the ArchWiki.
 
 === Full system encryption
 
-// #+begin_NOTE
-This is only one way to do it (read: it is the way I have previously done it).
-// #+end_NOTE
+
+#NOTE[
+  This is only one way to do it (read: it is the way I have previously done it).
+]
 
 I'm using a `LUKS` setup, with `btrfs` and `luks2`.
 For more information look into the #link("https://wiki.archlinux.org/")[ArchWiki].
 
-This setup has different partitions, used for the EFI System partition, `root` partition, etc. compared to the ones used in the rest of the guide.
+This setup has different partitions, used for the `EFI System Partition`, `root` partition, etc. compared to the ones used in the rest of the guide.
 The only part of the guide, which currently uses the drives & partitions used in this section is #link("*The manual way").
 
 To start things, we first have to decide, which disk, or partition, is going to be `luks2` encrypted.
 
 In my case I'll be using my SSD in an USB-C enclosure to be ablet to take the system with me on the go.
 For that I will use a `GPT` partition scheme.
-I will then create a `2 GiB` EFI System partition (I have multiple kernels installed at a time), in my case `/dev/sda1`, defined as a `EFI System` partition type in `gdisk`, as well as the main `luks2` volume, in my case `/dev/sda2`, defined as a `Linux filesystem` partition type in `gdisk`.
+I will then create a `2 GiB` `EFI System partition` (I have multiple kernels installed at a time), in my case `/dev/sda1`, defined as a `EFI System partition` type in `gdisk`, as well as the main `luks2` volume, in my case `/dev/sda2`, defined as a `Linux filesystem` partition type in `gdisk`.
 
 After partitioning our disk, we now have to set everything up.
 
-==== EFI System partition
+==== `EFI System Partition`
 
-// #+ATTR_LATEX: :environment pkgtblr
-|    <c>     |   <c>   |     <c>     |  <c>  |
-|   *core*   | *extra* | *community* | *AUR* |
-|------------+---------+-------------+-------|
-| dosfstools |         |             |       |
+#pkgtable("dosfstools", "", "", "")
 
-I won't setup my EFI System partition with `cryptsetup`, as it makes no sense in my case.
+I won't setup my `EFI System Partition` with `cryptsetup`, as it makes no sense in my case.
 
-Every `EFI` binary (or `STUB`) will have to be signed with my custom Secure Boot keys, as described in #link("*The manual way"), so tempering with the EFI System partition poses no risk to my system.
+Every `EFI` binary (or `STUB`) will have to be signed with my custom Secure Boot keys, as described in #link("*The manual way"), so tempering with the `EFI System Partition` poses no risk to my system.
 
 Instead I will simply format it with a `FAT32` filesystem
 
@@ -302,16 +333,12 @@ root in /
 
 We will bother with mounting it later on.
 
-When you _do_ want to encrypt your EFI System partition, in conjunction with e.g. `grub`, please either use `LUKS 1`, or make sure to have the latest version of `grub` installed on your system, to make it work with `LUKS 2`!
+When you _do_ want to encrypt your `EFI System Partition`, in conjunction with e.g. `grub`, please either use `LUKS 1`, or make sure to have the latest version of `grub` installed on your system, to make it work with `LUKS 2`!
 I will use `limine` though, so for me all of this isn't a consideration.
 
 ==== `LUKS`
 
-// #+ATTR_LATEX: :environment pkgtblr
-|    <c>     |   <c>   |     <c>     |  <c>  |
-|   *core*   | *extra* | *community* | *AUR* |
-|------------+---------+-------------+-------|
-| cryptsetup |         |             |       |
+#pkgtable("cryptsetup", "", "", "")
 
 First off we have to create the `LUKS` volume
 
@@ -320,8 +347,11 @@ root in /
 > cryptsetup luksFormat --type luks2 /dev/sda2
 ```
 
-In my case, I will convert the keyslot the *Password-Based Key Derivation Function* (pbkdf) `pbkdf2`, as `luks2` defaults to `argon2id`, which doesn't play well with my portable setup, namely the differing RAM sizes.
+In my case, I will convert the keyslot to `pbkdf2`, as `luks2` defaults to `argon2id`, which doesn't play well with my portable setup, namely the differing RAM sizes.
 
+#NOTE[
+  / pbkdf: Password-Based Key Derivation Function
+]
 ```fish
 root in /
 > cryptsetup luksConvertKey --pbkdf pbkdf2 /dev/sda2
@@ -337,11 +367,8 @@ root in /
 The volume is now accessible under `/dev/mapper/DustPortable`.
 
 ==== `btrfs`
-// #+ATTR_LATEX: :environment pkgtblr
-|     <c>     |   <c>   |     <c>     |  <c>  |
-|   *core*    | *extra* | *community* | *AUR* |
-|-------------+---------+-------------+-------|
-| btrfs-progs |         |             |       |
+
+#pkgtable("btrfs-progs", "", "", "")
 
 Fist off we need to create the filesystem
 
@@ -382,20 +409,23 @@ root in /mnt/meta
 ```
 
 == Preparing the `chroot` environment
+
 As a first step it might make sense to edit `/etc/pacman.d/mirrorlist` to move the mirrors geographically closest to you to the top.
 
 === `pacstrap` in
+
 Generally we need to `pacstrap` the _minimum packages_ needed.
 We will install all other packages later on.
 
-// #+ATTR_LATEX: :environment pkgtblr
-|      <c>       |   <c>   |     <c>     |  <c>  |
-|     *core*     | *extra* | *community* | *AUR* |
-|----------------+---------+-------------+-------|
-|      base      |         |             |       |
-|   base-devel   |         |             |       |
-|     linux      |         |             |       |
-| linux-firmware |         |             |       |
+#pkgtable(
+  "base
+  base-devel
+  linux
+  linux-firmware",
+  "",
+  "",
+  ""
+)
 
 This is the actual command used in my case
 
@@ -405,6 +435,7 @@ root in /
 ```
 
 === Mounting party
+
 Now we have to mount the subvolumes and boot partition we created earlier to the appropriate locations.
 
 First off, we mount the `/` subvolume `@`
@@ -469,17 +500,17 @@ root in /mnt/DustPortable
 > swapon swapfile/swapfile
 ```
 
-// #+begin_IMPORTANT
-I use my SSD inside a USB-C enclosure (although it is rated at 40Gbps it is *not* Thunderbolt 3!), which means that it _doesn't_ support `TRIM`.
-This is why I personally need to add `nodiscard` to every `mount` command option, which would look something along the lines of this
+#IMPORTANT[
+  I use my SSD inside a USB-C enclosure (although it is rated at 40Gbps it is *not* Thunderbolt 3!), which means that it _doesn't_ support `TRIM`.
+  This is why I personally need to add `nodiscard` to every `mount` command option, which would look something along the lines of this
 
 ```fish
 root in /
 > mount -o subvol=@,nodiscard /dev/mapper/DustPortable /mnt/DustPortable
 ```
-// #+end_IMPORTANT
+]
 
-The only thing left to do now is mounting the boot partition, namely my /EFI System Partition/
+The only thing left to do now is mounting the boot partition, namely my `EFI System Partition`
 
 ```fish
 root in /mnt/DustPortable
@@ -508,6 +539,7 @@ root in /
 and you're ready to enter the `chroot` environment.
 
 === Outdated `archiso`
+
 If you're using an older version of the `archiso`, you might want to replace the mirrorlist present on the `archiso` with the newest #link("https://archlinux.org/mirrorlist/all")[online one]
 
 ```fish
@@ -515,11 +547,7 @@ root in /
 > curl https://archlinux.org/mirrorlist/all > /etc/pacman.d/mirrorlist
 ```
 
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |   <c>   |     <c>     |  <c>  |
-| *core* | *extra* | *community* | *AUR* |
-|--------+---------+-------------+-------|
-|        |         |  reflector  |       |
+#pkgtable("", "", "reflector", "")
 
 The best way to do this tho, is using a package from the official repositories named `reflector`.
 It comes with all sorts of options, for example sorting mirrors by speed, filtering by country, etc.
@@ -539,12 +567,13 @@ root in /
 
 for best results.
 
-// #+begin_CAUTION
-Be wary though as there could arise keyring issues etc.
-Normally the `pacstrap` command takes care of syncing everything etc.
-// #+end_CAUTION
+#CAUTION[
+  Be wary though as there could arise keyring issues etc.
+  Normally the `pacstrap` command takes care of syncing everything etc.
+]
 
 === Living behind a proxy
+
 If you're sitting behind a proxy, you're generally in for an unpleasant time.
 Generally you need to set the `http_proxy`, `https_proxy`, `ftp_proxy` variables as well as their *upper case* counterparts.
 
@@ -568,9 +597,7 @@ root in /
 > export FTP_PROXY=$http_proxy
 ```
 
-// #+begin_sloppypar
 If you can't `pacstrap` after that, you probaby have the issue thatthe `systemd-timesyncd`, as well as `pacman-init` service didn't execute correctly.
-// #+end_sloppypar
 
 ```fish
 root in /
@@ -606,8 +633,10 @@ root in /
 > pacman-key --populate
 ```
 
-// #+begin_NOTE
-You might also want to add the following lines to `/etc/sudoers`, in order to keep the proxy environment variables alive when executing a command through `sudo`
+#NOTE[
+  You might also want to add the following lines to `/etc/sudoers`, in order to keep the proxy environment variables alive when executing a command through `sudo`
+
+  #filesrc("/etc/sudoers")[
 ```
 Defaults  env_keep += "http_proxy"
 Defaults  env_keep += "https_proxy"
@@ -616,23 +645,19 @@ Defaults  env_keep += "HTTP_PROXY"
 Defaults  env_keep += "HTTPS_PROXY"
 Defaults  env_keep += "FTP_PROXY"
 ```
-// #+begin_center
-`/etc/sudoers`
-// #+end_center
+  ]
+]
 // #+end_NOTE
 
 = Entering the `chroot`
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |         <c>          |     <c>     |  <c>  |
-| *core* |       *extra*        | *community* | *AUR* |
-|--------+----------------------+-------------+-------|
-|        | arch-install-scripts |             |       |
 
-// #+begin_NOTE
-As we want to set up our new system, we need to have access to the different partitions, the internet, etc. which we wouldn't get by solely using `chroot`.
+#pkgtable("", "arch-install-scripts", "", "")
 
-That's why we are using `arch-chroot`, provided by the `arch-install-scripts` package, which is shipped with the `archiso`. This script takes care of all the afforementioned stuff, so we can set up our system properly.
-// #+end_NOTE
+#NOTE[
+  As we want to set up our new system, we need to have access to the different partitions, the internet, etc. which we wouldn't get by solely using `chroot`.
+
+  That's why we are using `arch-chroot`, provided by the `arch-install-scripts` package, which is shipped with the `archiso`. This script takes care of all the afforementioned stuff, so we can set up our system properly.
+]
 
 ```fish
 root in /
@@ -642,25 +667,40 @@ root in /
 Et Voil ! You successfully `chroot`-ed inside your new system and you'll be greeted by a `bash` prompt, which is the default shell on fresh Arch Linux installations.
 
 == Installing additional packages
-// #+ATTR_LATEX: :environment pkgtblr
-|       <c>        |            <c>             |     <c>     |  <c>   |
-|      *core*      |          *extra*           | *community* | *AUR*  |
-|------------------+----------------------------+-------------+--------|
-|    amd-ucode     |          efitools          |    fish     | limine |
-|    base-devel    |            git             |   neovim    |        |
-|   btrfs-progs    |        intel-ucode         |             |        |
-|    diffutils     |       networkmanager       |             |        |
-|      dmraid      | networkmanager-openconnect |             |        |
-|     dnsmasq      |   networkmanager-openvpn   |             |        |
-|    dosfstools    |           parted           |             |        |
-|    efibootmgr    |           polkit           |             |        |
-| emacs-nativecomp |           rsync            |             |        |
-|   exfat-utils    |            zsh             |             |        |
-|     iputils      |                            |             |        |
-|  linux-headers   |                            |             |        |
-|     openssh      |                            |             |        |
-|       sudo       |                            |             |        |
-|     usbutils     |                            |             |        |
+
+#pkgtable(
+  "amd-ucode
+  base-devel
+  btrfs-progs
+  diffutils
+  dmraid
+  dnsmasq
+  dosfstools
+  efibootmgr
+  emacs-nativecomp
+  exfat-utils
+  iputils
+  linux-headers
+  openssh
+  sudo
+  usbutils",
+
+  "efitools
+  git
+  intel-ucode
+  networkmanager
+  networkmanager-openconnect
+  networkmanager-openvpn
+  parted
+  polkit
+  rsync
+  zsh",
+
+  "fish
+  neovim",
+
+  "limine"
+)
 
 There are many command line text editors available, like `nano`, `vi`,
 `vim`, `emacs`, etc.
@@ -675,6 +715,8 @@ root in /
 ```
 
 With `polkit` installed, create a file to enable users of the `network` group to add new networks without the need of `sudo`.
+
+#filesrc("/etc/polkit-1/rules.d/50-org.freedesktop.NetworkManager.rules")[
 ```
 polkit.addRule(function(action, subject) {
     if (action.id.indexOf("org.freedesktop.NetworkManager.") `` 0 && subject.isInGroup("network")) {
@@ -682,31 +724,34 @@ polkit.addRule(function(action, subject) {
     }
 });
 ```
-// #+begin_center
-`/etc/polkit-1/rules.d/50-org.freedesktop.NetworkManager.rules`
-// #+end_center
+]
 
 If you use `UEFI`, you'll also need the `efibootmgr`, in order to modify the `UEFI` entries.
 
 === Additional kernels
-// #+ATTR_LATEX: :environment pkgtblr
-|        <c>        |          <c>           |     <c>     |  <c>  |
-|      *core*       |        *extra*         | *community* | *AUR* |
-|-------------------+------------------------+-------------+-------|
-|     linux-lts     |     linux-hardened     |             |       |
-| linux-lts-headers | linux-hardened-headers |             |       |
-|     linux-zen     |                        |             |       |
-| linux-zen-headers |                        |             |       |
+
+#pkgtable(
+  "linux-lts
+  linux-lts-headers
+  linux-zen
+  linux-zen-headers",
+
+  "linux-hardened
+  linux-hardened-headers",
+
+  "",
+  ""
+)
 
 In addition to the standard `linux` kernel, there are a couple of different options out there.
 Just to name a few, there is `linux-lts`, `linux-zen` and `linux-hardened`.
 
 You can simply install them and then add the corresponding `initramfs` and kernel image to your bootloader entries.
 
-Make sure you have allocated enough space on your _EFI System Partition_ though.
+Make sure you have allocated enough space on your `EFI System Partition` though.
 
 == Master of time
-// #+begin_sloppypar
+
 After that, you have to set your timezone and update the system clock.
 
 Generally speaking, you can find all the different timezones under `/usr/share/zoneinfo`.
@@ -714,7 +759,6 @@ Generally speaking, you can find all the different timezones under `/usr/share/z
 In my case, my timezone file resides under `/usr/share/zoneinfo/Europe/Berlin`.
 
 To achieve the desired result, I will want to symlink this to `/etc/localtime` and set the hardware clock.
-// #+end_sloppypar
 
 ```fish
 root in /
@@ -742,6 +786,7 @@ root in /
 ```
 
 == Master of locales
+
 Now you have to generate your locale information.
 
 For that you have to edit `/etc/locale.gen` and uncomment the locales
@@ -773,12 +818,14 @@ root in /
 After that we're done with this part.
 
 == Naming your machine
+
 Now we can set the `hostname` for our new install and add `hosts` entries.
 
 Apart from being mentioned in your command prompt, the `hostname` also serves the purpose of identifying, or naming your machine locally, as well as in a networked scenario.
 This will enable you to see your PC with the correct name in your router, etc.
 
 === `hostname`
+
 To change the `hostname`, simply edit `/etc/hostname`, enter the desired name, then save and quit
 
 ```fish
@@ -786,6 +833,7 @@ DustArch
 ```
 
 === `hosts`
+
 Now we need to specify some `hosts` entries by editing `/etc/hosts`
 
 ```fish
@@ -798,9 +846,11 @@ Now we need to specify some `hosts` entries by editing `/etc/hosts`
 ```
 
 == User setup
+
 Now you should probably change the default `root` password and create a new non-`root` user for yourself, as using your new system purely through the native `root` user is not recommended from a security standpoint.
 
 === Give `root` a password
+
 To change the password for the current user (the `root` user) issue
 
 ```fish
@@ -811,12 +861,14 @@ root in /
 and choose a new password.
 
 === Create a personal user
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |   <c>   |     <c>     |  <c>  |
-| *core* | *extra* | *community* | *AUR* |
-|--------+---------+-------------+-------|
-|  sudo  |         |             |       |
-|  bash  |         |             |       |
+
+#pkgtable(
+  "sudo
+  bash",
+  "",
+  "",
+  ""
+)
 
 We are going to create a new user and set the password, groups and shell for this user
 
@@ -851,15 +903,12 @@ dustvoice ALL=(ALL) ALL
 to solely grant the _new_ user `sudo` privileges.
 
 == Boot manager
+
 In this section different boot managers / boot methods are explained.
 
 === `EFISTUB`
 
-// #+ATTR_LATEX: :environment pkgtblr
-|    <c>     |   <c>   |     <c>     |  <c>  |
-|   *core*   | *extra* | *community* | *AUR* |
-|------------+---------+-------------+-------|
-| efibootmgr |         |             |       |
+#pkgtable("efibootmgr ", "", "", "")
 
 You can directly boot the system, by making use of the `EFISTUB` contained in the kernel image. To utilize this, we can use `efibootmgr` to create an entry in the `UEFI`
 
@@ -871,30 +920,36 @@ root in /
 This only makes sense of course, if you're using `UEFI` instead of a legacy `BIOS`. In this case it doesn't matter of course, if your machine _theoretically supports_ `UEFI`, but rather if it is the /enabled mode/!
 
 === `grub`
-// #+ATTR_LATEX: :environment pkgtblr
-|    <c>     |   <c>   |     <c>     |  <c>  |
-|   *core*   | *extra* | *community* | *AUR* |
-|------------+---------+-------------+-------|
-| dosfstools | mtools  |  os-prober  |       |
-| efibootmgr |         |             |       |
-|    grub    |         |             |       |
+
+#pkgtable(
+  "dosfstools
+  efibootmgr
+  grub",
+
+  "mtools",
+
+  "os-prober",
+
+  ""
+)
 
 Of course you can also use a boot manager to boot the system, as the name implies.
 
 If I can't use `EFISTUB`, e.g. either because the system has no `UEFI` support, or because I need another feature of a boot manager, I could use `grub`.
 
-// #+begin_TIP
-Currently, I mainly use `limine` as a boot manager *especially* on my portable setup, as `grub` is *such a huge pain in the butt!*
+#TIP[
+  Currently, I mainly use `limine` as a boot manager *especially* on my portable setup, as `grub` is *such a huge pain in the butt!*
 
-`limine` is insanely easy to setup and configure, without all the `BIOS Boot partition` crap that I find myself mainly using this.
-Refer to #link("*`limine`")" for further information.
-// #+end_TIP
+  `limine` is insanely easy to setup and configure, without all the `BIOS Boot partition` crap that I find myself mainly using this.
+  Refer to #link("*`limine`")" for further information.
+]
 
-// #+begin_NOTE
-You'll probably only need the `efibootmgr` package, if you plan to utilize `UEFI`.
-// #+end_NOTE
+#NOTE[
+  You'll probably only need the `efibootmgr` package, if you plan to utilize `UEFI`.
+]
 
 ==== `grub` - `BIOS`
+
 If you chose the `BIOS - MBR` variation, you'll have to _do nothing special_.
 
 If you chose the `BIOS - GPT` variation, you'll have to _have a `+1M` boot partition_ created with the partition type set to `BIOS boot`.
@@ -909,16 +964,17 @@ root in /
 It should obvious that you would need to replace `/dev/sdb` with the disk you actually want to use. Note however that you have to specify a _disk_ and _not a partition_, so _no number_.
 
 ==== `grub` - `UEFI`
-If you chose the `UEFI - GPT` variation, you'll have to _have the EFI System partition mounted_ at `/boot` (where `/dev/sda2` is the partition holding said EFI System partition in my particular setup)
 
-Now /install `grub` to the EFI System partition/
+If you chose the `UEFI - GPT` variation, you'll have to _have the `EFI System Partition` mounted_ at `/boot` (where `/dev/sda2` is the partition holding said `EFI System Partition` in my particular setup)
+
+Now _install `grub` to the `EFI System Partition`_
 
 ```fish
 root in /
-> grub-install --target`x86_64-efi --efi-directory`/boot --bootloader-id=grub --recheck
+> grub-install --target x86_64-efi --efi-directory /boot --bootloader-id=grub --recheck
 ```
 
-If you've planned on dual booting arch with Windows and therefore reused the EFI System partition created by Windows, you might not be able to boot to grub just yet.
+If you've planned on dual booting arch with Windows and therefore reused the `EFI System Partition` created by Windows, you might not be able to boot to grub just yet.
 
 In this case, boot into Windows, open a `cmd` window as Administrator and type in
 
@@ -936,52 +992,57 @@ root in /
 under Linux to make sure, that the `grubx64.efi` file is really there.
 
 ==== `grub` config
+
 In all cases, you now have to create the main `grub.cfg` configuration file.
 
 But before we actually generate it, we'll make some changes to the default `grub` settings, which the `grub.cfg` will be generated from.
 
 ===== Adjust the timeout
+
 First of all, I want my `grub` menu to wait indefinitely for my command to boot an OS.
+
+#filesrc("/etc/default/grub")[
 ```
 GRUB_TIMEOUT=-1
 ```
-// #+begin_center
-`/etc/default/grub`
-// #+end_center
+]
 
 I decided on this, because I'm dual booting with Windows and after Windows updates itself, I don't want to accidentally boot into my Arch Linux, just because I wasn't quick enough to select the Windows Boot Loader from the `grub` menu.
 
 Of course you can set this parameter to whatever you want.
 
 Another way of achieving what I described, would be to make `grub` remember the last selection.
+
+#filesrc("/etc/default/grub")[
 ```
 GRUB_TIMEOUT=5
 GRUB_DEFAULT=saved
 GRUB_SAVEDEFAULT="true"
 ```
-// #+begin_center
-`/etc/default/grub`
-// #+end_center
+]
 
 ===== Enable the recovery
+
 After that I also want the recovery option showing up, which means that besides the standard and fallback images, also the recovery one would show up.
+
+#filesrc("/etc/default/grub")[
 ```
 GRUB_DISABLE_RECOVERY=false
 ```
-// #+begin_center
-`/etc/default/grub`
-// #+end_center
+]
 
 ===== NVIDIA fix
+
 Now, as I'm using the binary NVIDIA driver for my graphics card, I also want to make sure, to revert `grub` back to text mode, after I select a boot entry, in order for the NVIDIA driver to work properly. You might not need this
+
+#filesrc("/etc/default/grub")[
 ```
 GRUB_GFXPAYLOAD_LINUX=text
 ```
-// #+begin_center
-`/etc/default/grub`
-// #+end_center
+]
 
 ===== Add power options
+
 I also want to add two new menu entries, to enable me to shut down the PC, or reboot it, right from the `grub` menu.
 
 ```fish
@@ -995,23 +1056,18 @@ menuentry '=> Reboot' {
 ```
 
 ===== Installing `memtest`
+
 As I want all possible options to possibly troubleshoot my PC right there in my `grub` menu, without the need to boot into a live OS, I also want to have a memory tester there.
 
 ====== `BIOS`
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |    <c>     |     <c>     |  <c>  |
-| *core* |  *extra*   | *community* | *AUR* |
-|--------+------------+-------------+-------|
-|        | memtest86+ |             |       |
+
+#pkgtable("", "memtest86+", "", "")
 
 For a `BIOS` setup, you'll simply need to install the `memtest86+` package, with no further configuration.
 
 ====== `UEFI`
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |   <c>   |     <c>     |      <c>      |
-| *core* | *extra* | *community* |     *AUR*     |
-|--------+---------+-------------+---------------|
-|        |         |             | memtest86-efi |
+
+#pkgtable("", "", "", "memtest86-efi")
 
 For a `UEFI` setup, you'll first need to install the package and then tell `memtest86-efi` ^{`AUR`} how to install itself
 
@@ -1023,28 +1079,29 @@ root in /
 Now select option 3, to install it as a `grub2` menu item.
 
 ===== Enabling hibernation
-// #+begin_sloppypar
+
 We need to add the `resume` kernel parameter to `/etc/default/grub`, containing my `swap` partition `UUID`, in my case
-// #+end_sloppypar
+
+#filesrc("/etc/default/grub")[
 ```
 GRUB_CMDLINE_LINUX_DEFAULT`"loglevel`3 quiet resume`UUID`097c6f11-f246-40eb-a702-ba83c92654f2"
 ```
-// #+begin_center
-`/etc/default/grub`
-// #+end_center
+]
 
-If you have to change anything, like the `swap` partition `UUID`, inside the `grub` configuration files, you'll always have to rerun `> grub-mkconfig` as explained in the paragraph of the section .
+If you have to change anything, like the `swap` partition `UUID`, inside the `grub` configuration files, you'll always have to rerun #cmd("> grub-mkconfig") as explained in the paragraph of the section .
 
 ===== Disabling `os-prober`
+
 Sometimes it makes sense to disable the `os-prober` functionality of grub, even though `os-prober` is installed on the system (which auto enables it), for example when installing arch for portability purposes. We can disable the os-prober functionality in the `grub` default config file.
+
+#filesrc("/etc/default/grub")[
 ```
 GRUB_DISABLE_OS_PROBER=true
 ```
-// #+begin_center
-`/etc/default/grub`
-// #+end_center
+]
 
 ===== Generating the `grub` config
+
 Now we can finally generate our `grub.cfg`
 
 ```fish
@@ -1053,24 +1110,26 @@ root in /
 ```
 
 Now you're good to boot into your new system.
+
 === `limine`
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |   <c>   |     <c>     |  <c>   |
-| *core* | *extra* | *community* | *AUR*  |
-|--------+---------+-------------+--------|
-|        |         |             | limine |
 
-// #+begin_TIP
-You will have to switch to your normal user to install the `AUR` package.
+#pkgtable("", "", "", "limine")
 
-If you're at it though, you could also already install `paru`, to make things easier.
+#TIP[
+  You will have to switch to your normal user to install the `AUR` package.
 
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |   <c>    |     <c>     |   <c>    |
-| *core* | *extra*  | *community* |  *AUR*   |
-|--------+----------+-------------+----------|
-|        |   asp    |     bat     | paru-bin |
-|        | devtools |             |          |
+  If you're at it though, you could also already install `paru`, to make things easier.
+
+  #pkgtable(
+    "",
+
+    "asp
+    devtools",
+
+    "bat",
+
+    "paru-bin"
+  )
 
 ```fish
 root in /
@@ -1085,15 +1144,15 @@ root in /
 ~
 > rm -rf paru-bin
 ```
-// #+end_TIP
+]
 
 ==== `Hybrid`
+
 To be able to boot from a `BIOS`, as well as a `UEFI` system, simply follow both of these guides.
 
 ==== `BIOS`
-// #+begin_sloppypar
+
 For installing `limine` on a `BIOS` system, you first need to copy `/usr/share/limine/limine.sys` (which replaces the need for a boot partition, like `grub` uses it) to a `/` or `/boot` directory of any partition on the disk you want to try and boot from.
-// #+end_sloppypar
 
 ```fish
 root in /
@@ -1107,12 +1166,13 @@ root in /
 > limine-deploy /dev/sda
 ```
 
-// #+begin_NOTE
-Don't specify any partition number when using the `limine-deploy`!
-// #+end_NOTE
+#NOTE[
+  Don't specify any partition number when using the `limine-deploy`!
+]
 
 ==== `UEFI`
-Simply copy `/usr/share/limine/BOOTX64.EFI` to the appropriate location on your /EFI System Partition/
+
+Simply copy `/usr/share/limine/BOOTX64.EFI` to the appropriate location on your `EFI System Partition`
 
 ```fish
 root in /
@@ -1122,53 +1182,59 @@ root in /
 > cp /usr/share/limine/BOOTX64.EFI /boot/EFI/BOOT/
 ```
 
-// #+begin_NOTE
-In case you're using the #link("*Secure Boot")[Secure Boot] method described in #link("*`PreLoader`"), you would need to name it `loader.efi`, as the `PreLoader` takes the place of the `BOOTX64.EFI` which gets auto started by most `UEFI` systems.
-// #+end_NOTE
+#NOTE[
+  In case you're using the #link("*Secure Boot")[Secure Boot] method described in #link("*`PreLoader`"), you would need to name it `loader.efi`, as the `PreLoader` takes the place of the `BOOTX64.EFI` which gets auto started by most `UEFI` systems.
+]
 
 ==== config
+
 The only thing left to do is to create a `limine.cfg` file with all your desired boot entries in it.
 
-// #+begin_NOTE
-I usually have multiple kernels installed at a time, which is why my config file is so big.
-Note that I will intall the kernels at a later time, but already specify them as boot entries.
-Therefore don't be suprised if those boot entries in turn won't work yet!
-// #+end_NOTE
+#NOTE[
+  I usually have multiple kernels installed at a time, which is why my config file is so big.
+  Note that I will intall the kernels at a later time, but already specify them as boot entries.
+  Therefore don't be suprised if those boot entries in turn won't work yet!
+]
 
 ===== Kernel `cmdline`
+
 First off we'll define a variable which we then use throughout our boot entries, in order to reduce complexity and redundancy and increase readability.
 
-// #+begin_NOTE
-You need to replace the `[...]` part with the appropriate values for your system.
+#NOTE[
+  You need to replace the `[...]` part with the appropriate values for your system.
 
-For `[1]` the command to get the "physical" offset of the `swapfile` on `btrfs` is
+  For `[1]` the command to get the "physical" offset of the `swapfile` on `btrfs` is
 
 ```fish
 root in /
 > btrfs inspect-internal map-swapfile -r swapfile/swapfile
 ```
 
-For `[2]`, getting the `UUID` of the `LUKS` volume is achieved by using `blkid`.
-// #+end_NOTE
+  For `[2]`, getting the `UUID` of the `LUKS` volume is achieved by using `blkid`.
+]
+
+#filesrc("/boot/limine.cfg")[
 ```
 ${root_device}`root`/dev/mapper/DustPortable rw rootflags`subvol`@ resume`/dev/mapper/DustPortable resume_offset`[1] cryptdevice`UUID`[2]:DustPortable
 ```
-// #+begin_center
-`/boot/limine.cfg`
-// #+end_center
+]
 
 ===== `limine` options
+
 Next we configure some options for `limine`
+
+#filesrc("/boot/limine.cfg")[
 ```
 TIMEOUT=no
 INTERFACE_BRANDING=DustPortable
 ```
-// #+begin_center
-`/boot/limine.cfg`
-// #+end_center
+]
 
 ===== Boot entries
+
 Finally we can specify our boot entries
+
+#filesrc("/boot/limine.cfg")[
 ```
 :Arch Linux
 
@@ -1244,60 +1310,68 @@ MODULE_PATH=boot:///intel-ucode.img
 MODULE_PATH=boot:///amd-ucode.img
 MODULE_PATH=boot:///initramfs-linux-hardened-fallback.img
 ```
-// #+begin_center
-`/boot/limine.cfg`
-// #+end_center
+]
 
 == Configure the `initramfs`
+
 We'll add some custom entries to the `/etc/mkinitcpio.conf`.
 
-// #+begin_IMPORTANT
-It is crucial that after you're finised with editing the file, you run
+#IMPORTANT[
+  It is crucial that after you're finised with editing the file, you run
 
 ```fish
 root in /
 > mkinitcpio -P
 ```
 
-to regenerate the `initramfs`!
-// #+end_IMPORTANT
+  to regenerate the `initramfs`!
+]
 
 === `BINARIES`
+
 First off, we some binaries to be present in the image, so that if we drop into a recovery shell, we can use them.
+
+#filesrc("/etc/mkinitcpio.conf")[
 ```
 BINARIES=(btrfs nvim zsh fish)
 ```
-// #+begin_center
-`/etc/mkinitcpio.conf`
-// #+end_center
+]
 
 === Hibernation
+
 In order to use the hibernation feature, you should make sure that your `swap` partition/file is at least the size of your RAM.
 
 If you use a `busybox` based `ramdisk`, you need to add the `resume` hook to `/etc/mkinitcpio.conf`, before `fsck` and definetely after `block`
 
-// #+begin_NOTE
-When using `EFISTUB` without `sbupdate`, your motherboard has to support kernel parameters for boot entries. If your motherboard doesn't support this, you would need to use .
-// #+end_NOTE
+#NOTE[
+  When using `EFISTUB` without `sbupdate`, your motherboard has to support kernel parameters for boot entries. If your motherboard doesn't support this, you would need to use .
+]
 
 === `HOOKS`
+
 Now we will specify every hook we need.
 Mentionworthy additions to the default set are the hooks `colors`, `encrypt`, `btrfs` and `resume`.
+
+#filesrc("/etc/mkinitcpio.conf")[
 ```
 HOOKS=(base udev colors block keyboard keymap consolefont autodetect kms modconf encrypt btrfs resume filesystems fsck)
 ```
-// #+begin_center
-`/etc/mkinitcpio.conf`
-// #+end_center
+]
 
 === `colors`
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |   <c>   |      <c>      |          <c>          |
-| *core* | *extra* |  *community*  |         *AUR*         |
-|--------+---------+---------------+-----------------------|
-|        |         | terminus-font | mkinitcpio-colors-git |
+
+#pkgtable(
+  "",
+  "",
+
+  "terminus-font",
+
+  "mkinitcpio-colors-git"
+)
 
 By creating a file `/etc/vconsole.conf` we can specify a custom font and colorscheme to use
+
+#filesrc("/etc/vconsole.conf")[
 ```
 KEYMAP=us
 FONT=ter-116n
@@ -1318,21 +1392,20 @@ COLOR_13=ff79c6
 COLOR_14=bbe9fd
 COLOR_15=f8f8f2
 ```
-// #+begin_center
-`/etc/vconsole.conf`
-// #+end_center
+]
 
 == Switch to a `systemd` based `ramdisk`
-// #+begin_CAUTION
-I think it is worth noting that lately I didn't use a `systemd` based `ramdisk` on my portable setup anymore, as I encountered some issues.
 
-The underlying issue apparently were having the `block` and `keyboard` hook located after the `autodetect` hook.
-Reversing this so that `block` and `keyboard` precedes `autodetect` seems to fix the issue.
-In any case the `fallback initramfs` should always work.
+#CAUTION[
+  I think it is worth noting that lately I didn't use a `systemd` based `ramdisk` on my portable setup anymore, as I encountered some issues.
 
-It is worth noting though, that with the `busybox` based one, you lose the ability to unlock multiple `LUKS` encrypted partitions / devices at once, if they share the same password.
-In that case you would need to use the `/etc/crypttab`.
-// #+end_CAUTION
+  The underlying issue apparently were having the `block` and `keyboard` hook located after the `autodetect` hook.
+  Reversing this so that `block` and `keyboard` precedes `autodetect` seems to fix the issue.
+  In any case the `fallback initramfs` should always work.
+
+  It is worth noting though, that with the `busybox` based one, you lose the ability to unlock multiple `LUKS` encrypted partitions / devices at once, if they share the same password.
+  In that case you would need to use the `/etc/crypttab`.
+]
 
 There is nothing particularily better about using a `systemd` based `ramdisk` instead of a `busybox` one, it's just that I prefer it.
 
@@ -1366,12 +1439,10 @@ You can find all purposes of the individual hooks, as well as the `busybox` / `s
 
 
 == Secure Boot
+
 === `PreLoader`
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |   <c>   |     <c>     |       <c>        |
-| *core* | *extra* | *community* |      *AUR*       |
-|--------+---------+-------------+------------------|
-|        |         |             | preloader-signed |
+
+#pkgtable("", "", "", "preloader-signed")
 
 This is a way of handling secure boot that aims at just making everything work!
 It is not the way Secure Boot was intended to be used and you might as well disable it.
@@ -1385,7 +1456,7 @@ That is only correct, if you're _not_ using Secure Boot.
 You can either proceed by disabling Secure Boot in your firmware settings, or by using `PreLoader` as kind of a pre-bootloader.
 
 If you decided on using Secure Boot, you will first have to install the package.
-Now we just need to copy the `PreLoader` and the `HashTool`, which gets launched if the hash of the binary that is to be loaded (`loader.efi`) is not registered in the firmware yet, to our /EFI System Partition/
+Now we just need to copy the `PreLoader` and the `HashTool`, which gets launched if the hash of the binary that is to be loaded (`loader.efi`) is not registered in the firmware yet, to our `EFI System Partition`
 
 ```fish
 root in /
@@ -1395,8 +1466,8 @@ root in /
 > cp /usr/share/preloader-signed/HashTool.efi /boot/EFI/BOOT/
 ```
 
-// #+begin_NOTE
-If you have to use `bcdedit` from within Windows, as explained in section #link("*`grub` - `UEFI`"), you need to adapt the command accordingly
+#NOTE[
+  If you have to use `bcdedit` from within Windows, as explained in section #link("*`grub` - `UEFI`"), you need to adapt the command accordingly
 
 ```fish
 root in /
@@ -1406,12 +1477,12 @@ root in /
 > cp /usr/share/preloader-signed/HashTool.efi /boot/EFI/BOOT/
 ```
 
-and under Windows
+  and under Windows
 
 ```fish
 bcdedit /set {bootmgr} path \EFI\BOOT\PreLoader.efi
 ```
-// #+end_NOTE
+]
 
 Now you will be greeted by `HashTool` everytime you update your bootloader or kernel.
 
@@ -1421,9 +1492,11 @@ Reboot and your system should fire up just fine.
 
 === The manual way
 
+
 As this is a very tedious and time consuming process, it only makes sense when also utilizing some sort of disk encryption, which is, why I would advise you to read first.
 
 ==== File formats
+
 In the following subsections, we will be dealing with some different file formats.
 
 - `.key` `PEM` format private keys for `EFI` binary and `EFI` signature list signing.
@@ -1437,11 +1510,13 @@ In the following subsections, we will be dealing with some different file format
 - `.auth` Certificates in `EFI` Signature List with authentication header (i.e. a signed certificate update file) for `KeyTool` and/or firmware.
 
 ==== Create the keys
+
 First off, we have to generate our Secure Boot keys.
 
 These will be used to sign any binary which will be executed by the firwmare.
 
 ===== `GUID`
+
 Let's create a `GUID` first to use with the next commands.
 
 ```fish
@@ -1450,6 +1525,7 @@ Let's create a `GUID` first to use with the next commands.
 ```
 
 ===== `PK`
+
 We can now generate our `PK` (Platform Key)
 
 ```fish
@@ -1474,6 +1550,7 @@ In order to allow deletion of the `PK`, for firmwares which do not provide this 
 ```
 
 ===== `KEK`
+
 We proced in a similar fashion with the `KEK` (Key Exchange Key)
 
 ```fish
@@ -1491,6 +1568,7 @@ We proced in a similar fashion with the `KEK` (Key Exchange Key)
 ```
 
 ===== `DB`
+
 And finally the `DB` (Signature Database) key.
 
 ```fish
@@ -1508,6 +1586,7 @@ And finally the `DB` (Signature Database) key.
 ```
 
 ==== Windows stuff
+
 As your plan is to be able to control, which things do boot on your system and which don't, you're going through all this hassle to create and enroll custom keys, so only `EFI` binaries signed with said keys can be executed.
 
 But what if you have a Windows dual boot setup?
@@ -1528,21 +1607,26 @@ root in ~/sb
 ```
 
 ==== Move the kernel & keys
+
 In order to ensure a smooth operation, with actual security, we need to move some stuff around.
 
 ===== Kernel, `initramfs`, microcode
-`pacman` will put its unsigned and unencrypted kernel, `initramfs` and microcode images into `/boot`, which is, why it will be no longer a good idea, to leave your _EFI System Partition_ mounted there.
+
+`pacman` will put its unsigned and unencrypted kernel, `initramfs` and microcode images into `/boot`, which is, why it will be no longer a good idea, to leave your `EFI System Partition` mounted there.
 Instead we will create a new mountpoint under `/efi` and modify our `fstab` accordingly.
 
 ===== Keys
+
 As you probably want to automate signing sooner or later and only use the ultimately necessary keys for this process, as well as store the other more important keys somewhere more safe and secure than your `root` home directory, we will move the necessary keys.
 
 I personally like to create a `/etc/efi-keys` directory, `chmod`ded to `700` and place my `db.crt` and `db.key` there. All the keys will get packed into a `tar` archive and encrypted with a strong symmetric pass phrase and stored somewhere secure and safe.
 
 ==== Signing
+
 Signing is the process of, well, signing your `EFI` binaries, in order for them to be allowed to be executed, by the motherboard firmware. At the end of the day, that's why you're doing all this, to prevent an attack by launching unknown code.
 
 ===== Manual signing
+
 Of course, you can sign images yourself manually. In my case, I used this, to sign the boot loader, kernel and `initramfs` of my USB installation of Arch Linux.
 
 As always, manual signing also comes with its caveats!
@@ -1559,11 +1643,8 @@ root in ~/sb
 ```
 
 ===== `sbupdate`
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |   <c>   |     <c>     |     <c>      |
-| *core* | *extra* | *community* |    *AUR*     |
-|--------+---------+-------------+--------------|
-|        |         |             | sbupdate-git |
+
+#pkgtable("", "", "", "sbupdate-git")
 
 Of course, if you're using Secure Boot productively, you would want something more practical than manual signing, especially since you need to sign
 
@@ -1607,11 +1688,8 @@ After you've successfully configured `sbupdate`, you can run it as root, to crea
 In that case you will have to run `sbupdate` manually.
 
 ==== Add `EFI` entries
-// #+ATTR_LATEX: :environment pkgtblr
-|    <c>     |   <c>   |     <c>     |  <c>  |
-|   *core*   | *extra* | *community* | *AUR* |
-|------------+---------+-------------+-------|
-| efibootmgr |         |             |       |
+
+#pkgtable("efibootmgr", "", "", "")
 
 Now the only thing left to do, if you want to stay boot loader free
 anyways, is to add the signed images to the boot list of your `NVRAM`.
@@ -1628,14 +1706,16 @@ root in ~/sb
 Of course you can extend this list, with whichever entries you need.
 
 ==== Enrolling everything
+
 First off, copy all `.cer`, `.esl` and `.auth` files to a `FAT` formatted filesystem.
-I'm using my _EFI System Partition_ for this.
+I'm using my `EFI System Partition` for this.
 
 After that reboot into the firmware setup of your motherboard, clear the existing Platform Key, to set the firmware into "Setup Mode" and enroll the `db`, `KEK` and `PK` certificates in sequence.
 
 Enroll the Platform Key last, as it sets most firmware's Secure Boot sections back into "User mode", exiting "Setup Mode".
 
 = Inside the `DustArch`
+
 This section helps at setting up the customized system from within an installed system.
 
 This section mainly provides aid with the basic set up tasks, like networking, dotfiles, etc.
@@ -1649,6 +1729,7 @@ As I mentioned, this is only a guide and not the answer to everything.
 So reader discretion advised!
 
 == Someone there?
+
 First we have to check if the network interfaces are set up properly.
 
 To view the network interfaces with all their properties, we can issue
@@ -1675,9 +1756,10 @@ try restarting the `NetworkManager` service
 > sudo systemctl restart NetworkManager.service
 ```
 
-and then try `> ping`-ing again.
+and then try #cmd("> ping")-ing again.
 
 === Wi-Fi
+
 
 If you're trying to utilize a Wi-Fi connection, use `nmcli`, the NetworkManager's command line tool, or `nmtui`, the NetworkManager terminal user interface, to connect to a Wi-Fi network.
 
@@ -1725,9 +1807,10 @@ After that connect to the network
 > nmcli device wifi connect --ask
 ```
 
-Now try `> ping`-ing again.
+Now try #cmd("> ping")-ing again.
 
 == Update and upgrade
+
 After making sure that you have a working Internet connection, you can then proceed to update and upgrade all installed packages by issuing
 
 ```fish
@@ -1736,6 +1819,7 @@ After making sure that you have a working Internet connection, you can then proc
 ```
 
 == Enabling the `multilib` repository
+
 In order to make 32-bit packages available to `pacman`, we'll need to enable the `multilib` repository in `/etc/pacman.conf` first.
 Simply uncomment
 
@@ -1752,6 +1836,7 @@ and update `pacman`'s package repositories afterwards
 ```
 
 == `fish` for president
+
 Of course you can use any shell you want. In my case I'll be using the
 `fish` shell.
 
@@ -1763,48 +1848,47 @@ Therefore running `fish` as a login shell might not be the absolute best experie
 
 Instead we populate our `.bashrc` with some scripting that will let `fish` take over any _interactive_ shell, while scripts, etc. that expect a `POSIX` compliant shell can have their way.
 
-// #+begin_NOTE
-You can replicate the following instructions directly for the `root` user, to get the same kind of experience there
-// #+end_NOTE
+#NOTE[
+  You can replicate the following instructions directly for the `root` user, to get the same kind of experience there
+]
+
+#filesrc("~/.bashrc")[
 ```
 if [?[$- `` *i* && $(ps --no-header --pid`$PPID --format`comm) != "fish" && -z ${BASH_EXECUTION_STRING} ]]
 then
 	exec fish
 fi
 ```
-// #+begin_center
-`~/.bashrc`
-// #+end_center
+]
 
 Don't worry about the looks by the way, we're gonna change all that in just a second.
 
 == `git`
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |   <c>   |     <c>     |  <c>  |
-| *core* | *extra* | *community* | *AUR* |
-|--------+---------+-------------+-------|
-|        |   git   |             |       |
+
+#pkgtable("", "git", "", "")
 
 Install the package and you're good to go for now, as we'll care about the `.gitconfig` in just a second.
 
 == Security is important
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |   <c>   |     <c>     |  <c>  |
-| *core* | *extra* | *community* | *AUR* |
-|--------+---------+-------------+-------|
-| gnupg  |         |             |       |
+
+#pkgtable("gnupg", "", "", "")
 
 If you've followed the tutorial using a recent version of the archiso, you'll probably already have the most recent version of `gnupg` installed by default.
 
 === Smartcard shenanigans
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |      <c>      |     <c>     |  <c>  |
-| *core* |    *extra*    | *community* | *AUR* |
-|--------+---------------+-------------+-------|
-|        | libusb-compat |    ccid     |       |
-|        |               |   opensc    |       |
-|        |               |  pcsclite   |       |
-|        |               |    usbip    |       |
+
+#pkgtable(
+  "",
+
+  "libusb-compat",
+
+  "ccid
+  opnsc
+  pcsclite
+  usbip",
+
+  ""
+)
 
 After that you'll still have to setup `gnupg` correctly.
 In my case I have my private keys stored on a smartcard.
@@ -1829,22 +1913,32 @@ After that, you should be able to see your smartcard being detected
 If your smartcard still isn't detected, try logging off completely or even restarting, as that sometimes is the solution to the problem.
 
 == Additional required tools
-// #+ATTR_LATEX: :environment pkgtblr
-|   <c>   |     <c>     |      <c>      |  <c>  |
-| *core*  |   *extra*   |  *community*  | *AUR* |
-|---------+-------------+---------------+-------|
-|  make   |    clang    |      bat      |       |
-| openssh |    cmake    |      exa      |       |
-|         | jdk-openjdk |     pass      |       |
-|         |   python    | python-pynvim |       |
-|         |             |   starship    |       |
-|         |             |    zoxide     |       |
+
+#pkgtable(
+  "make
+  openssh",
+
+  "clang
+  cmake
+  jdk-openjdk
+  python",
+
+  "bat
+  exa
+  pass
+  python-pynvim
+  starship
+  zoxide",
+
+  ""
+)
 
 To minimize the effort required by the following steps, we'll install most of the required packages beforehand
 
 This will ensure, we proceed through the following section without the need for interruption, because a package needs to be installed, so the following content can be condensed to the relevant informations.
 
 == Setting up a `home` environment
+
 In this step we're going to setup a home environment for both the `root` and my personal `dustvoice` user.
 
 In my case these 2 home environments are mostly equivalent, which is why I'll execute the following commands as the `dustvoice` user first and then switch to the `root` user and repeat the same commands.
@@ -1855,7 +1949,7 @@ Note that this comes with some drawbacks.
 For example, if I change a configuration for my `dustvoice` user, I would have to regularly update it for the `root` user too.
 
 Also, I have to register my smartcard for the root user.
-This in turn is problematic, because the `gpg-agent` used for `ssh` authentication, doesn't behave well when used within a `> su` or `> sudo -i` session.
+This in turn is problematic, because the `gpg-agent` used for `ssh` authentication, doesn't behave well when used within a #cmd("> su") or #cmd("> sudo -i") session.
 So in order to update `root`'s config files I would either need to symlink everything, which I won't do, or I'll need to login as the `root` user now and then, to update everything.
 
 In my case, I want to access all my `git` repositories with my `gpg` key on my smartcard.
@@ -1863,6 +1957,7 @@ For that I have to configure the `gpg-agent` with some configuration files that 
 This means I will have to get along with using the `https` URL of the repository first and later changing the URL either in the corresponding `.git/config` file, or by issuing the appropriate command.
 
 === Use `dotfiles` for a base config
+
 To provide myself with a base configuration, which I can then extend, I maintain a `dotfiles` repository, which contains all kinds of configurations.
 
 The special thing about this `dotfiles` repository is that it _is_ my home folder.
@@ -1890,6 +1985,7 @@ To achieve this very specific setup, I have to turn my home directory into said 
 Now I can issue any `git` command in my `$HOME` directory, because it now is a `git` repository.
 
 === Set up `gpg`
+
 As I wanted to keep my `dotfiles` repository as modular as possible, I utilize `git`'s `submodule` feature.
 Furthermore I want to use my `nvim` repository, which contains all my configurations and plugins for `neovim`, on Windows, but without all the Linux specific configuration files.
 I am also using the `Pass` repository on my Android phone and Windows PC, where I only need this repository without the other Linux configuration files.
@@ -1917,20 +2013,16 @@ Before we'll be able to update the `submodule`?s (`nvim` config files and `pass`
 > gpg-connect-agent updatestartuptty /bye
 ```
 
-You would have to adapt the `keygrip` present in the `~/.gnupg/sshcontrol` file to your specific `keygrip`, retrieved with `> gpg -K --with-keygrip`.
+You would have to adapt the `keygrip` present in the `~/.gnupg/sshcontrol` file to your specific `keygrip`, retrieved with #cmd("> gpg -K --with-keygrip").
 
-// #+begin_IMPORTANT
-If you're inside a VM, you of course need to somehow pass the smartcard to said VM.
+#IMPORTANT[
+  If you're inside a VM, you of course need to somehow pass the smartcard to said VM.
 
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |   <c>   |     <c>     |  <c>  |
-| *core* | *extra* | *community* | *AUR* |
-|--------+---------+-------------+-------|
-|        |         |    usbip    |       |
+  #pkgtable("", "", "usbip", "")
 
-If you're inside a `Hyper-V` VM, you need to utilize `usbip`.
-If you're using `fish`, there's a script under `~/.config/fish/usbip-man.fish`
-// #+end_IMPORTANT
+  If you're inside a `Hyper-V` VM, you need to utilize `usbip`.
+  If you're using `fish`, there's a script under `~/.config/fish/usbip-man.fish`
+]
 
 Now, as mentioned before, I'll switch to using `ssh` for authentication, rather than `https`
 
@@ -1953,6 +2045,7 @@ That means that if you've used `ssh` to log into your machine, it probably won't
 You may need to restart the machine entirely.
 
 === Finalize the `dotfiles`
+
 Now log back in and continue
 
 ```fish
@@ -1961,6 +2054,7 @@ Now log back in and continue
 ```
 
 ==== Setup `nvim`
+
 If you plan on utilizing `nvim` with my config, you need to setup things first
 
 ```fish
@@ -1993,6 +2087,7 @@ If you plan on utilizing `nvim` with my config, you need to setup things first
 ```
 
 === `gpg-agent` forwarding
+
 Now there is only one thing left to do, in order to make the `gpg` setup complete: `gpg-agent` forwarding over `ssh`. This is very important for me, as I want to use my smartcard on my development server too, which requires me, to forward/tunnel my `gpg-agent` to my remote machine.
 
 First of all, I want to setup a config file for `ssh`, as I don't want to pass all parameters manually to ssh every time.
@@ -2046,6 +2141,7 @@ Another option would be changing that variable for the `ssh` command
 ```
 
 === Back to your `root`?s
+
 As mentioned before, you would now switch to the `root` user, either by logging in as `root`, or by using
 
 ```fish
@@ -2055,21 +2151,19 @@ As mentioned before, you would now switch to the `root` user, either by logging 
 
 Now go back to to repeat all commands for the `root` user.
 
-A native login would be better compared to `> sudo -iu root`, as there could be some complications, like already running `gpg-agent` instances, etc., which you would need to manually resolve, when using `> sudo -iu root`.
+A native login would be better compared to #cmd("> sudo -iu root"), as there could be some complications, like already running `gpg-agent` instances, etc., which you would need to manually resolve, when using #cmd("> sudo -iu root").
 
 == Audio
+
 Well, why wouldn't you want audio ...
 
 === `alsa`
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |    <c>     |     <c>     |  <c>  |
-| *core* |  *extra*   | *community* | *AUR* |
-|--------+------------+-------------+-------|
-|        | alsa-utils |             |       |
 
-// #+begin_NOTE
-You're probably better off using #link("*`pulseaudio`")[`pulseaudio`], #link("*`jack`")[`jack`] and/or #link("*`pipewire`")[`pipewire`].
-// #+end_NOTE
+#pkgtable("", "alsa-utils", "", "")
+
+#NOTE[
+  You're probably better off using #link("*`pulseaudio`")[`pulseaudio`], #link("*`jack`")[`jack`] and/or #link("*`pipewire`")[`pipewire`].
+]
 
 Now choose the sound card you want to use
 
@@ -2088,12 +2182,17 @@ defaults.ctl.card 2
 It should be clear, that you would have to switch out `2` with the number corresponding to the sound card you want to use.
 
 === `pulseaudio`
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |     <c>     |     <c>     |  <c>  |
-| *core* |   *extra*   | *community* | *AUR* |
-|--------+-------------+-------------+-------|
-|        | pavucontrol | pulsemixer  |       |
-|        | pulseaudio  |             |       |
+
+#pkgtable(
+  "",
+
+  "pavucontrol
+  pulseaudio",
+
+  "pulsemixer",
+
+  ""
+)
 
 Some applications require `pulseaudio`, or work better with it, for example `discord`, so it might make sense to use `pulseaudio` (although #link("*`pipewire`")[`pipewire`] could replace it).
 
@@ -2124,29 +2223,39 @@ Of course a restart of the `pulseaudio` daemon is necessary to reflect the chang
 ```
 
 === `jack`
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |       <c>       |     <c>     |  <c>  |
-| *core* |     *extra*     | *community* | *AUR* |
-|--------+-----------------+-------------+-------|
-|        | pulseaudio-jack |   cadence   |       |
-|        |                 |    jack2    |       |
+
+#pkgtable(
+  "",
+
+  "pulseaudio-jack",
+
+  "cadence
+  jack2",
+
+  ""
+)
 
 If you either want to manually control audio routing, or if you use some kind of audio application like `ardour`, you'll probably want to use `jack` and then `cadence` as a GUI to control it, as it has native support for bridging `pulseaudio` to `jack`.
 
 === `pipewire`
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |      <c>       |     <c>     |  <c>  |
-| *core* |    *extra*     | *community* | *AUR* |
-|--------+----------------+-------------+-------|
-|        |    pipewire    |  qpwgraph   |       |
-|        | pipewire-alsa  |             |       |
-|        | pipewire-audio |             |       |
-|        | pipewire-jack  |             |       |
-|        | pipewire-pulse |             |       |
-|        |  wireplumber   |             |       |
 
-// #+begin_TIP
-If you don't want to reboot, you need to stop `pulseaudio.service` and start `pipewire-pulse.service`
+#pkgtable(
+  "",
+
+  "pipewire
+  pipewire-alsa
+  pipewire-audio
+  pipewire-jack
+  pipewire-pulse
+  wireplumber",
+
+  "qpwgraph",
+
+  ""
+)
+
+#TIP[
+  If you don't want to reboot, you need to stop `pulseaudio.service` and start `pipewire-pulse.service`
 
 ```fish
 root in /
@@ -2156,25 +2265,31 @@ root in /
 > systemctl start pipewire-pulse.service
 ```
 
-You can check if `pipewire-pulse` is working correctly with
+  You can check if `pipewire-pulse` is working correctly with
 
 ```fish
 ~
 > pactl info
 ```
-// #+end_TIP
+]
 
 === Audio handling
-// #+ATTR_LATEX: :environment pkgtblr
-|  <c>   |    <c>    |     <c>     |  <c>  |
-| *core* |  *extra*  | *community* | *AUR* |
-|--------+-----------+-------------+-------|
-|        |   libao   |     sox     |       |
-|        | libid3tag |   twolame   |       |
-|        |  libmad   |             |       |
-|        | libpulse  |             |       |
-|        |   opus    |             |       |
-|        |  wavpack  |             |       |
+
+#pkgtable(
+  "",
+
+  "libao
+  libid3tag
+  libmad
+  libpulse
+  opus
+  wavpack",
+
+  "sox
+  twolame",
+
+  ""
+)
 
 To also play audio, we need to install the mentioned packages and then simply do
 
@@ -2190,8 +2305,17 @@ to play audio.
 
 == Bluetooth
 
-`extra` & `bluez bluez-utils pulseaudio-bluetooth`\\
-`community` & `blueman`\\
+#pkgtable(
+  "",
+
+  "bluez
+  bluez-utils
+  pulseaudio-bluetooth",
+
+  "blueman",
+
+  ""
+)
 
 To set up Bluetooth, we need to install the `bluez` and `bluez-utils`
 packages in order to have at least a command line utility `bluetoothctl`
@@ -2229,58 +2353,58 @@ defaulted, but in some cases, you might need to first select the
 Bluetooth controller
 
 ```fish
-(insert) [DustVoice]# list
-(insert) [DustVoice]# select <MAC_address>
+> list
+> select <MAC_address>
 ```
 
 After that, power on the controller
 
 ```fish
-(insert) [DustVoice]# power on
+> power on
 ```
 
 Now enter device discovery mode
 
 ```fish
-(insert) [DustVoice]# scan on
+> scan on
 ```
 
 and list found devices
 
 ```fish
-(insert) [DustVoice]# devices
+> devices
 ```
 
 You can turn device discovery mode off again, after your desired device
 has been found
 
 ```fish
-(insert) [DustVoice]# scan off
+> scan off
 ```
 
 Now turn on the agent
 
 ```fish
-(insert) [DustVoice]# agent on
+> agent on
 ```
 
 and pair with your device
 
 ```fish
-(insert) [DustVoice]# pair <MAC_address>
+> pair <MAC_address>
 ```
 
 If your device doesn't support PIN verification you might need to
 manually trust the device
 
 ```fish
-(insert) [DustVoice]# trust <MAC_address>
+> trust <MAC_address>
 ```
 
 Finally connect to your device
 
 ```fish
-(insert) [DustVoice]# connect <MAC_address>
+> connect <MAC_address>
 ```
 
 If your device is an audio device, of some kind you might have to
@@ -2352,9 +2476,7 @@ With
 > nvidia-settings
 ```
 
-// #+begin_sloppypar
 you'll only be able to save the current configuration to `~/.nvidia-settings-rc`, which you have to source after `X` startup with
-// #+end_sloppypar
 
 ```fish
 ~
@@ -2366,6 +2488,7 @@ drivers, so you might as well do it now, before any complications come
 up.
 
 === Launching the graphical environment
+
 After that you can now do `startx` in order to launch the graphical
 environment.
 
@@ -2446,10 +2569,12 @@ already be provided in the `dotfiles` repository.
 Now instead of `startx`, just run `nvidia-xrun`, enter your `sudo`
 password and you're good to go.
 
-== Additional `fish` software
-Software that is useful in combination with a `fish`.
+== Additional `console` software
+
+Software that is useful in combination with a `console`.
 
 === `tmux`
+
 
 `community` & `tmux`\\
 
@@ -2461,6 +2586,7 @@ To view a list of keybinds, you just need to press `Ctrl+b` followed by
 `?`.
 
 === Communication
+
 Life is all about communicating. Here are some pieces of software to do
 exactly that.
 
@@ -2497,12 +2623,12 @@ Now add `,cmd_completion` to the end of `weechat.bar.status.items`, in
 my case
 
 ```fish
-;/set weechat.bar.status.items "[time], [buffer_last_number], [buffer_plugin], buffer_number+:+buffer_name+(buffer_modes)+{buffer_nicklist_count}+buffer_zoom+buffer_filter, scroll, [lag], [hotlist], completion, cmd_completion"
-;#+end_src
+/set weechat.bar.status.items "[time], [buffer_last_number], [buffer_plugin], buffer_number+:+buffer_name+(buffer_modes)+{buffer_nicklist_count}+buffer_zoom+buffer_filter, scroll, [lag], [hotlist], completion, cmd_completion"
+```
 
 Now enable `vimode` searching
 
-// ```fish
+```fish
 /set plugins.var.python.vimode.search_vim on
 ```
 
@@ -2560,10 +2686,12 @@ run
 You can view all the controls by pressing `h`.
 
 == Additional `hybrid` software
+
 Some additional software providing some kind of `GUI` to work with, but
-that can be useful in a `fish` only environment nevertheless.
+that can be useful in a `console` only environment nevertheless.
 
 === `Pass`word management
+
 I'm using `pass` as my password manager. As we already installed it in
 the step and updated the `submodule` that holds our `.password-store`,
 there is nothing left to do in this step
@@ -2586,21 +2714,23 @@ install a code formatter too.
 
 For me there are mainly two options
 
-- `pygments.rb`, which requires python to be installed
+#list[
+  `pygments.rb`, which requires python to be installed
 
-  #+begin_src fish
-  ~
-  > gem install pygments.rb
+```fish
+~
+> gem install pygments.rb
 
-  ```
+```
+][
+  `rouge` which is a native `ruby` gem
 
-- `rouge` which is a native `ruby` gem
+```fish
+~
+> gem install rouge
 
-  ```fish
-  ~
-  > gem install rouge
-
-  ```
+```
+]
 
 Now the only thing left, in my case at least, is adding `~/.gem/ruby/2.7.0/bin` to your path.
 
@@ -2617,7 +2747,7 @@ path+=("$HOME/.gem/ruby/2.7.0/bin")
 which then gets sourced by the provided `.zshenv` file. An example is
 provided with the `.zshpath.example` file
 
-You might have to re-`> source` the `.zshenv` file to make the changes
+You might have to re-#cmd("> source") the `.zshenv` file to make the changes
 take effect immediately
 
 ```fish
@@ -2636,6 +2766,7 @@ If you use another shell than `zsh`, you might have to do something
 different, to add a directory to your `PATH`.
 
 === `JUCE` and `FRUT`
+
 `JUCE` is a library for `C++` that enables you to develop cross-platform
 applications with a single codebase.
 
@@ -2678,6 +2809,7 @@ installed, where `ladspa` and `lib32-freeglut` are not neccessarily
 needed.
 
 === Additional development tools
+
 Here are just some examples of development tools one could install in
 addition to what we already have.
 
@@ -2754,7 +2886,7 @@ Kill the `adb` server, if it is running
 > adb kill-server
 ```
 
-If the server is currently not running, `> adb` will output an error
+If the server is currently not running, #cmd("> adb") will output an error
 with a `Connection refused` message.
 
 Now connect your phone, unlock it and start the `adb` server
@@ -2795,7 +2927,7 @@ even work.
 
 You may also choose to use a graphical partitioning software instead of
 `fdisk` or `cfdisk`. For that you can use `gparted`. Of course there is
-also the `fish` equivalent `parted`.
+also the `console` equivalent `parted`.
 
 === PDF viewer
 
@@ -2821,6 +2953,7 @@ of `top` (like `vi` and `vim` for example)
 If you prefer a GUI for that kind of task, use `xfce4-taskmanager`.
 
 === Video software
+
 Just some additional software related to videos.
 
 ==== Live streaming a terminal session
@@ -2830,6 +2963,7 @@ Just some additional software related to videos.
 For this task, you'll need a program called `tmate`.
 
 == Additional `GUI` software
+
 As you now have a working graphical desktop environment, you might want
 to install some software to utilize your newly gained power.
 
@@ -2920,7 +3054,7 @@ Now you can start the applet with
 ```
 
 If you want to edit the network connections with a more full screen
-approach, you can also launch `> nm-connection-editor`.
+approach, you can also launch #cmd("> nm-connection-editor").
 
 The `nm-connection-editor` doesn't search for available Wi-Fis. You
 would have to set up a Wi-Fi connection completely by hand, which could
@@ -2949,8 +3083,7 @@ To copy something from the terminal to the `xorg` clipboard, use `xclip`
 For this functionality, especially in combination with `rofi`, use
 `scrot`.
 
-`> scrot $HOME/Pictures/filename.png` then saves the screen shot under
-`$HOME/Pictures/filename.png`.
+#cmd("> scrot ~/Pictures/filename.png") then saves the screen shot under `~/Pictures/filename.png`.
 
 === Image viewer
 
@@ -3068,6 +3201,7 @@ To test if everything is working, you could open up `brave`, then go to
 /Print/ and then try printing.
 
 === Communication
+
 Life is all about communicating. Here are some pieces of software to do
 exactly that.
 
@@ -3096,6 +3230,7 @@ Wanna chat with your gaming friends and they have a `teamspeak3` server?
 You'd rather use `discord`?
 
 === Video software
+
 Just some additional software related to videos.
 
 ==== Viewing video
@@ -3120,7 +3255,7 @@ In order to show the viewers what keystrokes you're pressing, you can
 use something like `screenkey`^{`AUR`}
 
 For ideal use with `obs`, my `dotfiles` repository already provides you
-with the `> screenkey-obs` alias for you to run with `zsh`.
+with the #cmd("> screenkey-obs") alias for you to run with `zsh`.
 
 ==== Editing video
 
@@ -3137,6 +3272,7 @@ Wanna remote control your own or another PC?
 `teamviewer`^{`AUR`} might just be the right choice for you
 
 === Audio Production
+
 You might have to edit `/etc/security/limits.conf`, to increase the
 allowed locked memory amount.
 
@@ -3192,7 +3328,7 @@ Now when you want to use `virtualbox` just load the kernel module
 > sudo modprobe vboxdrv
 ```
 
-and add the user which is supposed to run `> virtualbox` to the
+and add the user which is supposed to run #cmd("> virtualbox") to the
 `vboxusers` group
 
 ```fish
@@ -3245,6 +3381,7 @@ as `remmina`, to have a GUI client for those two protocols.
 Now you can set up all your connections inside `remmina`.
 
 = Upgrading the system
+
 You're probably wondering why this gets a dedicated section.
 
 You'll probably think that it would be just a matter of issuing
@@ -3260,7 +3397,7 @@ You have to make sure, /that your boot partition is mounted at `/boot`/
 in order for everything to upgrade correctly. That's because the moment
 you upgrade the `linux` package without having the correct partition
 mounted at `/boot`, your system won't boot. You also might have to do
-`> grub-mkconfig -o /boot/grub/grub.cfg` after you install a different
+#cmd("> grub-mkconfig -o /boot/grub/grub.cfg") after you install a different
 kernel image.
 
 If your system _indeed doesn't boot_ and _boots to a recovery fish_,
@@ -3284,6 +3421,7 @@ _The version of these two packages should be exactly the same!_
 If it isn't there is an easy fix for it.
 
 == Fixing a faulty kernel upgrade
+
 First off we need to restore the old `linux` package.
 
 For that note the version number of
@@ -3310,9 +3448,7 @@ root in ~
 > cd /var/cache/pacman/pkg
 ```
 
-// #+begin_sloppypar
 There should be a file located named something like `linux-<version>.pkg.tar.xz`, where `<version>` would be somewhat equivalent to the previously noted version number
-// #+end_sloppypar
 
 Now downgrade the `linux` package
 
@@ -3343,6 +3479,96 @@ Now simply rerun
 
 and you should be fine now.
 
+= Glossary <glossary>
+
+This documentation is structured in a way that allows you to keep a printed version up to date without the need to reprint the whole thing.
+This is why every section starts on a new page and page numbers are absent.
+
+== Programs, tools & terms
+
+Terms denoted by a `monospaced font` are mostly commands/programs or specific terms that are generally accepted to be a universal name for what they describe.
+For example when I say that you need to `cd` into the directory, `cd` denotes the program/command I intend you to use.
+If I say you need to read the `PKGBUILD` or that you need to create an `EFI System Partition`, that in turn is the universally accepted name for both of those things.
+
+== Commands
+
+Furthermore I will denote a command execution in a shell with a preceding #cmd(">"): #cmd("> uname -a").
+This then mostly includes any needed command line arguments.
+
+== Commandblocks
+
+Multiple commands, where the execution user, or rather the privilege needed, as well as the current working directory are of interested, are displayed in a command execution block.
+You can infer the privilege the command was executed by looking at the prompt line above the command, where the `root` username will be denoted if it's an elevated shell.
+In any case the first line always contains the current working directory and the next line the prompt.
+
+```fish
+~
+> git init
+
+root in /boot
+> ls -la
+```
+
+== Files
+
+If the content of a file is of interest a file listing is used, which shows the (partial) content of the file together with the filename / the filepath.
+
+#filesrc("~/test.sh")[
+```
+#!/bin/bash
+
+echo test
+```
+]
+
+If the file is only partially displayed, or the listing is supposed to show an addition to a specific file, it is denoted by `[...]` being appended to the filepath
+
+#filesrc("~/test.sh [...]")[
+```
+echo appendage
+```
+]
+
+If I only want to _mention_ a file or path, I will denote it like this #path("~/test.sh").
+
+== Blocks
+
+For special cases, noteworthy mentions, warning, etc. there are special text blocks that are supposed to draw your attention.
+
+#NOTE[
+  This is a *note*.
+  This annotates some special edge case, some #text(style: "italic")[gotcha]s etc., in other words some useful information.
+]
+
+#TIP[
+  This is a *tip*.
+  This will often be employed if there is a scenario I often times struggled with, or if some special or unusual procedure is needed.
+  It just wants to give you a tip.
+]
+
+#IMPORTANT[
+  This is *important*.
+  Should probably be read and adhered to unless you know what you're doing.
+  I think this is self explanatory
+]
+
+#WARNING[
+  This gives you a *warning*.
+  I mean this is pretty self explanatory too.
+  In general this includes big #text(style: "italic")[gotcha]s, problems, potentially breaking stuff, etc.
+]
+
+#CAUTION[
+  This gives you the hint to proceed with *caution* and double check!
+]
+
+== Explanations
+
+If any term needs an explanation, I will explain it briefly in the following form.
+
+/ term: Short explanation
+
 = Additional notes
+
 If you've printed this guide, you might want to add some additional
 blank pages for notes.
