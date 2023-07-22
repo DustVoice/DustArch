@@ -1,0 +1,3 @@
+[submodule "dustypst"]
+	path = dustypst
+	url = https://git.dustvoice.de/DustVoice/dustypst

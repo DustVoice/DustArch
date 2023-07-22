@@ -2,11 +2,5 @@
 /*/
 !/.gitignore
 
-!/changelog.org
-!/notes.org
-!/todo.org
-
-!/dustdoc.cls
-!/Documentation.tex
-!/DustArch.org
 !/DustArch.typ
+!/dustypst
