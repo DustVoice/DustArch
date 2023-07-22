@@ -1720,10 +1720,27 @@ To achieve this very specific setup, I have to turn my home directory into said 
   
   git fetch
   
-  git reset origin/master --hard
+  git reset origin/main --hard
   
-  git branch --set-upstream-to=origin/master master
+  git branch --set-upstream-to=origin/main main
   ```
+]
+
+#important[
+  This has lead to some problems in the past.
+  Generally I would try and use the new #cmd[`git switch`] command like so:
+
+  #terminal("~")[
+    ```
+    git init
+  
+    git remote add origin https://git.dustvoice.de/DustVoice/dotfiles.git
+  
+    git fetch
+  
+    git switch -C main origin/main
+    ```
+  ]
 ]
 
 Now I can issue any `git` command in my `$HOME` directory because it now is a `git` repository.
