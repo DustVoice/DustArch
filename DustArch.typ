@@ -1705,7 +1705,7 @@ This means I will have to get along with using the `https` URL of the repository
 
 === Use `dotfiles` for a base config
 
-To provide myself with a base configuration, which I can then extend, I maintain a `dotfiles` repository, which contains all kinds of configurations.
+To provide myself with a base configuration, which I can then extend, I maintain a `dotfiles` repository (on my self-hosted GitLab instance, mirrored of course), which contains all kinds of configurations.
 
 The special thing about this `dotfiles` repository is that it _is_ my home folder.
 By using a curated `.gitignore` file, I'm able only to include the configuration files I want to keep between installs into the repository and ignore everything else.
