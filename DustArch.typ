@@ -1716,7 +1716,7 @@ To achieve this very specific setup, I have to turn my home directory into said 
   ```
   git init
   
-  git remote add origin https://git.dustvoice.de/DustVoice/dotfiles.git
+  git remote add origin https://gitlab.dustvoice.de/DustVoice/dotfiles.git
   
   git fetch
   
@@ -1734,7 +1734,7 @@ To achieve this very specific setup, I have to turn my home directory into said 
     ```
     git init
   
-    git remote add origin https://git.dustvoice.de/DustVoice/dotfiles.git
+    git remote add origin https://gitlab.dustvoice.de/DustVoice/dotfiles.git
   
     git fetch
   
@@ -1786,7 +1786,7 @@ You would have to adapt the `keygrip` present in the #filepath("~/.gnupg/sshcont
 
 Now, as mentioned before, I'll switch to using `ssh` for authentication, rather than `https`
 
-#terminal("~")[`git remote set-url origin git@git.dustvoice.de:DustVoice/dotfiles.git`]
+#terminal("~")[`git remote set-url origin gitlab@gitlab.dustvoice.de:DustVoice/dotfiles.git`]
 
 The best method to make `fish` recognize all the configuration changes, as well as the `gpg-agent` behave properly, is to re-login.
 We'll do just that
