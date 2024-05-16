@@ -14,9 +14,9 @@ and to install additional software, as the `archiso` doesn't have all packages
 available from cache, especially the ones that need to be installed from the `AUR`.
 
 / AUR (Arch User Repository):
-  A huge collection of packages contributed and maintained by the community, which
-  in order to install you need to download and build.\
-  Accessable and browsable under #linkfn("https://aur.archlinux.org/")[aur.archlinux.org].
+    A huge collection of packages contributed and maintained by the community, which
+    in order to install you need to download and build.\
+    Accessable and browsable under #linkfn("https://aur.archlinux.org/")[aur.archlinux.org].
 
 Furthermore, one should bear in mind that depending on the version, or rather
 modification date, of this guide, the exact steps taken may already be outdated.
@@ -88,7 +88,7 @@ Clone the package with `git`
 If you are on a slow PC or don't want to compile `paru` from scratch, you can
 also use the #linkfn("https://aur.archlinux.org/packages/paru-bin")[paru-bin].
 ][
-  Switch to the package directory
+    Switch to the package directory
 ][
 Execute #cmd[`makepkg`] with the appropriate argments
 #terminal("~/paru")[`makepkg -si`]
@@ -114,13 +114,13 @@ non-`root` user, because `makepkg` doesn't run as `root`.
 In this guide, the software is categorized into three different categories
 
 / `console`: Intended to be used with either the native linux console or with a terminal
-  emulator
+    emulator
 
 / `GUI`: Intended to be used within a graphical desktop environment
 
 / `hybrid`: To be used either within both a console and a graphical desktop environment
-  (e.g. `networkmanager`), or there are packages available for both a console and
-  a graphical desktop environment (e.g. `pulseaudio` with `pulsemixer` for `Console` and `pavucontrol` for `GUI`)
+    (e.g. `networkmanager`), or there are packages available for both a console and
+    a graphical desktop environment (e.g. `pulseaudio` with `pulsemixer` for `Console` and `pavucontrol` for `GUI`)
 
 === Software installation
 
@@ -130,10 +130,10 @@ section at the beginning of the individual sections.
 This allows you to
 
 - clearly see what packages get installed/need to be installed in a specific
-  section
+    section
 
 - install packages before you start with the section in order to minimize waiting
-  time
+    time
 
 The packages are always the recommended packages.
 
@@ -155,11 +155,11 @@ The output of #cmd[`fdisk -l`] is dependent on your system configuration and
 many other factors, like the `BIOS` initialization order, etc.
 
 #caution[
-  Don't assume the same path of a device between reboots!
+    Don't assume the same path of a device between reboots!
 
-  Always double-check!
+    Always double-check!
 
-  There is nothing worse than formatting a drive you didn't mean to format!
+    There is nothing worse than formatting a drive you didn't mean to format!
 ]
 
 === The standard way
@@ -182,14 +182,14 @@ You should make the `swap` size at least your RAM size and for RAM sizes over `4
 the intention to hibernate, at least one and a half times your RAM size.
 
 If you haven't yet partitioned your disk, please refer to the #linkfn(
-  "https://wiki.archlinux.org/index.php/Partitioning",
+    "https://wiki.archlinux.org/index.php/Partitioning",
 )[general partitioning tutorial] in the ArchWiki.
 
 === Full system encryption
 
 
 #note[
-  This is only one way to do it (read: it is the way I have previously done it).
+    This is only one way to do it (read: it is the way I have previously done it).
 ]
 
 I'm using a `LUKS` setup, with `btrfs` and `luks2`. For more information look
@@ -327,7 +327,7 @@ mount -o subvol=@ /dev/mapper/DustPortable /mnt/DustPortable
 Now we can mount the #filepath("/home") subvolume `@home`
 
 #terminal-root(
-  "/mnt/DustPortable",
+    "/mnt/DustPortable",
 )[`mount -o subvol=@home /dev/mapper/DustPortable home`]
 
 The #filepath("/.snapshots") subvolume `@snapshots` closely follows
@@ -422,7 +422,7 @@ named `reflector`. It comes with all sorts of options, for example sorting
 mirrors by speed, filtering by country, etc.
 
 #terminal-root(
-  "/",
+    "/",
 )[
 `reflector --verbose --latest 200 --sort rate --save /etc/pacman.d/mirrorlist`
 ]
@@ -536,7 +536,7 @@ installations.
 == Installing additional packages
 
 #pkgtable(
-  core: "amd-ucode base-devel btrfs-progs diffutils dmraid dnsmasq dosfstools efibootmgr emacs-nativecomp exfat-utils iputils linux-headers openssh sudo usbutils", extra: "efitools fish git intel-ucode neovim networkmanager networkmanager-openconnect networkmanager-openvpn nushell parted polkit rsync zsh", aur: "limine",
+    core: "amd-ucode base-devel btrfs-progs diffutils dmraid dnsmasq dosfstools efibootmgr emacs-nativecomp exfat-utils iputils linux-headers openssh sudo usbutils", extra: "efitools fish git intel-ucode neovim networkmanager networkmanager-openconnect networkmanager-openvpn nushell parted polkit rsync zsh", aur: "limine",
 )
 
 #note[
@@ -558,7 +558,7 @@ With `polkit` installed, create a file to enable users of the `network` group to
 add new networks without the need for `sudo`.
 
 #filesrc(
-  part: true, perm: true, "/etc/polkit-1/rules.d/50-org.freedesktop.NetworkManager.rules",
+    part: true, perm: true, "/etc/polkit-1/rules.d/50-org.freedesktop.NetworkManager.rules",
 )[
 ```
 polkit.addRule(function(action, subject) {
@@ -576,7 +576,7 @@ If you use `UEFI`, you'll also need the `efibootmgr`, in order to modify the `UE
 === Additional kernels
 
 #pkgtable(
-  core: "linux-lts linux-lts-headers linux-zen linux-zen-headers", extra: "linux-hardened linux-hardened-headers",
+    core: "linux-lts linux-lts-headers linux-zen linux-zen-headers", extra: "linux-hardened linux-hardened-headers",
 )
 
 In addition to the standard `linux` kernel, there are a couple of different
@@ -756,7 +756,7 @@ the kernel image. To utilize this, we can use `efibootmgr` to create an entry in
 the `UEFI`
 
 #terminal-root(
-  "/",
+    "/",
 )[
 ```
 efibootmgr
@@ -841,7 +841,7 @@ In this case, boot into Windows, open a `cmd` window as Administrator, and type
 in
 
 #terminal-root(
-  windows: true, "C:\\Windows\\System32",
+    windows: true, "C:\\Windows\\System32",
 )[`bcdedit /set {bootmgr} path \EFI\grub\grubx64.efi`]
 
 To make sure that the path is correct, you can use
@@ -955,7 +955,7 @@ We need to add the `resume` kernel parameter to #filepath("/etc/default/grub"),
 containing my `swap` partition `UUID`, in my case
 
 #filesrc(
-  part: true, perm: true, "/etc/default/grub",
+    part: true, perm: true, "/etc/default/grub",
 )[
 ```
 GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet resume=UUID=097c6f11-f246-40eb-a702-ba83c92654f2"
@@ -1057,10 +1057,10 @@ The only thing left to do is to create a `limine.cfg` file with all your desired
 boot entries in it.
 
 #note[
-  I usually have multiple kernels installed at a time, which is why my config file
-  is so big. Note that I will install the kernels at a later time, but already
-  specify them as boot entries. Therefore don't be surprised if those boot entries
-  in turn won't work yet!
+    I usually have multiple kernels installed at a time, which is why my config file
+    is so big. Note that I will install the kernels at a later time, but already
+    specify them as boot entries. Therefore don't be surprised if those boot entries
+    in turn won't work yet!
 ]
 
 ===== Kernel `cmdline`
@@ -1080,7 +1080,7 @@ For `[2]`, getting the `UUID` of the `LUKS` volume is achieved by using `blkid`.
 ]
 
 #filesrc(
-  part: true, perm: true, "/boot/limine.cfg",
+    part: true, perm: true, "/boot/limine.cfg",
 )[
 ```
 ${root_device}=root=/dev/mapper/DustPortable rw rootflags=subvol=@ resume=/dev/mapper/DustPortable resume_offset=[1] cryptdevice=UUID=[2]:DustPortable
@@ -1223,7 +1223,7 @@ Now we will specify every hook we need. Mention-worthy additions to the default
 list are the hooks `colors`, `encrypt`, `btrfs`, and `resume`.
 
 #filesrc(
-  part: true, perm: true, "/etc/mkinitcpio.conf",
+    part: true, perm: true, "/etc/mkinitcpio.conf",
 )[
 ```
 HOOKS=(base udev colors block keyboard keymap consolefont autodetect kms modconf encrypt btrfs resume filesystems fsck)
@@ -1291,29 +1291,29 @@ from now on, for example, `sd-encrypt` instead of `encrypt`.
 
 - `base`
 
-  In my case, I left the `base` hook untouched to get a `busybox` recovery shell,
-  if something goes wrong, although you wouldn't technically need it when using `systemd`.
+    In my case, I left the `base` hook untouched to get a `busybox` recovery shell,
+    if something goes wrong, although you wouldn't technically need it when using `systemd`.
 
-  Don't remove this, when using `busybox`, unless you absolutely know what you're
-  doing.
+    Don't remove this, when using `busybox`, unless you absolutely know what you're
+    doing.
 
 - `udev`
 
-  Replace this with `systemd` to switch from `busybox` to `systemd`.
+    Replace this with `systemd` to switch from `busybox` to `systemd`.
 
 - `keymap` and/or `consolefont`
 
-  If you didn't use one of these two, or one, it needs to be replaced with `sd-vconsole`.
-  Everything else stays the same with these.
+    If you didn't use one of these two, or one, it needs to be replaced with `sd-vconsole`.
+    Everything else stays the same with these.
 
 - `encrypt`
 
-  It isn't used in the default #filepath("/etc/mkinitcpio.conf"), but it could be
-  important later on, for example when using. You need to substitute this with `sd-encrypt`.
+    It isn't used in the default #filepath("/etc/mkinitcpio.conf"), but it could be
+    important later on, for example when using. You need to substitute this with `sd-encrypt`.
 
 - `lvm2`
 
-  Same thing as with `encrypt` and needs to be substituted with `sd-lvm2`.
+    Same thing as with `encrypt` and needs to be substituted with `sd-lvm2`.
 
 You can find all purposes of the individual hooks, as well as the `busybox` / `systemd` equivalent
 of each one, in the #linkfn("https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks")[ArchWiki].
@@ -1357,7 +1357,7 @@ If you have to use `bcdedit` from within Windows, as explained in the section #l
 you must adapt the command accordingly.
 
 #terminal-root(
-  "/",
+    "/",
 )[
 ```
 cp /usr/share/preloader-signed/PreLoader.efi /boot/EFI/BOOT/PreLoader.efi
@@ -1369,7 +1369,7 @@ cp /usr/share/preloader-signed/HashTool.efi /boot/EFI/BOOT/
 and under Windows
 
 #terminal-root(
-  windows: true, "C:\\Windows\\System32",
+    windows: true, "C:\\Windows\\System32",
 )[`bcdedit /set {bootmgr} path \EFI\BOOT\PreLoader.efi`]
 ]
 
@@ -1391,20 +1391,20 @@ first.
 In the following subsections, we will deal with different file formats.
 
 / `.key`:
-  `PEM` format private keys for `EFI` binary and `EFI` signature list signing.
+    `PEM` format private keys for `EFI` binary and `EFI` signature list signing.
 
 / `.crt`:
-  `PEM` format certificates for `sbsign`.
+    `PEM` format certificates for `sbsign`.
 
 / `.cer`:
-  `DER` format certificates for firmware.
+    `DER` format certificates for firmware.
 
 / `.esl`:
-  Certificates in `EFI` Signature List for `KeyTool` and/or firmware.
+    Certificates in `EFI` Signature List for `KeyTool` and/or firmware.
 
 / `.auth`:
-  Certificates in `EFI` Signature List with authentication header (i.e., a signed
-  certificate update file) for `KeyTool` and/or firmware.
+    Certificates in `EFI` Signature List with authentication header (i.e., a signed
+    certificate update file) for `KeyTool` and/or firmware.
 
 ==== Create the keys
 
@@ -1539,7 +1539,7 @@ keys, so only `EFI` binaries signed with said keys can be executed.
 But what if you have a Windows dual boot setup?
 
 Well, the procedure is actually pretty straightforward. You grab the #linkfn(
-  "https://www.microsoft.com/pkiops/certs/MicWinProPCA2011_2011-10-19.crt",
+    "https://www.microsoft.com/pkiops/certs/MicWinProPCA2011_2011-10-19.crt",
 )[Microsoft's certificates], convert them into a usable format, sign them, and
 enroll them. No need to sign the Windows boot loader.
 
@@ -1656,17 +1656,17 @@ You will probably need to
 
 - add your kernel parameters, for example
 
-  - `rd.luks.name`
+    - `rd.luks.name`
 
-  - `root`
+    - `root`
 
-  - `rw`
+    - `rw`
 
-  - `resume`
+    - `resume`
 
-  - etc.
+    - etc.
 
-  to `CMDLINE_DEFAULT`
+    to `CMDLINE_DEFAULT`
 
 After you've successfully configured `sbupdate`, you can run it as root, to
 create all the signed files.
@@ -1832,7 +1832,7 @@ get the same kind of experience there
 ]
 
 #filesrc(
-  part: true, "~/.bashrc",
+    part: true, "~/.bashrc",
 )[
 ```
 if [[ $- == *i* && $(ps --no-header --pid $PPID --format comm) != "fish" && -z ${BASH_EXECUTION_STRING} ]]
@@ -1887,7 +1887,7 @@ restarting, as that sometimes is the solution to the problem.
 == Additional required tools
 
 #pkgtable(
-  core: "make openssh", extra: "atuin bat clang cmake exa jdk-openjdk pass python python-pynvim starship zoxide",
+    core: "make openssh", extra: "atuin bat clang cmake exa jdk-openjdk pass python python-pynvim starship zoxide",
 )
 
 To minimize the effort required by the following steps, we'll install most of
@@ -2024,7 +2024,7 @@ Now, as mentioned before, I'll switch to using `ssh` for authentication, rather
 than `https`
 
 #terminal(
-  "~",
+    "~",
 )[`git remote set-url origin gitlab@gitlab.dustvoice.de:DustVoice/dotfiles.git`]
 
 The best method to make `fish` recognize all the configuration changes, as well
@@ -2062,7 +2062,7 @@ nvim --headless +PlugInstall +qa
 ```
 ]
 #terminal(
-  "~/.config/nvim/plugged/YouCompleteMe",
+    "~/.config/nvim/plugged/YouCompleteMe",
 )[`python3 install.py --clang-completer --java-completer`]
 
 === `gpg-agent` forwarding
@@ -2095,7 +2095,7 @@ To get the paths needed as parameters for `RemoteForward`, issue
 An example for a valid #filepath("~/.ssh/config") would be
 
 #filesrc(
-  part: true, "~/.ssh/config",
+    part: true, "~/.ssh/config",
 )[
 ```
 Host archserver
@@ -2221,7 +2221,7 @@ a GUI to control it, as it has native support for bridging `pulseaudio` to `jack
 === `pipewire`
 
 #pkgtable(
-  extra: "pipewire pipewire-alsa pipewire-audio pipewire-jack pipewire-pulse qpwgraph wireplumber",
+    extra: "pipewire pipewire-alsa pipewire-audio pipewire-jack pipewire-pulse qpwgraph wireplumber",
 )
 
 #tip[
@@ -2395,7 +2395,7 @@ Things differ a little bit though, depending on whether you want to use `xorg` o
 === Xorg
 
 #pkgtable(
-  core: "nerd-fonts", extra: "alacritty arandr bspwm dmenu sxhkd xclip xorg-xinit", aur: "polybar", groups: "xorg xorg-drivers",
+    core: "nerd-fonts", extra: "alacritty arandr bspwm dmenu sxhkd xclip xorg-xinit", aur: "polybar", groups: "xorg xorg-drivers",
 )
 
 `xclip` is useful when sending something to the `X` clipboard. It is also
@@ -2735,7 +2735,7 @@ now become obsolete.
 ==== Using `JUCE`
 
 #pkgtable(
-  core: "gcc gnutls", extra: "alsa-lib clang freeglut freetype2 jack2 ladspa libcurl-gnutls libx11 libxcomposite libxinerama libxrandr mesa webkit2gtk", multilib: "lib32-freeglut",
+    core: "gcc gnutls", extra: "alsa-lib clang freeglut freetype2 jack2 ladspa libcurl-gnutls libx11 libxcomposite libxinerama libxrandr mesa webkit2gtk", multilib: "lib32-freeglut",
 )
 
 In order to use `JUCE`, you'll need to have some dependency packages installed,
@@ -3027,14 +3027,14 @@ time you simply want to extract an archive of some sort. That's why we'll use `x
 As you're already using a GUI, you also might be interested in a web browser. In
 my case, I'm using `firefox`, as well as `browserpass` from the official
 repositories, the #linkfn(
-  "https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/",
+    "https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/",
 )[uBlock Origin], #linkfn(
-  "https://addons.mozilla.org/en-US/firefox/addon/darkreader/",
+    "https://addons.mozilla.org/en-US/firefox/addon/darkreader/",
 )[Dark Reader], #linkfn(
-  "https://addons.mozilla.org/en-US/firefox/addon/duckduckgo-for-firefox/",
+    "https://addons.mozilla.org/en-US/firefox/addon/duckduckgo-for-firefox/",
 )[DuckDuckGo Privacy Essentials], #linkfn("https://addons.mozilla.org/en-US/firefox/addon/vimium-ff/")[Vimium] and
 finally #linkfn(
-  "https://addons.mozilla.org/en-US/firefox/addon/browserpass-ce/",
+    "https://addons.mozilla.org/en-US/firefox/addon/browserpass-ce/",
 )[Browserpass] add-ons, in order to use my passwords in `firefox` and have the
 best protection in regard to privacy, while browsing the web.
 
@@ -3063,7 +3063,7 @@ I'll use `libreoffice-fresh` for anything that I'm not able to do with
 ==== Printing
 
 #pkgtable(
-  extra: "avahi cups cups-pdf nss-mdns print-manager system-config-printer",
+    extra: "avahi cups cups-pdf nss-mdns print-manager system-config-printer",
 )
 
 In order to be able to print from the `gtk` print dialog, we'll also need `system-config-printer` and `print-manager`.
@@ -3080,11 +3080,11 @@ Now you have to edit #filepath("/etc/nsswitch.conf") and add
 #raw("mdns4_minimal [NOTFOUND`return]=")
 
 #filesrc(
-  "/etc/nsswitch.conf",
+    "/etc/nsswitch.conf",
 )[
-  #raw(
-    block: true, "hosts: files mymachines myhostname mdns4_minimal [NOTFOUND`return] resolve [!UNAVAIL`return] dns",
-  )
+    #raw(
+        block: true, "hosts: files mymachines myhostname mdns4_minimal [NOTFOUND`return] resolve [!UNAVAIL`return] dns",
+    )
 ]
 
 Now continue with this
@@ -3243,7 +3243,7 @@ Now just re-login and you're good to go.
 === Gaming
 
 #pkgtable(
-  extra: "lutris pulseaudio pulseaudio-alsa", multilib: "lib32-libpulse lib32-nvidia-utils steam",
+    extra: "lutris pulseaudio pulseaudio-alsa", multilib: "lib32-libpulse lib32-nvidia-utils steam",
 )
 
 The first option for native/emulated gaming on Linux is obviously
@@ -3364,27 +3364,27 @@ There are special blocks that are supposed to draw your attention and seperate
 their contents:
 
 #note[
-  This is a *note*. This annotates some special edge cases, some #emph[gotcha]s,
-  noteworthy stuff, etc.
+    This is a *note*. This annotates some special edge cases, some #emph[gotcha]s,
+    noteworthy stuff, etc.
 ]
 
 #tip[
-  This is a *tip*. This will often be employed if there is a scenario I often
-  times struggled with, or if some special or unusual procedure is needed.
+    This is a *tip*. This will often be employed if there is a scenario I often
+    times struggled with, or if some special or unusual procedure is needed.
 ]
 
 #important[
-  This is *important*. Should probably be read and adhered to unless you know what
-  you're doing.
+    This is *important*. Should probably be read and adhered to unless you know what
+    you're doing.
 ]
 
 #warning[
-  This gives you a *warning*. In general, this includes big #emph[gotcha]s,
-  problems, potentially breaking stuff, etc.
+    This gives you a *warning*. In general, this includes big #emph[gotcha]s,
+    problems, potentially breaking stuff, etc.
 ]
 
 #caution[
-  This gives you the hint to proceed with *caution* and double-check!
+    This gives you the hint to proceed with *caution* and double-check!
 ]
 
 
@@ -3404,7 +3404,7 @@ or reading the _`PKGBUILD`_, this is just the lowest level / highest abstraction
 version. I could instead use:
 
 - #pkg-aur("sbupdate-git") instead of e.g. `sbupdate-git`, if I assume you don't
-  have the program yet and need the package / repository link _(explained in @packages)_
+    have the program yet and need the package / repository link _(explained in @packages)_
 - #cmd[`rm -rf folder/*.txt`], instead of the simple `rm -rf folder/*.txt` _(explained in @commands)_
 - #filepath("PKGBUILD") as a filepath descriptor, in place of `PKGBUILD` _(explained in @files)_
 ]
@@ -3431,7 +3431,7 @@ the pages as mentioned in @glossary.
 
 In order to
 - not clutter the pages with install instructions / packages required for specific
-  sections,
+    sections,
 - group packages together so you can install everything in one go,
 - and make them visibly stand out
 I use two different markups for packages.
@@ -3448,7 +3448,7 @@ The second option is a package-table which categorizes the packages into
 repositories.
 
 #pkgtable(
-  core: "base linux", extra: "neovim pulseaudio", multilib: "lib32-libpulse",
+    core: "base linux", extra: "neovim pulseaudio", multilib: "lib32-libpulse",
 )
 
 In this case, you can click the globe symbol #emoji.globe.eu.af to get to the
@@ -3480,12 +3480,12 @@ command execution block. You can infer the privilege the command was executed by
 looking at the #emoji.lock symbol before the path.
 
 #note[
-  Even when the command is executed in a root shell, the path #filepath("~") always
-  refers to the local, _normal_ user's home directory (usually #filepath("/home/username")).
+    Even when the command is executed in a root shell, the path #filepath("~") always
+    refers to the local, _normal_ user's home directory (usually #filepath("/home/username")).
 
-  Technically #filepath("~") #sym.eq.def #filepath("/root") is true, when in a
-  root shell, but to reduce visual clutter, I decided to use this convention
-  instead.
+    Technically #filepath("~") #sym.eq.def #filepath("/root") is true, when in a
+    root shell, but to reduce visual clutter, I decided to use this convention
+    instead.
 ]
 
 In any case, the first line always contains the current working directory and
@@ -3545,8 +3545,8 @@ form:
 
 / Term: Short explanation
 / 2#super[nd] Term:
-  This is a long explanation.\
-  With multiple lines and everything.\
+    This is a long explanation.\
+    With multiple lines and everything.\
 
 There is also a variant with more space between the items:
 
@@ -3557,7 +3557,7 @@ There is also a variant with more space between the items:
 == Example section
 
 #pkgtable(
-  core: "base-devel", extra: "ardour cadence git jsampler linuxsampler qsampler", aur: "sbupdate-git",
+    core: "base-devel", extra: "ardour cadence git jsampler linuxsampler qsampler", aur: "sbupdate-git",
 )
 
 #note[
@@ -3575,7 +3575,7 @@ If there is someting unusual going on, which you don't understand, try turning
 it off and on again.
 
 #caution[
-  Bad joke detected!
+    Bad joke detected!
 ]
 
 = Additional notes
